@@ -1,0 +1,243 @@
+@font-face {
+  font-family: "ClimateCrisisKR-1979";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/ClimateCrisisKR-2030.woff2")
+    format("woff2");
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "ClimateCrisisKR-1979";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/ClimateCrisisKR-2040.woff2")
+    format("woff2");
+  font-weight: 200;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  color: #412823;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.container {
+  padding-top: 58px; /* 헤더 높이만큼 패딩 추가 */
+  padding-bottom: 60px;
+  position: relative;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+  z-index: 100;
+  min-height: 100vh;
+}
+
+.container.fade-out {
+  opacity: 0;
+}
+
+.container.fade-in {
+  opacity: 1;
+}
+
+header {
+  background-color: #f8f6f1;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 58px;
+  z-index: 1000;
+}
+
+header .titleArea {
+  height: 100%;
+  background-color: #f8f6f1;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 15px;
+  box-sizing: border-box;
+}
+.mainImage{
+  background-color: #f8f6f1;
+
+}
+.mainImage img {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  width: 100%;
+  padding: 0;
+}
+
+.image-grid {
+  width: 100%;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background-color: #412823;
+  
+  /* 아래 지우면 테두리 사라짐 */
+  gap: 1px;
+  padding: 1px 0;
+}
+
+.image-item {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background-color: #fff;
+}
+
+.image-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 70px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  text-align: center;
+  align-items: center;
+  background-color: #f8f6f1;
+  z-index: 1000;
+  box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.3);
+}
+
+footer * {
+  margin-top:-20px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.footerBorder {
+  font-size: 11px;
+}
+
+.floating {
+  width: 60px;
+  height: 60px;
+  background-color: #f39c12;
+  border-radius: 50%;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 100000;
+}
+
+@keyframes floating-animation {
+  0% {
+      transform: translateY(0);
+  }
+   50% {
+      transform: translateY(-10px);
+  }
+  100% {
+      transform: translateY(0);
+  }
+}
+
+#overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.overlay-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+#content {
+  opacity: 0; /* 초기값을 0으로 설정 */
+  transition: opacity 0.5s ease-in-out; /* 트랜지션 설정 */
+}
+
+#content.fade-in {
+  opacity: 1; /* 페이드 인 효과로 나타나도록 설정 */
+}
+
+/* 페이드 아웃 애니메이션 */
+#content.fade-out {
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.floating {
+  transition: left 0.1s ease-in-out, top 0.1s ease-in-out, background-color 0.3s ease-in-out;
+}
+
+#content.fade-in {
+  animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+#content.fade-out {
+  animation: fadeOut 0.5s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+      opacity: 0;
+  }
+  to {
+      opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+      opacity: 1;
+  }
+  to {
+      opacity: 0;
+  }
+}
+
+  /* 기본 상태에서 이미지가 투명해지지 않도록 설정 */
+  #mainBanner {
+    width: 100%; /* 이미지가 부모 요소 크기에 맞게 조정됨 */
+    height: auto;
+    opacity: 1;
+    transition: opacity 1s ease-in-out;
+  }
+
+  /* 페이드 아웃 효과 */
+  #mainBanner.fade-out {
+    opacity: 0;
+  }
+  
+
+  a {
+    color: inherit; /* 부모 요소의 색상을 상속받게 설정 */
+  }
+  
+  a:active, a:focus {
+    color: #F59191; /* 부모 요소의 색상을 상속받게 설정 */
+  }

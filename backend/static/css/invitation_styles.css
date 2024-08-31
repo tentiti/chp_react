@@ -1,0 +1,163 @@
+@font-face {
+  font-family: 'Cafe24Simplehae';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.1/Cafe24Simplehae.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  color: #412823;
+  background-color: #EDECE7;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.background-wrapper {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-top-left-radius: 20px;
+}
+
+.background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('../stockimages/invitation_background.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed;
+  border-top-left-radius: 20px;
+}
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 58px;
+  z-index: 1000;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  overflow: hidden;
+}
+
+header .titleArea {
+  color: #F8F6F1;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 15px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+header .titleArea > div:first-child, 
+header .titleArea > div:last-child {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+header .titleArea > div:first-child {
+  left: 15px;
+}
+
+header .titleArea > div:last-child {
+  right: 15px;
+}
+/* 기존 CSS 유지 */
+
+.container {
+  position: absolute;
+  top: 58px; /* 헤더 높이 */
+  left: 0;
+  right: 0;
+  bottom: 80px; /* #letsmakedance 버튼 높이 */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  z-index: 10;
+}
+
+#content {
+  min-height: 100%;
+  padding-bottom: 20px; /* 하단 여백 추가 */
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 1) 100%);
+}
+
+#inv_text {
+  position: relative;
+  min-height: 100%; /* 컨텐츠 영역 전체 높이 사용 */
+  color: white;
+  font-family: 'Cafe24Simplehae', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  padding: 20px;
+}
+
+.blur-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30%;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.8));
+  pointer-events: none;
+}
+
+#letsmakedance {
+  position: fixed;
+  bottom: 20px; /* 하단에서의 거리 조정 */
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  height: 60px; /* 버튼 영역 높이 */
+}
+
+/* 나머지 CSS 유지 */
+
+#letsmakedance {
+  position: fixed;
+  bottom: 80px;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+}
+
+#letsmakedance a {
+  display: inline-block;
+  width: 170px;
+  height: 35px;
+  line-height: 35px;
+  text-align: center;
+  box-sizing: border-box;
+  background: #f8f6f1;
+  border: 1px solid #e6e1dc;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+  text-decoration: none;
+  color: inherit;
+}
+
+#letsmakedance a:hover,
+#letsmakedance a:active,
+#letsmakedance a:focus {
+  color: #f8f6f1;
+  background: #ED9A9A;
+  border: 1px solid #E6E1DC;
+}

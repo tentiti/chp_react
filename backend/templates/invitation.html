@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+
+    <!-- font - inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- font - google icon -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/invitation_styles.css') }}"
+    />
+
+    <title>이제 댄스타임 - 초대장</title>
+  </head>
+  <body>
+    <div class="background-wrapper">
+      <div class="background"></div>
+      <!-- 고정된 헤더 뒤 배경 추가 -->
+      <header>
+        <div class="titleArea">
+          <div>
+            <img
+              src="{{ url_for('static', filename='icons/back_double.png') }}"
+              alt="back"
+              id="back-button"
+              style="filter: brightness(0) invert(1)"
+            />
+          </div>
+          <div style="font-size: 20px">춤 이야기</div>
+
+          <div></div>
+        </div>
+      </header>
+
+      <div class="container" id="content">
+        <div id="inv_text">
+          <p>
+            사회는 눈에 보이는, 보이지 않는<br />
+            권력 관계와 규칙들로 이루어져 있다.<br /><br />
+
+            국가들 사이 뿐만 아니라 그 너머까지<br />
+            우리의 삶과 세계에 영향을 미친다.<br /><br />
+
+            ｢만월댄스(2019)｣는<br />
+            어느 달이 밝은 밤, 슬리퍼를 신은 여성이<br />
+            단독 주택의 2층 옥상에서 춤을 추는 모습을 담고 있다.<br /><br />
+
+            ‘춤’과 ‘집’은 여성에게 어떤 의미일까?<br />
+            여성은 해방의 춤을 추고, 집은 그 대상이 된다.<br />
+            차오른 만월은 때가 되었음을 알린다.<br /><br />
+
+            이는 각자의 '우리 집'이<br />
+            가부장적이고 차별적인 현장의 시작이 됨을 말한다.<br /><br />
+
+            이러한 규칙들은 오랜 시간 동안 뿌리내려<br />
+            같은 문법으로<br />
+            기후위기, 전쟁, 그리고 폭력적인 세상을 만들고 있다.<br /><br />
+
+            작가 김화순의 그림 속 '춤'은 제도와 속박에 분노하는 저항,<br />
+            동시에 연대하는 희망을 의미한다.<br />
+            새로운 사회를 바라기에 그 현장 위에 바로 서 춤을 춘다.<br /><br />
+
+            이 춤을 함께 추자고,<br />
+            함께 살 수 있는 평화를 찾자고<br />
+            당신에게 손을 내민다.<br />
+            이제는 우리의 때가 되었다. 이 춤을 함께 추자고,<br />
+            함께 살 수 있는 평화를 찾자고<br />
+            당신에게 손을 내민다.<br />
+            이제는 우리의 때가 되었다. 이 춤을 함께 추자고,<br />
+            함께 살 수 있는 평화를 찾자고<br />
+            당신에게 손을 내민다.<br />
+            이제는 우리의 때가 되었다.
+
+            <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+          </p>
+          <div class="blur-overlay"></div>
+        </div>
+      </div>
+
+      <div id="letsmakedance">
+        <a
+          href="{{ url_for('createCharacter') }}"
+          class="ajax-link"
+          id="letsmakedancebutton"
+        >
+          캐릭터 생성하기
+        </a>
+      </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/invitation.js') }}"></script>
+  </body>
+</html>
