@@ -17,13 +17,14 @@ eventlet.monkey_patch()
 app = Flask(__name__)
 CORS(app)
 
-app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['UPLOAD_FOLDER'] = os.path.join(
+    os.path.dirname(__file__), 'uploads')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///comments.db'
 db = SQLAlchemy(app)
 socketio = SocketIO(app)
 
-if not os.path.exists('uploads'):
-    os.makedirs('uploads')
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
 
 
 @app.context_processor
@@ -90,7 +91,7 @@ def list_videos():
     return jsonify(files), 200
 
 
-@ app.route('/video/<filename>', methods=['GET'])
+@ app.route('/uploads/<filename>', methods=['GET'])
 def get_video(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
@@ -121,4 +122,4 @@ def handle_video_stream(data):
 
 if __name__ == '__main__':
     socketio.run(app, debug=True, host='0.0.0.0', port=8000,
-                 keyfile='/Users/hyungyulee/chp_react/backend/key.pem', certfile='/Users/hyungyulee/chp_react/backend/cert.pem')
+                 keyfile='/Users/hyungyulee/chp_react/certs/key.pem', certfile='/Users/hyungyulee/chp_react/certs/cert.pem')
