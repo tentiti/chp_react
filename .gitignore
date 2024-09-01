@@ -11,6 +11,9 @@
 # production
 /build
 *.glb
+*.db
+*.mp4
+*.gif
 
 # misc
 .DS_Store
