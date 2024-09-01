@@ -85,11 +85,6 @@ def post_comment():
     return jsonify({"message": "Comment added"}), 200
 
 
-@ app.route('/videos', methods=['GET'])
-def list_videos():
-    files = os.listdir(app.config['UPLOAD_FOLDER'])
-    return jsonify(files), 200
-
 
 @ app.route('/uploads/<filename>', methods=['GET'])
 def get_video(filename):

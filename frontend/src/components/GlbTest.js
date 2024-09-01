@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'; // Updated part
 import { CanvasCapture } from 'canvas-capture';
 import GIF from 'gif.js';
 import './CreateCharacter.css'; // Assuming you saved your CSS in this file
+import Header from './Header'; // 헤더 컴포넌트 불러오기
 
 const GlbTest = () => {
   const navigate = useNavigate(); // Updated part
@@ -429,20 +430,7 @@ const GlbTest = () => {
         </div>
       )}
 
-      <header>
-        <div className="titleArea">
-          <div>
-            <img
-              src="/static/icons/back_double.png"
-              alt="back"
-              id="back-button"
-              onClick={() => window.history.back()}
-            />
-          </div>
-          <div style={{ fontSize: '20px', color: '#412823'}}>춤 함께 추기</div>
-          <div></div>
-        </div>
-      </header>
+      <Header title="춤 함께 추기" />
 
       {isSplashVisible && (
         <div id="splash-screen" className="splash-screen">

@@ -6,6 +6,8 @@ import CreateCharacter from './components/CreateCharacter';
 import GlbTest from './components/GlbTest';
 import PlaceSelection from './components/PlaceSelection';
 import PostcardCreation from './components/PostcardCreation';
+import PostcardView from './components/PostcardView';
+
 
 function App() {
   return (
@@ -20,7 +22,7 @@ function App() {
         {/*GLBTest 페이지 */}
         <Route path="/GlbTest" element={<GlbTest />} />
         <Route path="/place-selection" element={<PlaceSelection />} />
-        <Route path="/postcard" element={<PostcardCreation />} />
+        <Route path="/postcardcreation" element={<PostcardCreation />} />
       </Routes>
     </Router>
   );
