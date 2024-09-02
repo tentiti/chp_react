@@ -1,3 +1,4 @@
+from PIL import Image, ImageDraw, ImageSequence
 import numpy as np
 import cv2
 from datetime import datetime
@@ -9,6 +10,7 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, jsonify, send_from_directory, render_template, url_for
 import eventlet
+import random
 eventlet.monkey_patch()
 
 
@@ -97,6 +99,21 @@ def get_video(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
+# 이미지 저장 폴더 경로 설정
+app.config['IMAGE_UPLOAD_FOLDER'] = os.path.join(
+    os.path.dirname(__file__), 'imageuploads')
+
+if not os.path.exists(app.config['IMAGE_UPLOAD_FOLDER']):
+    os.makedirs(app.config['IMAGE_UPLOAD_FOLDER'])
+
+# 배경 색상 설정 (number 값에 따라 결정)
+BACKGROUND_COLORS = {
+    1: (255, 0, 0),    # Red
+    2: (0, 255, 0),    # Green
+    3: (0, 0, 255)     # Blue
+}
+
+
 @app.route('/submit-postcard', methods=['POST'])
 def submit_postcard():
     try:
@@ -107,11 +124,14 @@ def submit_postcard():
         name = data.get('name')
         comment = data.get('comment')
         timestamp = data.get('timestamp')
-        number = data.get('number')
+        number = data.get('selectedBackground')
+
+        # 파일 이름만 추출하여 사용
+        gif_filename = os.path.basename(gif_name)
 
         # Postcard 객체 생성 및 데이터베이스에 저장
         new_postcard = Postcard(
-            gif_name=gif_name,
+            gif_name=gif_filename,
             name=name,
             comment=comment,
             timestamp=datetime.fromisoformat(timestamp),
@@ -119,6 +139,36 @@ def submit_postcard():
         )
         db.session.add(new_postcard)
         db.session.commit()
+
+        # 랜덤 프레임 추출 및 PNG 저장
+        gif_path = os.path.join(app.config['UPLOAD_FOLDER'], gif_filename)
+        with Image.open(gif_path) as gif:
+            frames = [frame.convert("RGBA")
+                      for frame in ImageSequence.Iterator(gif)]
+            random_frame = random.choice(frames)
+            print('***************', number)
+
+            # 원 그리기 (이미지를 꽉 채우는 원)
+            if number in BACKGROUND_COLORS:
+                # 원을 먼저 그리기 위한 새로운 레이어 생성
+                overlay = Image.new('RGBA', random_frame.size)
+                draw = ImageDraw.Draw(overlay)
+                width, height = random_frame.size
+                radius = min(width, height) // 2  # 반지름을 이미지 크기의 절반으로 설정
+                center = (width // 2, height // 2)
+                color = BACKGROUND_COLORS[number] + (255,)  # 불투명한 색상으로 설정
+                draw.ellipse([center[0] - radius, center[1] - radius,
+                              center[0] + radius, center[1] + radius], fill=color)
+
+                # 원을 그린 레이어를 프레임 위에 합성
+                combined = Image.alpha_composite(overlay, random_frame)
+                random_frame = combined
+
+            # PNG로 저장 (new_postcard.id.png) - RGBA 모드 유지
+            png_filename = os.path.splitext(gif_filename)[0] + '.png'
+            png_path = os.path.join(
+                app.config['IMAGE_UPLOAD_FOLDER'], png_filename)
+            random_frame.save(png_path, format='PNG')
 
         # 응답 반환
         return jsonify({"message": "Postcard submitted successfully", "id": new_postcard.id}), 200

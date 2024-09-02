@@ -27,10 +27,11 @@ const PostcardCreation = () => {
                 name,
                 comment,
                 timestamp: currentTime,
-                number
+                selectedBackground
             };
 
             const response = await axios.post('https://localhost:8000/submit-postcard', postData);
+            console.log('sent:', postData);
             const postcardId = response.data.id; // 서버에서 반환된 ID
             console.log('Backend response:', response.data);
 

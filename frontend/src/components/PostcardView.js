@@ -52,7 +52,7 @@ const PostcardView = () => {
                 textAlign: 'center' 
             }}>
                 <img 
-                    src={postcard.gif_name} 
+                    src={`https://localhost:8000/uploads/${postcard.gif_name}`}
                     alt="GIF" 
                     style={{ 
                         width: '200px', 
