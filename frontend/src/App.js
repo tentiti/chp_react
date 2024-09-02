@@ -23,6 +23,8 @@ function App() {
         <Route path="/GlbTest" element={<GlbTest />} />
         <Route path="/place-selection" element={<PlaceSelection />} />
         <Route path="/postcardcreation" element={<PostcardCreation />} />
+        {/* PostcardView를 위한 라우트 설정 */}
+        <Route path="/postcardview/:id" element={<PostcardView />} />
       </Routes>
     </Router>
   );

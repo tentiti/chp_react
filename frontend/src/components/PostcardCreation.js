@@ -30,10 +30,12 @@ const PostcardCreation = () => {
                 number
             };
 
-            const response = await axios.post('/api/submit-postcard', postData);
+            const response = await axios.post('https://localhost:8000/submit-postcard', postData);
+            const postcardId = response.data.id; // 서버에서 반환된 ID
             console.log('Backend response:', response.data);
 
-            navigate('/postcardview', { state: postData });
+            navigate(`/postcardview/${postcardId}`);
+
         } catch (error) {
             console.error('Error submitting postcard:', error);
             alert('포스트카드 제출 중 오류가 발생했습니다. 다시 시도해주세요.');

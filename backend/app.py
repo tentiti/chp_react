@@ -19,8 +19,22 @@ CORS(app)
 
 app.config['UPLOAD_FOLDER'] = os.path.join(
     os.path.dirname(__file__), 'uploads')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///comments.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///postcard.db'
 db = SQLAlchemy(app)
+
+
+class Postcard(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    gif_name = db.Column(db.String(120), nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    comment = db.Column(db.String(500), nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    number = db.Column(db.String(50), nullable=True)
+
+    def __repr__(self):
+        return f'<Postcard {self.name}>'
+
+
 socketio = SocketIO(app)
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
@@ -30,13 +44,6 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 @app.context_processor
 def override_url_for():
     return dict(url_for=lambda endpoint, **values: url_for(endpoint, _scheme='https', **values))
-
-
-class Comment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    video_name = db.Column(db.String(120), nullable=False)
-    comment = db.Column(db.String(500), nullable=False)
-    datetime = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 with app.app_context():
@@ -85,34 +92,59 @@ def post_comment():
     return jsonify({"message": "Comment added"}), 200
 
 
-
 @ app.route('/uploads/<filename>', methods=['GET'])
 def get_video(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
-@ app.route('/comments/<video_name>', methods=['GET'])
-def get_comments(video_name):
-    comments = Comment.query.filter_by(video_name=video_name).all()
-    return jsonify([{"id": c.id, "comment": c.comment, "datetime": c.datetime.isoformat()} for c in comments]), 200
+@app.route('/submit-postcard', methods=['POST'])
+def submit_postcard():
+    try:
+        # JSON 데이터 파싱
+        data = request.get_json()
+
+        gif_name = data.get('gifName')
+        name = data.get('name')
+        comment = data.get('comment')
+        timestamp = data.get('timestamp')
+        number = data.get('number')
+
+        # Postcard 객체 생성 및 데이터베이스에 저장
+        new_postcard = Postcard(
+            gif_name=gif_name,
+            name=name,
+            comment=comment,
+            timestamp=datetime.fromisoformat(timestamp),
+            number=number
+        )
+        db.session.add(new_postcard)
+        db.session.commit()
+
+        # 응답 반환
+        return jsonify({"message": "Postcard submitted successfully", "id": new_postcard.id}), 200
+
+    except Exception as e:
+        # 오류 발생 시 오류 메시지와 함께 500 응답 반환
+        print(f"Error: {e}")
+        return jsonify({"error": "Failed to submit postcard"}), 500
 
 
-@ socketio.on('connect')
-def test_connect():
-    print('Client connected')
+@app.route('/postcard/<int:id>', methods=['GET'])
+def get_postcard(id):
+    try:
+        postcard = Postcard.query.get_or_404(id)
+        return jsonify({
+            "id": postcard.id,
+            "gif_name": postcard.gif_name,
+            "name": postcard.name,
+            "comment": postcard.comment,
+            "timestamp": postcard.timestamp.isoformat(),
+            "number": postcard.number
+        }), 200
 
-
-@ socketio.on('disconnect')
-def test_disconnect():
-    print('Client disconnected')
-
-
-@ socketio.on('video_stream')
-def handle_video_stream(data):
-    nparr = np.frombuffer(data['frame'], np.uint8)
-    frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    # 비디오 저장 코드 추가
-    cv2.imwrite(f"uploads/{data['filename']}.jpg", frame)
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": "Postcard not found"}), 404
 
 
 if __name__ == '__main__':

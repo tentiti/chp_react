@@ -89,7 +89,8 @@ const PlaceSelection = () => {
     };
 
     const handleSelectPlace = () => {
-        navigate('/postcardcreation', { state: { selectedBackground: currentIndex, gifUrl: gifUrl} });
+        console.log('Selected background:', currentIndex+1);
+        navigate('/postcardcreation', { state: { selectedBackground: currentIndex+1, gifUrl: gifUrl} });
     };
     
 
