@@ -35,7 +35,7 @@ const PostcardCreation = () => {
             const postcardId = response.data.id; // 서버에서 반환된 ID
             console.log('Backend response:', response.data);
 
-            navigate(`/postcardview/${postcardId}`);
+            navigate(`/postcardview/${postcardId}`, { state: { models:location.state?.models} });
 
         } catch (error) {
             console.error('Error submitting postcard:', error);

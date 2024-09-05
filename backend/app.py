@@ -1,3 +1,6 @@
+import eventlet
+eventlet.monkey_patch()
+
 from PIL import Image, ImageDraw, ImageSequence
 import numpy as np
 import cv2
@@ -9,15 +12,14 @@ from werkzeug.utils import secure_filename
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, jsonify, send_from_directory, render_template, url_for
-import eventlet
 import random
-eventlet.monkey_patch()
+
 
 
 # 필요한 경우 이벤트렛 패치
 
-app = Flask(__name__)
-CORS(app)
+app = Flask(__name__, static_folder='../frontend/build', static_url_path='')
+CORS(app, resources={r"/*": {"origins": "*"}})  # 혹은 특정 도메인을 설정
 
 app.config['UPLOAD_FOLDER'] = os.path.join(
     os.path.dirname(__file__), 'uploads')
@@ -52,9 +54,13 @@ with app.app_context():
     db.create_all()
 
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    if path != "" and os.path.exists(app.static_folder + '/' + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 
 @app.route('/invitation')
@@ -78,7 +84,8 @@ def upload_file():
     file_ext = os.path.splitext(filename)[1]
     unique_filename = str(uuid.uuid4()) + file_ext
     file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_filename))
-    return jsonify({"message": "File uploaded successfully", "filename": unique_filename}), 200
+    print(unique_filename)
+    return jsonify({"filename": unique_filename}), 200
 
 
 @ app.route('/comment', methods=['POST'])
@@ -199,4 +206,4 @@ def get_postcard(id):
 
 if __name__ == '__main__':
     socketio.run(app, debug=True, host='0.0.0.0', port=8000,
-                 keyfile='/Users/hyungyulee/chp_react/certs/key.pem', certfile='/Users/hyungyulee/chp_react/certs/cert.pem')
+                 keyfile='/Users/hyungyulee/chp_react/backend/key.pem', certfile='/Users/hyungyulee/chp_react/backend/cert.pem')

@@ -1,18 +1,18 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { useNavigate } from 'react-router-dom'; // Updated part
-import { CanvasCapture } from 'canvas-capture';
+import { useNavigate } from 'react-router-dom';
 import GIF from 'gif.js';
-import './CreateCharacter.css'; // Assuming you saved your CSS in this file
-import Header from './Header'; // 헤더 컴포넌트 불러오기
+import './CreateCharacter.css';
+import Header from './Header';
+
+const API_URL = process.env.REACT_APP_API_URL;
 
 const GlbTest = () => {
-  const navigate = useNavigate(); // Updated part
+  const navigate = useNavigate();
 
-  const [isSplashVisible, setIsSplashVisible] = useState(false); // Splash screen state
+  const [isSplashVisible, setIsSplashVisible] = useState(false);
   const [overlayVisible, setOverlayVisible] = useState(true);
-  const overlayRef = useRef(null);
   const canvasRef = useRef(null);
   const hiddenCanvasRef = useRef(null);
   const rendererRef = useRef(null);
@@ -21,11 +21,8 @@ const GlbTest = () => {
   const cameraRef = useRef(null);
   const clockRef = useRef(new THREE.Clock());
   const modelsRef = useRef([]);
-  const drawingCanvasRef = useRef(null);
-  const [gifUrl, setGifUrl] = useState(null); // Store the GIF URL
 
   const [loadingStatus, setLoadingStatus] = useState('Loading...');
-  const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState(null);
   const [selectedColors, setSelectedColors] = useState({
     HEAD: 'black',
@@ -35,14 +32,13 @@ const GlbTest = () => {
     ACCESSORY: 'black',
   });
   const [isRecording, setIsRecording] = useState(false);
-  const [gifBlob, setGifBlob] = useState(null);
 
   const CATEGORIES = [
-    { name: 'HEAD', assets: ['/static/images/head1.png', '/static/images/head2.png', '/static/images/head3.png'], useColor: true },
-    { name: 'TOP', assets: ['/static/images/top1.png', '/static/images/top2.png', '/static/images/top3.png'], useColor: false },
-    { name: 'BOTTOM', assets: ['/static/images/bottom1.png', '/static/images/bottom2.png', '/static/images/bottom3.png'], useColor: false },
-    { name: 'SHOES', assets: ['/static/images/shoes1.png', '/static/images/shoes2.png', '/static/images/shoes3.png'], useColor: false },
-    { name: 'ACCESSORY', assets: ['/static/images/accessory1.png', '/static/images/accessory2.png', '/static/images/accessory3.png'], useColor: false },
+    { name: 'HEAD', assets: ['head1.png', 'head2.png', 'head3.png'], useColor: true },
+    { name: 'TOP', assets: ['top1.png', 'top2.png', 'top3.png'], useColor: false },
+    { name: 'BOTTOM', assets: ['bottom1.png', 'bottom2.png', 'bottom3.png'], useColor: false },
+    { name: 'SHOES', assets: ['shoes1.png', 'shoes2.png', 'shoes3.png'], useColor: false },
+    { name: 'ACCESSORY', assets: ['accessory1.png', 'accessory2.png', 'accessory3.png'], useColor: false },
     { name: 'EXPRESSION', assets: [], useColor: false },
   ];
 
@@ -109,7 +105,6 @@ const GlbTest = () => {
       },
       (error) => {
         console.error('Error loading GLB file:', error);
-        setError(`Failed to load model: ${error.message}`);
         setLoadingStatus('Load Failed');
       }
     );
@@ -162,8 +157,6 @@ const GlbTest = () => {
       hiddenRendererRef.current.setSize(400, 400);
       hiddenRendererRef.current.setClearColor(0x000000, 0);
 
-
-
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
       sceneRef.current.add(ambientLight);
 
@@ -184,20 +177,17 @@ const GlbTest = () => {
       modelsRef.current.forEach(({ mixer }) => mixer.update(delta));
     
       if (rendererRef.current && sceneRef.current && cameraRef.current) {
-        // 배경을 흰색으로 초기화
         rendererRef.current.clear(); 
-        rendererRef.current.setClearColor(0xffffff, 0); // 흰색으로 초기화
+        rendererRef.current.setClearColor(0xffffff, 0);
         rendererRef.current.render(sceneRef.current, cameraRef.current);
       }
     
       if (hiddenRendererRef.current && sceneRef.current && cameraRef.current) {
-        // 배경을 흰색으로 초기화
         hiddenRendererRef.current.clear();
-        hiddenRendererRef.current.setClearColor(0xffffff, 0); // 흰색으로 초기화
+        hiddenRendererRef.current.setClearColor(0xffffff, 0);
         hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
       }
     };
-    
 
     animate();
 
@@ -223,13 +213,13 @@ const GlbTest = () => {
 
   const startRecording = () => {
     setIsRecording(true);
-    setIsSplashVisible(true); // Show the splash screen
+    setIsSplashVisible(true);
     resetAndStartAnimation();
 
     const canvas = document.createElement('canvas');
     canvas.width = 400;
     canvas.height = 400;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
     const gif = new GIF({
       workers: 2,
@@ -239,7 +229,7 @@ const GlbTest = () => {
       transparent: 'rgba(0,0,0,0)',
     });
 
-    const duration = 3; // 3 seconds
+    const duration = 3;
     const fps = 30;
     const totalFrames = duration * fps;
     let frameCount = 0;
@@ -265,31 +255,27 @@ const GlbTest = () => {
 
     gif.on('finished', async (blob) => {
       setIsRecording(false);
-      setGifBlob(blob);
 
-      // Upload the GIF and get the URL
       const gifUploadUrl = await uploadGif(blob);
 
       if (gifUploadUrl) {
-        // Hide the splash screen and navigate to /place-selection with the gifUrl as state
         setIsSplashVisible(false);
         navigate('/place-selection', { state: { gifUrl: gifUploadUrl } });
       } else {
         console.error('Failed to upload GIF');
-        setIsSplashVisible(false);  // Hide splash screen even if the upload fails
+        setIsSplashVisible(false);
       }
     });
 
     captureFrame();
-};
-
+  };
 
   const uploadGif = async (gifBlob) => {
     const formData = new FormData();
     formData.append('file', gifBlob, 'transparent_animation.gif');
-
+    
     try {
-        const response = await fetch('https://localhost:8000/upload', {
+        const response = await fetch(`${API_URL}/upload`, {
             method: 'POST',
             body: formData,
         });
@@ -301,11 +287,10 @@ const GlbTest = () => {
         const data = await response.json();
         console.log('Upload response:', data);
 
-        const filename = data.filename;  // Ensure this matches the key returned by your Flask backend
+        const filename = data.filename;
         console.log('GIF Filename:', filename);
 
-        // Construct the full URL based on your server's base URL and the uploads directory
-        const gifUrl = `https://localhost:8000/uploads/${filename}`;
+        const gifUrl = `${API_URL}/uploads/${filename}`;
         console.log('Constructed GIF URL:', gifUrl);
 
         return gifUrl;
@@ -314,63 +299,6 @@ const GlbTest = () => {
         return null;
     }
 };
-
-
-
-  const shareRecording = async () => {
-    if (!gifBlob) return;
-
-    // Assuming you have a sharing service or integration
-    const formData = new FormData();
-    formData.append('file', gifBlob, 'animation.gif');
-
-    try {
-      const response = await fetch('/share', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!response.ok) {
-        throw new Error('Sharing failed');
-      }
-
-      alert('GIF shared successfully!');
-    } catch (error) {
-      console.error('Error sharing GIF:', error);
-    }
-  };
-
-  const handleSalmonButtonClick = async () => {
-    if (!gifBlob) return;
-
-    // Upload the GIF and then navigate
-    await uploadGif(gifBlob);
-
-    // Navigate to another page
-    navigate('/placeselection', { state: { gifUrl } });
-  };
-
-  // Drawing functions
-  const startDrawing = (event) => {
-    const context = drawingCanvasRef.current.getContext('2d');
-    context.beginPath();
-    context.moveTo(event.nativeEvent.offsetX, event.nativeEvent.offsetY);
-    drawingCanvasRef.current.addEventListener('mousemove', draw);
-    drawingCanvasRef.current.addEventListener('mouseup', stopDrawing);
-  };
-
-  const draw = (event) => {
-    const context = drawingCanvasRef.current.getContext('2d');
-    context.lineTo(event.nativeEvent.offsetX, event.nativeEvent.offsetY);
-    context.stroke();
-  };
-
-  const stopDrawing = () => {
-    const context = drawingCanvasRef.current.getContext('2d');
-    context.closePath();
-    drawingCanvasRef.current.removeEventListener('mousemove', draw);
-    drawingCanvasRef.current.removeEventListener('mouseup', stopDrawing);
-  };
 
   const closeOverlay = () => {
     setOverlayVisible(false);
@@ -398,7 +326,7 @@ const GlbTest = () => {
   return (
     <div style={{ overflow: 'auto' }} id="whatareYou?">
       {overlayVisible && (
-        <div id="overlay" className="overlay" ref={overlayRef}>
+        <div id="overlay" className="overlay">
           <div className="overlay-content">
             <img
               src="../static/stockimages/make_invitation.png"
@@ -438,65 +366,27 @@ const GlbTest = () => {
         </div>
       )}
 
-      <div id="container" style={{ display: 'flex', flexDirection: 'column', marginTop: '58px', height: '100vh', overflowX: 'hidden' }}>
-        <canvas ref={canvasRef} style={{ width: '100vw', height: '100vw', border: '1px solid black' }} />
+      <div
+        id="container"
+        style={{ display: 'flex', flexDirection: 'column', marginTop: '58px', height: 'calc(100vh-58px)', overflowX: 'hidden' }}
+      >
+        <canvas
+          ref={canvasRef}
+          style={{
+            width: '100vw',
+            height: '100vw',
+            border: '1px solid black'
+          }}
+        />
         <canvas ref={hiddenCanvasRef} style={{ display: 'none' }} />
 
-        <div className="controls" style={{ position: 'fixed', bottom: '0px' }}>
-          {activeCategory && activeCategory.useColor && (
-            <div className="color-selection">
-              {COLORS.map((color) => (
-                <button
-                  key={color.value}
-                  onClick={() => selectColor(activeCategory.name, color.value)}
-                  style={{
-                    backgroundColor: color.value,
-                    border: selectedColors[activeCategory.name] === color.value ? '3px solid black' : '1px solid black',
-                    cursor: 'pointer'
-                  }}
-                />
-              ))}
-            </div>
-          )}
-
-          <div className="asset-grid" style={{ marginTop: '60px' }}>
-            {activeCategory && activeCategory.name === 'EXPRESSION' ? (
-              <canvas
-                ref={drawingCanvasRef}
-                width={360}
-                height={360}
-                style={{ border: '1px solid black' }}
-                onMouseDown={startDrawing}
-                onMouseMove={draw}
-                onMouseUp={stopDrawing}
-                onMouseLeave={stopDrawing}
-              />
-            ) : (
-              activeCategory && activeCategory.assets.map((asset, index) => (
-                <div
-                  className="pictures"
-                  key={index}
-                  onClick={() => {
-                    const modelPath = activeCategory.useColor
-                      ? `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}_${selectedColors[activeCategory.name]}.glb`
-                      : `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}.glb`;
-                    loadModel(modelPath, activeCategory.name, activeCategory.useColor);
-                  }}
-                >
-                  <img
-                    src={`https://placehold.co/200x200?text=${asset}`} 
-                    alt={`Asset ${index}`}
-                    style={{
-                      maxWidth: '100%',
-                      maxHeight: '100%',
-                      borderRadius: '18px',
-                    }}
-                  />
-                </div>
-              ))
-            )}
-          </div>
-
+        <div className="controls"
+        style={{ 
+          marginTop: 'auto', 
+          display: 'flex', 
+          flexDirection: 'column-reverse'
+        }}>
+          
           <div id="bottombuttons">
             <div className="category-selection">
               {CATEGORIES.map((category) => (
@@ -527,10 +417,53 @@ const GlbTest = () => {
               </button>
             </div>
           </div>
+
+
+          <div className="asset-grid">
+            {activeCategory && activeCategory.assets.map((asset, index) => (
+              <div
+                className="pictures"
+                key={index}
+                onClick={() => {
+                  const modelPath = activeCategory.useColor
+                    ? `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}_${selectedColors[activeCategory.name]}.glb`
+                    : `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}.glb`;
+                  loadModel(modelPath, activeCategory.name, activeCategory.useColor);
+                }}
+              >
+                <img
+                  src={`https://placehold.co/200x200?text=${asset}`} 
+                  alt={`Asset ${index}`}
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    borderRadius: '18px',
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+          {activeCategory && activeCategory.useColor && (
+            <div className="color-selection">
+              {COLORS.map((color) => (
+                <button
+                  key={color.value}
+                  onClick={() => selectColor(activeCategory.name, color.value)}
+                  style={{
+                    backgroundColor: color.value,
+                    border: selectedColors[activeCategory.name] === color.value ? '3px solid black' : '1px solid black',
+                    cursor: 'pointer'
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
         </div>
       </div>
-    </div>
-  );
-};
+
+          </div>
+        );
+      };
 
 export default GlbTest;

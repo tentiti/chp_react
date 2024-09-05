@@ -62,7 +62,7 @@ function Invitation() {
 
 
       <div id="letsmakedance">
-        <a href="/createCharacter" className="ajax-link" id="letsmakedancebutton">
+        <a href="/GlbTest" className="ajax-link" id="letsmakedancebutton">
           캐릭터 생성하기
         </a>
       </div>
