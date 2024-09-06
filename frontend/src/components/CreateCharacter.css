@@ -100,7 +100,8 @@ header {
 }
 
 canvas {
-  background-image: url("/static/stockimages/paper.jpeg"); /* 배경 이미지 설정 */
+  /* background-image: url("/static/stockimages/paper.jpeg"); 배경 이미지 설정 */
+  background-color: red;
   background-size: cover; /* 이미지가 전체를 덮도록 */
   background-position: center;
   border: 1px solid #e6e1dc; /* 캔버스 경계선 */
