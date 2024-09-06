@@ -256,3 +256,27 @@ canvas {
   height: 100%;
   border: 1px solid #e6e1dc;
 }
+
+#topChoices {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around; /* This ensures elements are spaced evenly */
+  flex-wrap: nowrap; /* Ensure items do not wrap to the next line */
+  width: 100%; /* Make sure the container is wide enough */
+  margin-bottom: 10px; /* Add margin if needed */
+}
+
+.expression-color-selection button {
+  width: 50px; /* Adjust to fit in one row */
+  height: 50px;
+}
+
+.expression-tool-selection button {
+  width: 80px;
+  height: 40px;
+}
+
+.apply-button button {
+  width: 80px;
+  height: 40px;
+}

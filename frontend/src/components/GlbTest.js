@@ -473,6 +473,7 @@ const GlbTest = () => {
       <div className="asset-grid">
   {selectedCategory === 'EXPRESSION' ? (
     <>
+      
       {/* 색상 선택 버튼 */}
       <div className="expression-color-selection" style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '10px' }}>
         {GRAYSCALE_COLORS.map((color, index) => (
@@ -614,3 +615,4 @@ const GlbTest = () => {
       };
 
 export default GlbTest;
+
