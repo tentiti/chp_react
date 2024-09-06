@@ -55,6 +55,7 @@ body {
 }
 
 .text-overlay {
+  font-family: "Cafe24Simplehae";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -72,7 +73,7 @@ body {
 }
 
 header {
-  position: fixed;
+  position: sticky;
   top: 0;
   width: 100vw;
   height: 58px;
@@ -87,7 +88,23 @@ header {
   flex-direction: column;
   height: 100vh;
   width: 100vw;
-  overflow-x: hidden;
+  margin: 0;
+  overflow: hidden;
+}
+
+.canvas-container {
+  position: fixed;
+  width: 100vw;
+  height: 100vw;
+  background-color: #edece7;
+}
+
+canvas {
+  background-image: url("/static/stockimages/paper.jpeg"); /* 배경 이미지 설정 */
+  background-size: cover; /* 이미지가 전체를 덮도록 */
+  background-position: center;
+  border: 1px solid #e6e1dc; /* 캔버스 경계선 */
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
 }
 
 .controls {
@@ -100,39 +117,141 @@ header {
   flex-direction: column-reverse;
 }
 
+.color-selection {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px; /* 20px의 여백을 설정 */
+  gap: 10px; /* 버튼 간의 간격을 20px로 설정 */
+  border: 1px solid #e6e1dc;
+}
+
+.color-selection button {
+  position: relative;
+  width: 32px; /* 큰 원의 지름 */
+  height: 32px;
+  border: none; /* 테두리 제거 */
+  background-color: transparent;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.big-circle {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25); /* 그림자 효과 */
+}
+
+.small-circle {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25); /* 그림자 효과 */
+  top: 5px; /* 큰 원과 작은 원 간의 거리 조정 */
+}
+
 .asset-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  padding: 10px;
-  width: 100vw;
-  height: 205px;
-  overflow-y: auto;
+  grid-template-columns: repeat(4, 1fr); /* 열 개수는 유지 */
+  gap: 10px; /* 요소 간의 간격 */
+  padding: 10px; /* 바깥쪽 여백 */
+  width: 100%; /* 가로 너비를 100%로 설정해 넘침 방지 */
+  height: 25vh; /* 높이를 부모 컨테이너에 맞게 설정 */
+  box-sizing: border-box; /* 패딩을 포함한 전체 크기 계산 */
+  overflow-y: scroll; /* 넘칠 경우 스크롤 추가 */
+  border: 1px solid #e6e1dc;
+}
+
+.asset-grid .pictures {
+  background-color: #edece7; /* 이미지 배경색 */
+  border-radius: 18px;
 }
 
 .category-selection {
   display: flex;
-  justify-content: space-around;
-  padding: 10px;
-  background-color: #ddd;
+  justify-content: space-between;
+  padding: 5px 15px; /* 위아래 5px, 좌우 15px의 여백 설정 */
+  gap: 10px; /* 버튼 간의 간격 */
 }
 
 .category-selection button {
-  flex: 1;
-  margin: 0 5px;
-  padding: 10px;
-  background-color: #ddd;
+  width: 44px; /* 원의 지름 */
+  height: 44px;
+  border-radius: 50%; /* 원형으로 만들기 */
+  border: 1px solid #e6e1dc; /* 테두리 색상 */
+  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.25); /* 그림자 효과 */
+  background-color: #bab9b3; /* 기본 배경색 (선택되지 않은 경우) */
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* 버튼 내부 내용 중앙 정렬 */
+  color: #f8f6f1; /* 텍스트 색상 */
+  font-family: inherit;
+}
+
+.category-selection button.selected {
+  background-color: #e9a7a7; /* 선택된 경우 배경색 */
+}
+
+.category-selection button:hover {
+  background-color: #e9a7a7; /* 호버 시 선택된 상태와 동일한 색상 */
+}
+
+.create-character-container {
+  position: relative;
+  height: 80px; /* 버튼을 배치할 영역의 높이 */
+  display: flex;
+  justify-content: center; /* 버튼을 수평 가운데 정렬 */
+  align-items: center; /* 버튼을 수직 가운데 정렬 */
+  border: 1px solid #e6e1dc;
 }
 
 .create-character {
-  margin: 10px;
-  padding: 10px;
-  width: calc(100vw - 20px);
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+  box-sizing: border-box;
+  position: absolute; /* 부모 컨테이너 안에서 절대 위치 */
+  left: 28.24%;
+  right: 28.5%;
+  top: 20%;
+  bottom: 36.25%;
+
+  width: 170px;
+  height: 35px;
+  background: #f8f6f1;
+  border: 1px solid #e6e1dc;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+
+  font-family: "Pretendard", sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
+  letter-spacing: -0.025em;
+  color: #412823;
+  cursor: pointer; /* 마우스 포인터 변경 */
+}
+
+.expression-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.expression-colors {
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+}
+
+.expression-canvas {
+  width: 100%; /* asset-grid 영역에 맞추기 */
+  height: 100%;
+  border: 1px solid #e6e1dc;
 }

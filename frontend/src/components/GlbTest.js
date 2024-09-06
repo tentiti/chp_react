@@ -32,9 +32,18 @@ const GlbTest = () => {
     ACCESSORY: 'black',
   });
   const [isRecording, setIsRecording] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('HEAD'); // 초기값을 'HEAD'로 설정
+  const CATEGORY_NAME_MAP = {
+    HEAD: '머리',
+    TOP: '상의',
+    BOTTOM: '하의',
+    SHOES: '신발',
+    ACCESSORY: '소품',
+    EXPRESSION: '표정',
+  };
 
   const CATEGORIES = [
-    { name: 'HEAD', assets: ['head1.png', 'head2.png', 'head3.png'], useColor: true },
+    { name: 'HEAD', assets: ['head1.png', 'head2.png', 'head3.png', 'head4.png','head5.png','head6.png', 'head7.png', 'head8.png','head9.png'], useColor: true },
     { name: 'TOP', assets: ['top1.png', 'top2.png', 'top3.png'], useColor: false },
     { name: 'BOTTOM', assets: ['bottom1.png', 'bottom2.png', 'bottom3.png'], useColor: false },
     { name: 'SHOES', assets: ['shoes1.png', 'shoes2.png', 'shoes3.png'], useColor: false },
@@ -43,13 +52,13 @@ const GlbTest = () => {
   ];
 
   const COLORS = [
-    { name: 'Red', value: 'red' },
-    { name: 'Orange', value: 'orange' },
-    { name: 'Yellow', value: 'yellow' },
-    { name: 'Green', value: 'green' },
-    { name: 'Blue', value: 'blue' },
-    { name: 'Indigo', value: 'indigo' },
-    { name: 'Violet', value: 'violet' },
+    { name: 'Red', value: '#F5A0A0' },
+    { name: 'Orange', value: '#E1E17B' },
+    { name: 'Yellow', value: '#CCA9FA' },
+    { name: 'Green', value: '#8FDCDC' },
+    { name: 'Blue', value: '#83C0AA' },
+    { name: 'Indigo', value: '#9C746C' },
+    { name: 'Violet', value: '#7A6565' },
     { name: 'Black', value: 'black' },
   ];
 
@@ -63,6 +72,13 @@ const GlbTest = () => {
       [categoryName]: color,
     }));
   };
+
+  //표정 그리기 관련
+  const GRAYSCALE_COLORS = ['#FFFFFF', '#E0E0E0', '#C0C0C0', '#808080', '#404040', '#000000'];
+
+  const [expressionDrawingColor, setExpressionDrawingColor] = useState('#000000'); // 초기 색상: 검은색
+  const [expressionIsErasing, setExpressionIsErasing] = useState(false); // 지우개 여부
+  const expressionCanvasRef = useRef(null); // 표정을 그리는 캔버스  
 
   const loadModel = useCallback((modelPath, categoryName, useColor = false, onLoad) => {
     const loader = new GLTFLoader();
@@ -145,6 +161,7 @@ const GlbTest = () => {
         alpha: true,
         preserveDrawingBuffer: true 
       });
+
       rendererRef.current.setSize(400, 400);
       rendererRef.current.setClearColor(0x000000, 0);
 
@@ -321,148 +338,278 @@ const GlbTest = () => {
         document.removeEventListener('click', handleClick);
       };
     }
+    const initialCategory = CATEGORIES.find(category => category.name === 'HEAD');
+    if (initialCategory) {
+      selectCategory(initialCategory); // 초기 렌더링 시 'HEAD' 카테고리 로드
+    }
   }, [overlayVisible]);
 
+  // 표정
+  let isDrawingExpression = false;
+
+    const startExpressionDrawing = (e) => {
+      isDrawingExpression = true;
+      drawExpression(e); // 마우스 눌렀을 때 첫 번째 점 그리기
+    };
+
+    const drawExpression = (e) => {
+      if (!isDrawingExpression) return;
+
+      const ctx = expressionCanvasRef.current.getContext('2d');
+      ctx.lineWidth = 5;
+      ctx.lineCap = 'round';
+
+      if (expressionIsErasing) {
+        ctx.strokeStyle = '#FFFFFF'; // 지우개 기능일 때 흰색으로 칠함
+      } else {
+        ctx.strokeStyle = expressionDrawingColor;
+      }
+
+      ctx.lineTo(e.clientX - expressionCanvasRef.current.offsetLeft, e.clientY - expressionCanvasRef.current.offsetTop);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(e.clientX - expressionCanvasRef.current.offsetLeft, e.clientY - expressionCanvasRef.current.offsetTop);
+    };
+
+    const finishExpressionDrawing = () => {
+      isDrawingExpression = false;
+      expressionCanvasRef.current.getContext('2d').beginPath(); // 경로 초기화
+    };
+
+    const applyExpressionTextureToModel = () => {
+      const canvas = expressionCanvasRef.current;
+      const texture = new THREE.CanvasTexture(canvas); // 캔버스를 텍스처로 변환
+      texture.needsUpdate = true;
+    
+      modelsRef.current.forEach(({ model }) => {
+        const headMesh = model.getObjectByName('mixamorighead');
+        if (headMesh) {
+          headMesh.material.map = texture; // 텍스처를 머리에 적용
+          headMesh.material.needsUpdate = true;
+        }
+      });
+    };
+    
+  
+
   return (
-    <div style={{ overflow: 'auto' }} id="whatareYou?">
-      {overlayVisible && (
-        <div id="overlay" className="overlay">
-          <div className="overlay-content">
-            <img
-              src="../static/stockimages/make_invitation.png"
-              alt="Invitation"
-            />
-            <div className="text-overlay">
-              <span id='top'>
-                우리가 만든 춤판,<br />
-                만들 새바람
-              </span>
-
-              <span id="middle">
-                To. 모든 여러분들<br /><br />
-                정신 없고 복잡한 세상 속에서 안녕하셨나요?<br />
-                꽉 찬 달처럼, 세상을 한 번 뒤집을 때가 무르익었어요!<br />
-                '우리'들의 댄스타임에 초대합니다!<br />
-                각자가 원하는 모습으로 함께 춤을 추어요!<br />
-                10월 중반. 바람이 부는 날 생명 평화의 나무 밑에서 만나요.<br />
-                우리들만의 약속입니다!
-              </span>
-
-              <span id="bottom">
-                김화순 개인전 : 전시 제목 블라블라 라고 합니다.<br />
-                일시 : 2024. 10. 12. - 10. 29.<br />
-                위치 : 자하미술관
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <Header title="춤 함께 추기" />
-
-      {isSplashVisible && (
-        <div id="splash-screen" className="splash-screen">
-          <img src="https://placehold.co/390x800?text=gogetImage" alt="Splash" style={{ position:'Fixed', width: '100vw', height: '100vh', objectFit: 'cover', zIndex:'999999999' }} />
-        </div>
-      )}
-
-      <div
-        id="container"
-        style={{ display: 'flex', flexDirection: 'column', marginTop: '58px', height: 'calc(100vh-58px)', overflowX: 'hidden' }}
-      >
-        <canvas
-          ref={canvasRef}
-          style={{
-            width: '100vw',
-            height: '100vw',
-            border: '1px solid black'
-          }}
+<div style={{ overflow: 'auto' }} id="whatareYou?">
+  {overlayVisible && (
+    <div id="overlay" className="overlay">
+      <div className="overlay-content">
+        <img
+          src="../static/stockimages/make_invitation.png"
+          alt="Invitation"
         />
-        <canvas ref={hiddenCanvasRef} style={{ display: 'none' }} />
+        <div className="text-overlay">
+          <span id="top">
+            우리가 만든 춤판,<br />
+            만들 새바람
+          </span>
 
-        <div className="controls"
-        style={{ 
-          marginTop: 'auto', 
-          display: 'flex', 
-          flexDirection: 'column-reverse'
-        }}>
-          
-          <div id="bottombuttons">
-            <div className="category-selection">
-              {CATEGORIES.map((category) => (
-                <button
-                  key={category.name}
-                  onClick={() => selectCategory(category)}
-                >
-                  {category.name}
-                </button>
-              ))}
-            </div>
+          <span id="middle">
+            To. 모든 여러분들<br /><br />
+            정신 없고 복잡한 세상 속에서 안녕하셨나요?<br />
+            꽉 찬 달처럼, 세상을 한 번 뒤집을 때가 무르익었어요!<br />
+            '우리'들의 댄스타임에 초대합니다!<br />
+            각자가 원하는 모습으로 함께 춤을 추어요!<br />
+            10월 중반. 바람이 부는 날 생명 평화의 나무 밑에서 만나요.<br />
+            우리들만의 약속입니다!
+          </span>
 
-            <div id="botbottoms" style={{ display: 'flex', flexDirection: 'Row' }}>
-              <button className="create-character"
-                onClick={startRecording}
-                style={{
-                  marginTop: '10px',
-                  padding: '5px 10px',
-                  fontSize: '14px',
-                  backgroundColor: isRecording ? 'red' : 'green',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: 'pointer'
-                }}
-              >
-                {isRecording ? 'Stop Recording' : 'Start Recording'}
-              </button>
-            </div>
-          </div>
+          <span id="bottom">
+            김화순 개인전 : 전시 제목 블라블라 라고 합니다.<br />
+            일시 : 2024. 10. 12. - 10. 29.<br />
+            위치 : 자하미술관
+          </span>
+        </div>
+      </div>
+    </div>
+  )}
 
+  <Header title="춤 함께 추기" />
 
-          <div className="asset-grid">
-            {activeCategory && activeCategory.assets.map((asset, index) => (
-              <div
-                className="pictures"
-                key={index}
-                onClick={() => {
-                  const modelPath = activeCategory.useColor
-                    ? `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}_${selectedColors[activeCategory.name]}.glb`
-                    : `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}.glb`;
-                  loadModel(modelPath, activeCategory.name, activeCategory.useColor);
-                }}
-              >
-                <img
-                  src={`https://placehold.co/200x200?text=${asset}`} 
-                  alt={`Asset ${index}`}
-                  style={{
-                    maxWidth: '100%',
-                    maxHeight: '100%',
-                    borderRadius: '18px',
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-          {activeCategory && activeCategory.useColor && (
-            <div className="color-selection">
-              {COLORS.map((color) => (
-                <button
-                  key={color.value}
-                  onClick={() => selectColor(activeCategory.name, color.value)}
-                  style={{
-                    backgroundColor: color.value,
-                    border: selectedColors[activeCategory.name] === color.value ? '3px solid black' : '1px solid black',
-                    cursor: 'pointer'
-                  }}
-                />
-              ))}
-            </div>
-          )}
+  {isSplashVisible && (
+    <div id="splash-screen" className="splash-screen">
+      <img src="https://placehold.co/390x800?text=gogetImage" alt="Splash" style={{ position: 'Fixed', width: '100vw', height: '100vh', objectFit: 'cover', zIndex: '999999999' }} />
+    </div>
+  )}
 
+  <div id="container" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 58px)', overflowX: 'hidden' }}>
+    <canvas
+      ref={canvasRef}
+      style={{
+        width: '100vw',
+        height: '100vw'
+      }}
+    />
+    <canvas ref={hiddenCanvasRef} style={{ display: 'none' }} />
+
+    <div className="controls" style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column-reverse' }}>
+      <div id="botbottoms" style={{ display: 'flex', flexDirection: 'Column' }}>
+        <div className="category-selection">
+          {CATEGORIES.map((category) => (
+            <button
+              key={category.name}
+              onClick={() => {
+                setSelectedCategory(category.name); // 선택된 카테고리 업데이트
+                selectCategory(category); // 기존 함수 호출
+              }}
+              className={`color-button ${selectedCategory === category.name ? 'selected' : ''}`} // 선택된 경우 클래스 추가
+            >
+              {CATEGORY_NAME_MAP[category.name]} {/* 한글 카테고리 이름 표시 */}
+            </button>
+          ))}
+        </div>
+
+        <div className="create-character-container">
+          <button className="create-character" onClick={startRecording}>
+            캐릭터 생성하기
+          </button>
         </div>
       </div>
 
-          </div>
+      {/* Asset Grid (표정 카테고리를 선택했을 때와 그렇지 않을 때) */}
+      <div className="asset-grid">
+  {selectedCategory === 'EXPRESSION' ? (
+    <>
+      {/* 색상 선택 버튼 */}
+      <div className="expression-color-selection" style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '10px' }}>
+        {GRAYSCALE_COLORS.map((color, index) => (
+          <button
+            key={index}
+            onClick={() => setExpressionDrawingColor(color)}
+            className="color-button"
+            style={{ border: 'none', background: 'none' }}
+          >
+            <div
+              className="big-circle"
+              style={{
+                backgroundColor: color,
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <div
+                className="small-circle"
+                style={{
+                  backgroundColor: color,
+                  width: '20px',
+                  height: '20px',
+                  borderRadius: '50%',
+                }}
+              />
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* 연필/지우개 토글 버튼 */}
+      <div className="expression-tool-selection" style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '10px' }}>
+        <button
+          onClick={() => setExpressionIsErasing(!expressionIsErasing)}
+          style={{
+            width: '80px',
+            height: '40px',
+            borderRadius: '8px',
+            backgroundColor: '#000',
+            color: '#fff',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          {expressionIsErasing ? '지우개' : '연필'}
+        </button>
+      </div>
+
+      {/* 적용 버튼 */}
+      <div className="apply-button" style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+        <button
+          onClick={applyExpressionTextureToModel}
+          style={{
+            width: '80px',
+            height: '40px',
+            borderRadius: '8px',
+            backgroundColor: '#000',
+            color: '#fff',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          적용
+        </button>
+      </div>
+
+      {/* 그리기 캔버스 */}
+      <canvas
+        ref={expressionCanvasRef}
+        width="200" height="200" // 캔버스 크기를 작게 조정
+        style={{
+          backgroundColor: '#fff',
+          border: '1px solid black',
+          marginTop: '10px',
+          width: '200px',
+          height: '200px',
+        }}
+        onMouseDown={startExpressionDrawing}
+        onMouseMove={drawExpression}
+        onMouseUp={finishExpressionDrawing}
+      />
+    </>
+  ) : (
+    <>
+      {activeCategory && activeCategory.assets.map((asset, index) => (
+        <div
+          className="pictures"
+          key={index}
+          onClick={() => {
+            const modelPath = activeCategory.useColor
+              ? `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}_${selectedColors[activeCategory.name]}.glb`
+              : `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}.glb`;
+            loadModel(modelPath, activeCategory.name, activeCategory.useColor);
+          }}
+        >
+          <img
+            src={`https://placehold.co/200x200?text=${asset}`} 
+            alt={`Asset ${index}`}
+            style={{
+              maxWidth: '100%',
+              maxHeight: '100%',
+              borderRadius: '18px',
+            }}
+          />
+        </div>
+      ))}
+    </>
+  )}
+</div>
+
+
+      {activeCategory && activeCategory.useColor && (
+        <div className="color-selection">
+          {COLORS.map((color, index) => (
+            <button
+              key={color.value}
+              onClick={() => {
+                selectColor(activeCategory.name, color.value);
+                console.log(color.value);
+              }}
+              className="color-button"
+            >
+              <div className="big-circle" style={{ backgroundColor: color.value }} />
+              <div className="small-circle" style={{ backgroundColor: color.value }} />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+</div>
+
         );
       };
 

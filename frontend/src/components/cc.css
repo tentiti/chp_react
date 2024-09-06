@@ -1,0 +1,123 @@
+@font-face {
+  font-family: "ClimateCrisisKR-1979";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/ClimateCrisisKR-2030.woff2")
+    format("woff2");
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "ClimateCrisisKR-1979";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/ClimateCrisisKR-2040.woff2")
+    format("woff2");
+  font-weight: 200;
+}
+
+@font-face {
+  font-family: "Cafe24Simplehae";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.1/Cafe24Simplehae.woff")
+    format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  color: #412823;
+  background-color: #edece7;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+#container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow-x: hidden;
+  margin-top: 58px; /* Header 영역 확보 */
+}
+
+.controls {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column-reverse;
+  padding: 10px;
+  background-color: #edece7;
+}
+
+.asset-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 10px;
+  width: 100vw;
+  height: 205px;
+  overflow-y: auto;
+}
+
+.category-selection {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px;
+  background-color: #ddd;
+}
+
+.create-character {
+  padding: 10px;
+  margin-top: 10px;
+  font-size: 14px;
+  background-color: green;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.3s;
+}
+
+.create-character.red {
+  background-color: red;
+}
+
+.color-selection {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.color-selection button {
+  width: 35px;
+  height: 35px;
+  margin: 0 5px;
+  border-radius: 50%;
+  border: 1px solid black;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.color-selection button.active {
+  border: 3px solid black;
+}
+
+#splash-screen {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999999999;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hidden-canvas {
+  display: none;
+}
+
+.main-canvas {
+  width: 100vw;
+  height: 100vw;
+  border: 1px solid black;
+}
