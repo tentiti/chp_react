@@ -1,30 +1,32 @@
 import React, { useRef, useEffect, useState } from 'react';
-import RecordRTC from 'recordrtc';
+import * as THREE from 'three';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import Header from './Header';
-import { useParams } from 'react-router-dom';  // useParams 사용
-import './PostcardView.css';
+import RecordRTC from 'recordrtc';
+import SuperGif from 'libgif';
 
-const backgrounds = [
-  "/static/stockimages/bg1.png",
-  "src(https://placehold.co/300x375?text=bg1)",
-  "src(https://placehold.co/300x375?text=bg2)",
-  "src(https://placehold.co/300x375?text=bg3)",
-];
 
 const PostcardView = () => {
-  const { id } = useParams();  // useParams로 id 받아오기
-  // alert(id);
+  const { id } = useParams();
   const [postcard, setPostcard] = useState(null);
+  const [blobUrl, setBlobUrl] = useState(null); // State for storing the blob URL
+  const canvasRef = useRef(null);
+  const sceneRef = useRef(null);
+  const cameraRef = useRef(null);
+  const rendererRef = useRef(null);
   const recorderRef = useRef(null);
-  const videoContainerRef = useRef(null);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingBlob, setRecordingBlob] = useState(null);
+  const gifTextureRef = useRef(null);
+
+  const updateCanvasSize = () => {
+    const width = window.innerWidth; // 100vw
+    const height = (width / 9) * 16; // 16:9 aspect ratio
+    return { width, height };
+  };
 
   useEffect(() => {
     const fetchPostcard = async () => {
       try {
-        const response = axios.get('https://127.0.0.1:8000/postcard/${id}', { cache: 'no-cache' });
+        const response = await axios.get(`https://127.0.0.1:8000/postcard/${id}`, { cache: 'no-cache' });
         if (response.status === 200) {
           setPostcard(response.data);
         } else {
@@ -38,232 +40,258 @@ const PostcardView = () => {
     fetchPostcard();
   }, [id]);
 
+  useEffect(() => {
+    if (!postcard) return;
+
+    const initThreeJS = async () => {
+      const { width, height } = updateCanvasSize(); // Updated canvas size
+
+      sceneRef.current = new THREE.Scene();
+      cameraRef.current = new THREE.OrthographicCamera(
+        width / -2, width / 2, height / 2, height / -2, 0.1, 1000
+      );
+      cameraRef.current.position.z = 1;
+
+      rendererRef.current = new THREE.WebGLRenderer({ canvas: canvasRef.current, antialias: true });
+      rendererRef.current.setSize(width, height);  // Set to dynamic size
+      rendererRef.current.setPixelRatio(window.devicePixelRatio);  // Maintain quality across devices
+      rendererRef.current.setClearColor(0xffffff);
+      
+
+      // Background
+      const loader = new THREE.TextureLoader();
+      const bgTexture = await loader.loadAsync(`/static/stockimages/bg${postcard.number + 1}.png`);
+      const bgGeometry = new THREE.PlaneGeometry(width, height);
+      const bgMaterial = new THREE.MeshBasicMaterial({ map: bgTexture });
+      const bgMesh = new THREE.Mesh(bgGeometry, bgMaterial);
+      sceneRef.current.add(bgMesh);
+
+      // GIF
+      if (postcard.gif_name) {
+        const gifUrl = `https://localhost:8000/uploads/${postcard.gif_name}`;
+        const gifFrames = await loadGif(gifUrl);
+        gifTextureRef.current = new THREE.DataTexture(
+          gifFrames[0].data,
+          gifFrames[0].width,
+          gifFrames[0].height,
+          THREE.RGBAFormat
+        );
+        gifTextureRef.current.flipY = true; // Fix upside-down issue
+        gifTextureRef.current.needsUpdate = true;
+
+        const gifGeometry = new THREE.PlaneGeometry(116, 150);
+        const gifMaterial = new THREE.MeshBasicMaterial({ map: gifTextureRef.current, transparent: true });
+        const gifMesh = new THREE.Mesh(gifGeometry, gifMaterial);
+        gifMesh.position.set(0, -10, 0.1);  // Adjust position as needed
+        sceneRef.current.add(gifMesh);
+
+        // Animate GIF
+        let frameIndex = 0;
+        let lastFrameTime = performance.now();
+        let accumulatedTime = 0;  // 누적된 시간을 저장
+        
+        const animateGif = () => {
+          const currentTime = performance.now();
+          const elapsedTime = currentTime - lastFrameTime;
+          lastFrameTime = currentTime;  // 마지막 프레임 시간 업데이트
+          accumulatedTime += elapsedTime;  // 누적 시간을 증가
+        
+          const currentFrame = gifFrames[frameIndex];
+          const delayInMilliseconds = currentFrame.delay * 100;  // 센티초를 밀리초로 변환
+        
+          // 누적 시간이 현재 프레임의 지연 시간을 초과하면 프레임 전환
+          while (accumulatedTime >= delayInMilliseconds) {
+            frameIndex = (frameIndex + 1) % gifFrames.length;
+            gifTextureRef.current.image.data = gifFrames[frameIndex].data;
+            gifTextureRef.current.needsUpdate = true;
+            
+            accumulatedTime -= delayInMilliseconds;  // 초과된 시간을 차감
+          }
+        
+          // 다음 프레임을 요청
+          requestAnimationFrame(animateGif);
+        };
+        
+        // Start GIF animation
+        animateGif();
+        
+        
+        // Start GIF animation
+        animateGif();
+        
+      }
+
+      // Text
+      const addText = (text, y, size = 20) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = width;
+        canvas.height = 200;
+        ctx.font = `${size}px Cafe24Simplehae, sans-serif`;
+        ctx.fillStyle = 'black';
+        ctx.textAlign = 'center';
+        ctx.fillText(text, canvas.width / 2, 100);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        const geometry = new THREE.PlaneGeometry(width, 200);
+        const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(0, y, 0.2);
+        sceneRef.current.add(mesh);
+      };
+
+      addText(`내용: ${postcard.comment}`, 400);
+      addText(postcard.timestamp, 300);
+      addText(`이름: ${postcard.name}`, 200);
+    };
+
+    initThreeJS();
+
+    const animate = () => {
+      requestAnimationFrame(animate);
+      rendererRef.current.render(sceneRef.current, cameraRef.current);
+    };
+    animate();
+
+    window.addEventListener('resize', () => {
+      const { width, height } = updateCanvasSize();
+
+    });
+  }, [postcard]);
+
+  const loadGif = (url) => {
+    return new Promise((resolve) => {
+      const img = document.createElement('img');
+      img.src = url;
+  
+      // 이미지 숨기기
+      img.style.display = 'none';
+      document.body.appendChild(img); // Append img to the DOM temporarily
+  
+      const superGif = new SuperGif({
+        gif: img,
+        draw_while_loading: false,  // 로딩 중 그리지 않음
+        auto_play: false,           // 자동 재생 비활성화
+      });
+      superGif.load(() => {
+        const frames = [];
+        for (let i = 0; i < superGif.get_length(); i++) {
+          superGif.move_to(i);
+          const canvas = superGif.get_canvas();
+  
+          // 내부 캔버스 숨기기
+          canvas.style.display = 'none';
+  
+          const ctx = canvas.getContext('2d');
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  
+          frames.push({
+            data: new Uint8Array(imageData.data.buffer),
+            width: canvas.width,
+            height: canvas.height,
+            delay: 100// Default 100ms delay for each frame
+          });
+        }
+  
+        // 이미지와 내부 캔버스를 DOM에서 제거
+        // document.body.removeChild(img);
+  
+        resolve(frames);
+      });
+    });
+  };
+  
+  
+
   const startRecording = () => {
-    const videoContainer = videoContainerRef.current;
-
-    if (!videoContainer || !videoContainer.captureStream) {
-      console.error('Canvas capture is not supported on this browser.');
-      alert('녹화 기능을 지원하지 않는 브라우저입니다.');
-      return;
-    }
-
-    const stream = videoContainer.captureStream(30); // 30fps로 캡처
-    const newRecorder = new RecordRTC(stream, {
+    const stream = canvasRef.current.captureStream(30);
+    const recorder = new RecordRTC(stream, {
       type: 'video',
-      mimeType: 'video/webm', // MP4로 저장할 경우 브라우저 지원 여부에 유의
-      bitsPerSecond: 800000,  // 비디오 품질 설정
+      mimeType: 'video/mp4',
+      bitsPerSecond: 8000000
     });
 
-    newRecorder.startRecording();
-    recorderRef.current = newRecorder;
-    setIsRecording(true);
+    recorder.startRecording();
+    recorderRef.current = recorder;
 
-    // 3초 후 녹화 중지
-    setTimeout(() => stopRecording(), 3000);
+    setTimeout(() => stopRecording(), 10000);  // 3 seconds recording
   };
+
+  const [recordedBlob, setRecordedBlob] = useState(null);
 
   const stopRecording = () => {
     if (recorderRef.current) {
-      recorderRef.current.stopRecording(() => {
-        const blob = recorderRef.current.getBlob();
-        setRecordingBlob(blob);
-        setIsRecording(false);
-      });
+        recorderRef.current.stopRecording(() => {
+          const blob = recorderRef.current.getBlob();
+          const url = URL.createObjectURL(blob);
+          setBlobUrl(url);
+          setRecordedBlob(blob); // Store the actual blob
+        });
+      }
+  };
+
+  const downloadVideo = () => {
+    if (blobUrl) {
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = blobUrl;
+      a.download = 'postcard-video.mp4';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+      }, 100);
     }
   };
 
-  const shareRecording = async () => {
-    if (!recordingBlob) return;
+  const shareVideo = async () => {
+    if (navigator.canShare && recordedBlob) {
+      const file = new File([recordedBlob], 'postcard-video.mp4', { type: 'video/mp4' });
 
-    const file = new File([recordingBlob], 'postcard-animation.mp4', { type: 'video/mp4' });
-
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({
-          files: [file],
-          title: 'My Postcard Animation',
-          text: 'Check out this cool animation!',
-        });
-      } catch (error) {
-        console.error('Error sharing video:', error);
+      if (navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            title: 'Postcard Video',
+            text: 'Check out this postcard video!',
+            files: [file],
+          });
+          console.log('Video shared successfully');
+        } catch (error) {
+          console.error('Error sharing video:', error);
+        }
+      } else {
+        console.warn('Sharing not supported on this device');
       }
     } else {
-      // 다운로드로 대체
-      const url = URL.createObjectURL(recordingBlob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'postcard-animation.mp4';
-      a.click();
-      URL.revokeObjectURL(url);
+      console.warn('Sharing not supported or no video recorded');
     }
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-    }}>
-      <div style={{
-        height:'58px',
-        position: 'fixed',
-        top: '0',
-        width: '100vw',
-      }}>
-        <Header title={`'${postcard.name}'의 춤사위`} />
+    <div>
+      <canvas
+  ref={canvasRef}
+  style={{
+    position: 'absolute',   // 캔버스를 절대 위치로 설정
+    top: '120px',            // 상단에서 58px 만큼 띄움
+    left: '0',              // 화면 왼쪽에 맞춤
+    width: '100vw',         // 화면 너비를 100% 사용
+    height: 'calc(100vw * (16 / 9))',  // 9:16 비율을 유지하면서 높이를 설정
+    overflow: 'hidden'      // 넘침을 방지
+  }}
+/>
+
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+        <button onClick={startRecording} style={{ marginRight: '10px' }}>
+          Start Recording
+        </button>
+        <button onClick={downloadVideo} style={{ marginRight: '10px' }} disabled={!blobUrl}>
+          Download Video
+        </button>
+        <button onClick={shareVideo} disabled={!blobUrl}>
+          Share Video
+        </button>
       </div>
-
-      <div id="createdImages" style={{
-        position: 'fixed',
-        top: '58px',
-        width: '100vw',
-        height: 'calc(100% - 58px)',
-        backgroundColor: 'white',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'flex-start'
-      }}>
-        <div style={{
-          marginTop: '70px',
-        }}>
-            {postcard && (
-            <div
-              ref={videoContainerRef}
-              style={{
-                width: '310px',
-                height: '390px',
-                margin: '0 auto',
-                backgroundImage: backgrounds[postcard.number],
-                backgroundSize: 'cover',
-              }}
-            >
-              {/* GIF 이미지 */}
-              {postcard.gif_name && (
-                <img
-                  src={`https://localhost:8000/uploads/${postcard.gif_name}`}
-                  alt="GIF"
-                  style={{
-                    position: 'absolute',
-                    top: '254px',
-                    left: '96px',
-                    transform: 'translate(-50%, -50%)',
-                    width: '116px',
-                    height: '150px',
-                  }}
-                />
-              )}
-            </div>
-          )}
-        </div>
-      
-      
-      <div
-            style={{
-              marginTop: '20px',
-              width: '100vw',
-              color: 'white',
-              fontSize: '20px',
-              textAlign: 'center',
-              fontFamily:'Cafe24Simplehae, sans-serif',
-              backgroundColor: 'red',
-            }}
-      >
-            내용 {postcard.comment}
-      </div>
-
-      <div
-            style={{
-              width: '100vw',
-              color: 'white',
-              fontSize: '20px',
-              textAlign: 'center',
-              fontFamily:'Cafe24Simplehae, sans-serif',
-              backgroundColor: 'red',
-            }}
-      >
-            {postcard.timestamp}
-      </div>
-
-      <div
-            style={{
-              marginTop: '12px',
-              width: '100vw',
-              color: 'white',
-              fontSize: '20px',
-              textAlign: 'center',
-              fontFamily:'Cafe24Simplehae, sans-serif',
-              backgroundColor: 'red',
-            }}
-      >
-            이름 {postcard.name}
-      </div>
-
-      <div style={{ textAlign: 'center'}}>
-        {!isRecording && (
-          <button onClick={startRecording}>
-            Start Recording
-          </button>
-        )}
-        {recordingBlob && (
-          <button onClick={shareRecording}>
-            Share or Download Video
-          </button>
-        )}
-      </div>
-      </div>
-
-      <div id="footer" style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        height: '80px',
-        backgroundColor: '#F8F6F1',
-        borderTop: '1px solid #E6E1DC',
-       }}>
-          <button
-              // onClick={}
-              style={{
-                  position: 'absolute',
-                  left: '50%',
-                  bottom: '20px',
-                  transform: 'translateX(-50%)',
-                  width: '170px',
-                  height: '35px',
-                  backgroundColor: '#F8F6F1',
-                  border: '1px solid E6E1DC',
-                  color: '#412823',
-                  boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.25)',
-                  fontSize: '16px',
-                  cursor: 'pointer',
-          }}
-          >
-              저장하기
-          </button>
-
-          <button
-              // onClick={}
-              style={{
-                  position: 'absolute',
-                  left: '50%',
-                  bottom: '20px',
-                  transform: 'translateX(-50%)',
-                  width: '170px',
-                  height: '35px',
-                  backgroundColor: '#F8F6F1',
-                  border: '1px solid E6E1DC',
-                  color: '#412823',
-                  boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.25)',
-                  fontSize: '16px',
-                  cursor: 'pointer',
-          }}
-          >
-              인스타그램 공유하기
-          </button>
-
-
-      </div>
-
     </div>
   );
 };

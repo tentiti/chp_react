@@ -34,6 +34,7 @@ const PostcardCreation = () => {
             console.log('sent:', postData);
             const postcardId = response.data.id; // 서버에서 반환된 ID
             console.log('Backend response:', response.data);
+            alert();
 
             navigate(`/postcardview/${postcardId}`, { state: { models:location.state?.models} });
 
@@ -196,7 +197,7 @@ const PostcardCreation = () => {
                     style={{
                         position: 'absolute',
                         left: '50%',
-                        bottom: '20px',
+                        bottom: '5%',
                         transform: 'translateX(-50%)',
                         width: '170px',
                         height: '35px',
