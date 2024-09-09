@@ -50,7 +50,7 @@ body {
 }
 
 .overlay-content img {
-  width: 100%;
+  width: 80%;
   height: auto;
 }
 
@@ -65,11 +65,71 @@ body {
   text-align: center;
 }
 
-#top,
-#middle,
-#bottom {
+#top {
+  /* 우리가 만든 춤판, 만들 새바람 */
+
+  position: fixed;
+  width: 150px;
+  height: 42px;
+  left: calc(50% - 150px / 2 - 0.5px);
+  top: -85px;
+
+  font-family: "ClimateCrisisKR-1979";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 21px;
+  display: flex;
+  align-items: center;
   text-align: center;
+  letter-spacing: -0.025em;
+
   color: #412823;
+}
+
+#middle {
+  /* To. 모든 여러분들 정신없고 복잡한 세상 속에서 안녕하셨나요? 꽉 찬 달처럼, 세상을 한 번 뒤집을 때가 무르익었어요! ‘우리’들의 댄스타임에 초대합니다! 각자가 원하는 모습으로 함께 춤을 추어요! 10월 중반. 바람이 부는 날 생명 평화의 나무 밑에서 만나요. 우리들만의 약속입니다! */
+
+  position: fixed;
+  width: 281px;
+  height: 80px;
+  left: calc(50% - 281px / 2);
+  top: calc(50% - 80px / 2);
+
+  font-family: "Cafe24Simplehae";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  /* or 133% */
+  display: flex;
+  align-items: center;
+  text-align: center;
+  letter-spacing: -0.5px;
+
+  color: #412823;
+}
+
+#bottom {
+  /* 김화순 개인전 : 우리는 앞으로 몇번의 만월을 볼 수 있을까 일시 : 2024. 10. 12. - 10. 29. 위치 : 자하미술관 */
+
+  position: fixed;
+  width: 172px;
+  height: 34px;
+  left: calc(50% - 172px / 2 + 0.5px);
+  top: 412px;
+
+  font-family: "Cafe24 Simplehae OTF";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 8px;
+  line-height: 10px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  letter-spacing: -0.025em;
+
+  color: #000000;
 }
 
 header {
@@ -100,19 +160,15 @@ header {
 }
 
 canvas {
-  /* background-image: url("/static/stockimages/paper.jpeg"); 배경 이미지 설정 */
-  background-color: red;
   background-size: cover; /* 이미지가 전체를 덮도록 */
   background-position: center;
-  border: 1px solid #e6e1dc; /* 캔버스 경계선 */
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
 }
 
 .controls {
   position: fixed;
   bottom: 0;
   width: 100vw;
-  min-height: 50vh;
+  min-height: 40vh;
   background-color: #edece7;
   display: flex;
   flex-direction: column-reverse;
@@ -156,15 +212,24 @@ canvas {
 }
 
 .asset-grid {
-  display: grid;
+  display: grid !important;
   grid-template-columns: repeat(4, 1fr); /* 열 개수는 유지 */
   gap: 10px; /* 요소 간의 간격 */
   padding: 10px; /* 바깥쪽 여백 */
   width: 100%; /* 가로 너비를 100%로 설정해 넘침 방지 */
-  height: 25vh; /* 높이를 부모 컨테이너에 맞게 설정 */
+  height: 220px; /* 높이를 부모 컨테이너에 맞게 설정 */
   box-sizing: border-box; /* 패딩을 포함한 전체 크기 계산 */
   overflow-y: scroll; /* 넘칠 경우 스크롤 추가 */
   border: 1px solid #e6e1dc;
+}
+
+.asset-grid.expanded {
+  /* expression이 선택되었을 때 높이 추가 */
+  display: flex !important;
+  height: 278px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .asset-grid .pictures {
@@ -249,12 +314,6 @@ canvas {
   display: flex;
   justify-content: space-around;
   gap: 10px;
-}
-
-.expression-canvas {
-  width: 100%; /* asset-grid 영역에 맞추기 */
-  height: 100%;
-  border: 1px solid #e6e1dc;
 }
 
 #topChoices {

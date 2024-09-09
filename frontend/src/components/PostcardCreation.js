@@ -47,7 +47,7 @@ const PostcardCreation = () => {
         <div>
             <Header title="포스트카드 만들기" />
             <div id="container" style={{ 
-                position: 'relative', 
+                position: 'sticky', 
                 width: '100%', 
                 height: '100vh', 
                 fontFamily: 'Cafe24SimplehaeOTF-Regular, sans-serif',

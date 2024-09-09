@@ -1,12 +1,14 @@
 @font-face {
   font-family: "ClimateCrisisKR-1979";
-  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/ClimateCrisisKR-2030.woff2") format("woff2");
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/ClimateCrisisKR-2030.woff2")
+    format("woff2");
   font-weight: 400;
 }
 
 @font-face {
   font-family: "ClimateCrisisKR-1979";
-  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/ClimateCrisisKR-2040.woff2") format("woff2");
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/ClimateCrisisKR-2040.woff2")
+    format("woff2");
   font-weight: 200;
 }
 
@@ -128,7 +130,6 @@ footer * {
 .floating {
   width: 60px;
   height: 60px;
-  background-color: #f39c12;
   border-radius: 50%;
   position: fixed;
   bottom: 20px;
@@ -139,6 +140,8 @@ footer * {
   align-items: center;
   cursor: pointer;
   z-index: 10000; /* 다른 요소를 덮지 않도록 조정 */
+  background-size: cover; /* 배경 이미지가 항상 꽉 차도록 설정 */
+  background-position: center; /* 이미지가 가운데 정렬되도록 설정 */
 }
 
 @keyframes floating-animation {
@@ -159,9 +162,9 @@ footer * {
   overflow-y: scroll; /* 스크롤 가능하게 설정 */
 }
 
-
 .floating {
-  transition: left 0.1s ease-in-out, top 0.1s ease-in-out, background-color 0.3s ease-in-out;
+  transition: left 0.1s ease-in-out, top 0.1s ease-in-out,
+    background-color 0.3s ease-in-out;
 }
 
 #content.fade-in {

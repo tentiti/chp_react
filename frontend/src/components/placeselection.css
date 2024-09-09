@@ -1,0 +1,32 @@
+#workdetails {
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  margin-top: px;
+}
+#workdetails * {
+  width: 100%;
+  align-items: center;
+  justify-content: center; /* 수평 가운데 정렬 추가 */
+  text-align: center;
+
+  color: #412823;
+}
+#worktitle {
+  font-family: "ClimateCrisisKR-1979";
+  font-size: 18px;
+}
+
+#workdate {
+  font-family: "Pretendard", sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 8px;
+}
+
+#workdetails {
+  width: calc(100vw - 40px);
+  font-family: "Pretendard", sans-serif;
+  font-size: 12px;
+  line-height: 15px;
+}

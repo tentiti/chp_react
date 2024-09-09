@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { useNavigate } from 'react-router-dom';
 import GIF from 'gif.js';
@@ -11,8 +12,18 @@ const API_URL = process.env.REACT_APP_API_URL;
 const GlbTest = () => {
   const navigate = useNavigate();
 
+  //초대장 이미지 표시 관련
+  const [showImage, setShowImage] = useState(false); // 이미지 표시 여부를 결정하는 상태
+  const handleMenuClick = () => {
+    setShowImage(true); // 메뉴 버튼 클릭 시 이미지 보이게 설정
+  };
+  const handleCloseImage = () => {
+    setShowImage(false); // 화면을 클릭하면 이미지 사라지게 설정
+  };
+
   const [isSplashVisible, setIsSplashVisible] = useState(false);
   const [overlayVisible, setOverlayVisible] = useState(true);
+  const [isDressSelected, setIsDressSelected] = useState(false); // 원피스가 선택되었는지 여부
   const canvasRef = useRef(null);
   const hiddenCanvasRef = useRef(null);
   const rendererRef = useRef(null);
@@ -21,6 +32,7 @@ const GlbTest = () => {
   const cameraRef = useRef(null);
   const clockRef = useRef(new THREE.Clock());
   const modelsRef = useRef([]);
+  const controlsRef = useRef(null); // OrbitControls를 위한 Ref 추가
 
   const [loadingStatus, setLoadingStatus] = useState('Loading...');
   const [activeCategory, setActiveCategory] = useState(null);
@@ -73,6 +85,19 @@ const GlbTest = () => {
     }));
   };
 
+  //카메라 위치
+  const CAMERA_POSITIONS = {
+    HEAD: { x: 0, y: 2, z: 5 },
+    TOP: { x: 0, y: 1, z: 5 },
+    BOTTOM: { x: 0, y: -1, z: 5 },
+    SHOES: { x: 0, y: -2, z: 5 },
+    ACCESSORY: { x: 1, y: 1, z: 4 },
+    EXPRESSION: { x: 0, y: 2.5, z: 6 },
+  };
+  
+  const [initialCameraPosition, setInitialCameraPosition] = useState(null);
+
+
   //표정 그리기 관련
   const GRAYSCALE_COLORS = ['#FFFFFF', '#E0E0E0', '#C0C0C0', '#808080', '#404040', '#000000'];
 
@@ -80,8 +105,33 @@ const GlbTest = () => {
   const [expressionIsErasing, setExpressionIsErasing] = useState(false); // 지우개 여부
   const expressionCanvasRef = useRef(null); // 표정을 그리는 캔버스  
 
+  //색상 변경 함수
+  const clearCanvasWithColor = (color) => {
+    const ctx = expressionCanvasRef.current.getContext('2d');
+    ctx.fillStyle = color; // 선택한 색상으로 설정
+    ctx.fillRect(0, 0, expressionCanvasRef.current.width, expressionCanvasRef.current.height); // 캔버스 전체를 색으로 덮기
+    
+    // 경로를 초기화하고 다시 설정
+    ctx.beginPath(); // 새로운 경로 시작
+    ctx.strokeStyle = '#000000'; // 그리기 색상 다시 설정
+    ctx.lineWidth = 5; // 선 굵기 다시 설정
+    
+    ctx.closePath(); // 경로 종료
+  };
+
+
+
+
   const loadModel = useCallback((modelPath, categoryName, useColor = false, onLoad) => {
     const loader = new GLTFLoader();
+
+    // 원피스가 선택되었는지 여부 확인
+      if (categoryName === 'TOP' && modelPath.includes('dress')) {
+      setIsDressSelected(true);  // 원피스 선택 시 하의 비활성화
+    } else if (categoryName === 'TOP') {
+      setIsDressSelected(false); // 다른 상의를 선택하면 하의 활성화
+    }
+  
 
     modelsRef.current = modelsRef.current.filter((item) => {
       if (item.categoryName === categoryName) {
@@ -182,6 +232,13 @@ const GlbTest = () => {
       sceneRef.current.add(directionalLight);
 
       cameraRef.current.position.z = 5;
+
+      // OrbitControls 초기화
+      controlsRef.current = new OrbitControls(cameraRef.current, rendererRef.current.domElement);
+      controlsRef.current.enableDamping = true; // 부드러운 회전
+      controlsRef.current.dampingFactor = 0.25; // 감속 비율
+      controlsRef.current.enableZoom = true; // 줌 허용
+
     };
 
     initThreeJS();
@@ -192,6 +249,12 @@ const GlbTest = () => {
     
       const delta = clockRef.current.getDelta();
       modelsRef.current.forEach(({ mixer }) => mixer.update(delta));
+
+
+      // OrbitControls 업데이트
+      if (controlsRef.current) {
+        controlsRef.current.update();
+      }
     
       if (rendererRef.current && sceneRef.current && cameraRef.current) {
         rendererRef.current.clear(); 
@@ -229,6 +292,9 @@ const GlbTest = () => {
   };
 
   const startRecording = () => {
+    if (!initialCameraPosition) {
+      setInitialCameraPosition(cameraRef.current.position.clone()); // 초기 카메라 위치 저장
+    }
     setIsRecording(true);
     setIsSplashVisible(true);
     resetAndStartAnimation();
@@ -347,105 +413,183 @@ const GlbTest = () => {
   // 표정
   let isDrawingExpression = false;
 
-    const startExpressionDrawing = (e) => {
-      isDrawingExpression = true;
-      drawExpression(e); // 마우스 눌렀을 때 첫 번째 점 그리기
+  const getCanvasCoords = (e) => {
+    const canvas = expressionCanvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+  
+    // 터치 이벤트일 경우 터치 위치에서 좌표를 얻음, 아니면 마우스 좌표
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
     };
+  };
 
-    const drawExpression = (e) => {
-      if (!isDrawingExpression) return;
+  const startExpressionDrawing = (e) => {
+    e.preventDefault(); // 기본 터치 동작 방지
+    isDrawingExpression = true;
+    const coords = getCanvasCoords(e);
+    drawExpressionAt(coords.x, coords.y); // 시작할 때 바로 첫 점을 그림
+  };
 
-      const ctx = expressionCanvasRef.current.getContext('2d');
-      ctx.lineWidth = 5;
-      ctx.lineCap = 'round';
+  const drawExpression = (e) => {
+    e.preventDefault(); // 기본 터치 동작 방지
+    if (!isDrawingExpression) return;
+  
+    const coords = getCanvasCoords(e);
+    drawExpressionAt(coords.x, coords.y);
+  };
+  
+  const finishExpressionDrawing = () => {
+    isDrawingExpression = false;
+    const ctx = expressionCanvasRef.current.getContext('2d');
+    ctx.beginPath(); // 새로운 경로를 시작
+  };
+  
+  const drawExpressionAt = (x, y) => {
+    const ctx = expressionCanvasRef.current.getContext('2d');
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+  
+    if (expressionIsErasing) {
+      ctx.strokeStyle = expressionDrawingColor; // 지우개 기능일 때 흰색으로 칠함
+    } else {
+      ctx.strokeStyle = '#000000';
+    }
+  
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+  };
 
-      if (expressionIsErasing) {
-        ctx.strokeStyle = '#FFFFFF'; // 지우개 기능일 때 흰색으로 칠함
-      } else {
-        ctx.strokeStyle = expressionDrawingColor;
-      }
-
-      ctx.lineTo(e.clientX - expressionCanvasRef.current.offsetLeft, e.clientY - expressionCanvasRef.current.offsetTop);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(e.clientX - expressionCanvasRef.current.offsetLeft, e.clientY - expressionCanvasRef.current.offsetTop);
-    };
-
-    const finishExpressionDrawing = () => {
-      isDrawingExpression = false;
-      expressionCanvasRef.current.getContext('2d').beginPath(); // 경로 초기화
-    };
-
-    const applyExpressionTextureToModel = () => {
-      const canvas = expressionCanvasRef.current;
-      const texture = new THREE.CanvasTexture(canvas); // 캔버스를 텍스처로 변환
-      texture.needsUpdate = true;
-    
-      modelsRef.current.forEach(({ model }) => {
-        const headMesh = model.getObjectByName('mixamorighead');
-        if (headMesh) {
-          headMesh.material.map = texture; // 텍스처를 머리에 적용
-          headMesh.material.needsUpdate = true;
+  const applyExpressionTextureToModel = () => {
+    const canvas = expressionCanvasRef.current;
+    const texture = new THREE.CanvasTexture(canvas); // Convert canvas to texture
+    texture.needsUpdate = true;
+  
+    modelsRef.current.forEach(({ model }) => {
+      // 모델의 모든 자식 객체 탐색
+      model.traverse((child) => {
+        // 'head'라는 부모를 확인
+        if (child.name === 'head') {
+          // 'head'의 자식에서 'sphere001'을 찾음
+          child.children.forEach(sphereMesh => {
+            if (sphereMesh.name === 'Sphere001') {
+              // UV 좌표가 있는지 확인하고 없으면 기본 UV 추가
+              if (sphereMesh.geometry && sphereMesh.geometry.attributes) {
+                if (!sphereMesh.geometry.attributes.uv) {
+                  console.warn("UV attributes are missing, generating default UVs.");
+                  const geometry = sphereMesh.geometry;
+                  const uv = new Float32Array(geometry.attributes.position.count * 2);
+  
+                  for (let i = 0; i < uv.length; i += 2) {
+                    uv[i] = (i / 2) % 2; // u 값
+                    uv[i + 1] = Math.floor((i / 2) / 2); // v 값
+                  }
+  
+                  geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+                  geometry.attributes.uv.needsUpdate = true;
+                }
+  
+                // 재질이 없다면 새 재질 할당
+                if (!sphereMesh.material) {
+                  sphereMesh.material = new THREE.MeshBasicMaterial();
+                }
+  
+                // 텍스처 적용
+                sphereMesh.material.map = texture;
+                sphereMesh.material.needsUpdate = true;
+              } else {
+                console.warn("Geometry or geometry attributes are undefined for sphere mesh.");
+              }
+            }
+          });
         }
       });
-    };
+    });
+  };
+  
+
+    useEffect(() => {
+      const canvas = expressionCanvasRef.current;
+    
+      if (canvas) {
+        // 터치 이벤트 리스너에 passive: false 옵션을 추가
+        canvas.addEventListener('touchstart', startExpressionDrawing, { passive: false });
+        canvas.addEventListener('touchmove', drawExpression, { passive: false });
+        canvas.addEventListener('touchend', finishExpressionDrawing, { passive: false });
+    
+        // 컴포넌트 언마운트 시 이벤트 리스너를 제거
+        return () => {
+          canvas.removeEventListener('touchstart', startExpressionDrawing);
+          canvas.removeEventListener('touchmove', drawExpression);
+          canvas.removeEventListener('touchend', finishExpressionDrawing);
+        };
+      }
+    }, []);
+    
     
   
 
   return (
-<div style={{ overflow: 'auto' }} id="whatareYou?">
-  {overlayVisible && (
-    <div id="overlay" className="overlay">
-      <div className="overlay-content">
-        <img
-          src="../static/stockimages/make_invitation.png"
-          alt="Invitation"
-        />
-        <div className="text-overlay">
-          <span id="top">
-            우리가 만든 춤판,<br />
-            만들 새바람
-          </span>
+    <div>
+    <div style={{ overflow: 'auto' }} id="whatareYou?">
+      {overlayVisible && (
+        <div id="overlay" className="overlay">
+          <div className="overlay-content">
+            <img
+              src="../static/stockimages/make_invitation.png"
+              alt="Invitation"
+            />
 
-          <span id="middle">
-            To. 모든 여러분들<br /><br />
-            정신 없고 복잡한 세상 속에서 안녕하셨나요?<br />
-            꽉 찬 달처럼, 세상을 한 번 뒤집을 때가 무르익었어요!<br />
-            '우리'들의 댄스타임에 초대합니다!<br />
-            각자가 원하는 모습으로 함께 춤을 추어요!<br />
-            10월 중반. 바람이 부는 날 생명 평화의 나무 밑에서 만나요.<br />
-            우리들만의 약속입니다!
-          </span>
-
-          <span id="bottom">
-            김화순 개인전 : 전시 제목 블라블라 라고 합니다.<br />
-            일시 : 2024. 10. 12. - 10. 29.<br />
-            위치 : 자하미술관
-          </span>
+          </div>
         </div>
-      </div>
-    </div>
-  )}
+      )}
 
-  <Header title="춤 함께 추기" />
+      <Header title="춤 복장 선택하기" onMenuClick={handleMenuClick} />
 
-  {isSplashVisible && (
-    <div id="splash-screen" className="splash-screen">
-      <img src="https://placehold.co/390x800?text=gogetImage" alt="Splash" style={{ position: 'Fixed', width: '100vw', height: '100vh', objectFit: 'cover', zIndex: '999999999' }} />
-    </div>
-  )}
+      {showImage && (
+        <div 
+          style={{
+            position: 'absolute', 
+            top: 0, 
+            left: 0, 
+            width: '100vw', 
+            height: '100vh', 
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center',
+            // backgroundImage: 'url("/static/stockimages/inviflat.png")',
+          }}
+          onClick={handleCloseImage} // 이미지를 클릭해도 사라지게 설정
+        >
+          <img src="/static/stockimages/inviflat.png" alt="invitation" style={{ maxWidth: '90%', maxHeight: '90%', zIndex: '999999'}} />
+        </div>
+      )}
 
-  <div id="container" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 58px)', overflowX: 'hidden' }}>
-    <canvas
-      ref={canvasRef}
-      style={{
-        width: '100vw',
-        height: '100vw'
-      }}
-    />
-    <canvas ref={hiddenCanvasRef} style={{ display: 'none' }} />
+      {isSplashVisible && (
+        <div id="splash-screen" className="splash-screen">
+          <img src="/static/stockimages/making.png" alt="Splash" style={{ position: 'Fixed', width: '100vw', height: '100vh', objectFit: 'cover', zIndex: '999999999' }} />
+          <img src="/static/stockimages/loading-circle.gif" alt="Splash" style={{ width: '80px', position: 'Fixed', left:'calc(50vw - 40px)', top:'55vh',zIndex: '999999999' }} />
+        </div>
+      )}
 
-    <div className="controls" style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column-reverse' }}>
+    <div id="container" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 58px)', overflowX: 'hidden' }}>
+      <canvas
+        ref={canvasRef}
+        style={{
+          width: '100vw',
+          height: '70vh',
+          backgroundImage: 'url("/static/stockimages/paper.png")'
+        }}
+      />
+      <canvas ref={hiddenCanvasRef} style={{ display: 'none' }} />
+
+      <div className="controls" style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column-reverse' }}>
       <div id="botbottoms" style={{ display: 'flex', flexDirection: 'Column' }}>
         <div className="category-selection">
           {CATEGORIES.map((category) => (
@@ -456,10 +600,12 @@ const GlbTest = () => {
                 selectCategory(category); // 기존 함수 호출
               }}
               className={`color-button ${selectedCategory === category.name ? 'selected' : ''}`} // 선택된 경우 클래스 추가
+              disabled={category.name === 'BOTTOM' && isDressSelected} // 원피스가 선택되면 하의 버튼 비활성화
             >
               {CATEGORY_NAME_MAP[category.name]} {/* 한글 카테고리 이름 표시 */}
             </button>
           ))}
+          
         </div>
 
         <div className="create-character-container">
@@ -470,26 +616,40 @@ const GlbTest = () => {
       </div>
 
       {/* Asset Grid (표정 카테고리를 선택했을 때와 그렇지 않을 때) */}
-      <div className="asset-grid">
-  {selectedCategory === 'EXPRESSION' ? (
-    <>
-      
+      <div className={`asset-grid ${selectedCategory === 'EXPRESSION' ? 'expanded' : ''}`} style={{ }}>
+      {selectedCategory === 'EXPRESSION' ? (
+        <>
+      {/* 버튼과 캔버스를 가로로 배치하는 컨테이너 */}
+      <div style={{ position:'sticky', display: 'flex', flexDirection:'row', justifyContent: 'space-around', alignItems: 'center', zIndex: '999999'}}>
+
       {/* 색상 선택 버튼 */}
-      <div className="expression-color-selection" style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '10px' }}>
+      <div className="expression-color-selection" style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '10px', width:'75%' }}>
         {GRAYSCALE_COLORS.map((color, index) => (
           <button
             key={index}
-            onClick={() => setExpressionDrawingColor(color)}
+            onClick={() => {
+              setExpressionDrawingColor(color);
+              clearCanvasWithColor(color);
+            }}
             className="color-button"
-            style={{ border: 'none', background: 'none' }}
+            style={{
+              display: 'flex',
+              pointerEvents: 'auto',
+              justifyContent: 'center',
+              alignItems: 'center',
+              border: 'none',
+              background: 'none',
+              padding: '0', // 버튼 내 기본 패딩 제거
+              width: '40px', // 버튼의 크기를 원의 크기에 맞춤
+              height: '40px',
+              borderRadius: '50%', // 버튼 자체를 원형으로 만듦
+              boxSizing: 'border-box', // 패딩과 크기 계산을 일관되게 처리
+            }}
           >
             <div
               className="big-circle"
               style={{
                 backgroundColor: color,
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -498,10 +658,7 @@ const GlbTest = () => {
               <div
                 className="small-circle"
                 style={{
-                  backgroundColor: color,
-                  width: '20px',
-                  height: '20px',
-                  borderRadius: '50%',
+                  backgroundColor: color
                 }}
               />
             </div>
@@ -510,59 +667,76 @@ const GlbTest = () => {
       </div>
 
       {/* 연필/지우개 토글 버튼 */}
-      <div className="expression-tool-selection" style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '10px' }}>
-        <button
-          onClick={() => setExpressionIsErasing(!expressionIsErasing)}
-          style={{
-            width: '80px',
-            height: '40px',
-            borderRadius: '8px',
-            backgroundColor: '#000',
-            color: '#fff',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
-          {expressionIsErasing ? '지우개' : '연필'}
-        </button>
-      </div>
 
-      {/* 적용 버튼 */}
-      <div className="apply-button" style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-        <button
-          onClick={applyExpressionTextureToModel}
-          style={{
-            width: '80px',
-            height: '40px',
-            borderRadius: '8px',
-            backgroundColor: '#000',
-            color: '#fff',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
-          적용
-        </button>
+      <div className="expression-tool-selection" style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '10px' }}>
+      <button
+        onClick={() => setExpressionIsErasing(!expressionIsErasing)}
+        style={{
+          width: '32px',           // 너비 32px
+          height: '32px',          // 높이 32px
+          borderRadius: '50%',     // 둥근 원 모양
+          backgroundColor: '#000', // 배경색 검정
+          backgroundImage: `url(${expressionIsErasing ? 'static/stockimages/eraser.png' : 'static/stockimages/pencil.png'})`, // 조건에 따라 배경 이미지 변경
+          backgroundPosition: 'center',
+          backgroundSize: '70%',
+          backgroundRepeat: 'no-repeat',
+          boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', // 그림자 효과
+          border: 'none',         // 테두리 없음
+          cursor: 'pointer',      // 마우스 커서 변경
+        }}
+      />
+    </div>
+
+
+    {/* 적용 버튼 */}
+    <div className="apply-button" style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+      <button
+        onClick={applyExpressionTextureToModel}
+        style={{
+          width: '32px',           // 너비 32px
+          height: '32px',          // 높이 32px
+          borderRadius: '50%',     // 둥근 원 모양
+          backgroundColor: '#000', // 배경색 검정
+          backgroundImage: 'url(static/stockimages/apply.png)', // apply.png 이미지 사용
+          backgroundPosition: 'center',
+          backgroundSize: '70%',   // 이미지 크기를 50%로 설정
+          backgroundRepeat: 'no-repeat',
+          boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', // 그림자 효과
+          border: 'none',         // 테두리 없음
+          cursor: 'pointer',      // 마우스 커서 변경
+        }}
+      />
+    </div>
+
       </div>
 
       {/* 그리기 캔버스 */}
       <canvas
         ref={expressionCanvasRef}
-        width="200" height="200" // 캔버스 크기를 작게 조정
+        width='calc(100vw - 30px)' height="190" // 캔버스 내부 크기
         style={{
           backgroundColor: '#fff',
           border: '1px solid black',
-          marginTop: '10px',
-          width: '200px',
-          height: '200px',
+          width: 'calc(100vw - 30px)',  // 전체 가로 너비에서 양쪽 10px씩 여백
+          height: '190px',  // 고정된 높이 설정
+          margin: '0 5px',  // 좌우에 10px 여백
+          display: 'block',  // 중앙 정렬을 위해 block 요소로 설정
+          boxSizing: 'border-box',  // 패딩과 보더 포함된 크기 계산
         }}
+        // 마우스 이벤트
         onMouseDown={startExpressionDrawing}
         onMouseMove={drawExpression}
         onMouseUp={finishExpressionDrawing}
+        // 터치 이벤트
+        onTouchStart={startExpressionDrawing}
+        onTouchMove={drawExpression}
+        onTouchEnd={finishExpressionDrawing}
       />
-    </>
-  ) : (
-    <>
+
+
+      </>
+      ) : (
+      <>
       {activeCategory && activeCategory.assets.map((asset, index) => (
         <div
           className="pictures"
@@ -585,9 +759,9 @@ const GlbTest = () => {
           />
         </div>
       ))}
-    </>
-  )}
-</div>
+      </>
+      )}
+      </div>
 
 
       {activeCategory && activeCategory.useColor && (
@@ -597,7 +771,7 @@ const GlbTest = () => {
               key={color.value}
               onClick={() => {
                 selectColor(activeCategory.name, color.value);
-                console.log(color.value);
+                // console.log(color.value);
               }}
               className="color-button"
             >
@@ -607,6 +781,7 @@ const GlbTest = () => {
           ))}
         </div>
       )}
+      </div>
     </div>
   </div>
 </div>

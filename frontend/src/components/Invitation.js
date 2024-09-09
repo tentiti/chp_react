@@ -5,7 +5,9 @@ function Invitation() {
 
   return (
     <div className="background-wrapper">
-      <div className="background"></div>
+      <div className="background" style={{
+        backgroundImage: 'url("/static/stockimages/invitation_background.png")'
+      }}></div>
 
       <header>
         <div className="titleArea">

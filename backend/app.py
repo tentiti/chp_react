@@ -1,19 +1,17 @@
+import random
+from flask import Flask, request, jsonify, send_from_directory, render_template, url_for
+from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
+from werkzeug.utils import secure_filename
+from flask_socketio import SocketIO, emit
+import os
+import uuid
+from datetime import datetime
+import cv2
+import numpy as np
+from PIL import Image, ImageDraw, ImageSequence
 import eventlet
 eventlet.monkey_patch()
-
-from PIL import Image, ImageDraw, ImageSequence
-import numpy as np
-import cv2
-from datetime import datetime
-import uuid
-import os
-from flask_socketio import SocketIO, emit
-from werkzeug.utils import secure_filename
-from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
-from flask import Flask, request, jsonify, send_from_directory, render_template, url_for
-import random
-
 
 
 # 필요한 경우 이벤트렛 패치
@@ -174,7 +172,7 @@ def submit_postcard():
             # PNG로 저장 (new_postcard.id.png) - RGBA 모드 유지
             png_filename = os.path.splitext(gif_filename)[0] + '.png'
             png_path = os.path.join(
-                app.config['IMAGE_UPLOAD_FOLDER'], png_filename)
+                app.config['UPLOAD_FOLDER'], png_filename)
             random_frame.save(png_path, format='PNG')
 
         # 응답 반환
@@ -193,6 +191,7 @@ def get_postcard(id):
         return jsonify({
             "id": postcard.id,
             "gif_name": postcard.gif_name,
+            "png_name": postcard.gif_name.replace('.gif', '.png'),
             "name": postcard.name,
             "comment": postcard.comment,
             "timestamp": postcard.timestamp.isoformat(),
@@ -202,6 +201,33 @@ def get_postcard(id):
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"error": "Postcard not found"}), 404
+
+
+@app.route('/api/postcards', methods=['GET'])
+def get_postcards():
+    try:
+        # 모든 Postcard 데이터를 데이터베이스에서 가져옵니다.
+        postcards = Postcard.query.order_by(Postcard.timestamp.desc()).all()
+        # 각 Postcard 객체를 JSON 형태로 변환하여 응답합니다.
+        postcards_data = [
+            {
+                "id": postcard.id,
+                "gif_name": postcard.gif_name,
+                # .gif을 .png로 변환
+                "png_name": postcard.gif_name.replace('.gif', '.png'),
+                "name": postcard.name,
+                "comment": postcard.comment,
+                "timestamp": postcard.timestamp.isoformat(),
+                "number": postcard.number
+            }
+            for postcard in postcards
+        ]
+
+        return jsonify(postcards_data), 200
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": "Failed to fetch postcards"}), 500
 
 
 if __name__ == '__main__':

@@ -24,7 +24,7 @@
     "file-loader": "^6.2.0"
   },
   "scripts": {
-    "start": "concurrently \"npm run start-react\" \"npm run start-backend\"",
+    "start": "react-scripts start --https",
     "start-react": "react-scripts start",
     "build": "react-scripts build",
     "start-backend": " "
