@@ -2,14 +2,12 @@
   width: 100vw;
   display: flex;
   flex-direction: column;
-  margin-top: px;
 }
 #workdetails * {
   width: 100%;
   align-items: center;
   justify-content: center; /* 수평 가운데 정렬 추가 */
   text-align: center;
-
   color: #412823;
 }
 #worktitle {
@@ -29,4 +27,26 @@
   font-family: "Pretendard", sans-serif;
   font-size: 12px;
   line-height: 15px;
+}
+
+#scrolldownbutton {
+  margin-top: 10px;
+  width: 170px;
+  height: 35px;
+  background: #f8f6f1;
+  border: 1px solid #e6e1dc;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+
+  font-family: "Pretendard", sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  letter-spacing: -0.025em;
+  color: #412823;
+  cursor: pointer; /* 마우스 포인터 변경 */
 }

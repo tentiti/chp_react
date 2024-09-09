@@ -1,10 +1,20 @@
 import React, { useRef, useEffect, useState } from 'react';
 import RecordRTC from 'recordrtc';
 import axios from 'axios';
+import Header from './Header';
 import { useParams } from 'react-router-dom';  // useParams 사용
+import './PostcardView.css';
+
+const backgrounds = [
+  "/static/stockimages/bg1.png",
+  "src(https://placehold.co/300x375?text=bg1)",
+  "src(https://placehold.co/300x375?text=bg2)",
+  "src(https://placehold.co/300x375?text=bg3)",
+];
 
 const PostcardView = () => {
   const { id } = useParams();  // useParams로 id 받아오기
+  // alert(id);
   const [postcard, setPostcard] = useState(null);
   const recorderRef = useRef(null);
   const videoContainerRef = useRef(null);
@@ -14,14 +24,14 @@ const PostcardView = () => {
   useEffect(() => {
     const fetchPostcard = async () => {
       try {
-        if (!id) {
-          throw new Error('Postcard ID is undefined.');
+        const response = axios.get('https://127.0.0.1:8000/postcard/${id}', { cache: 'no-cache' });
+        if (response.status === 200) {
+          setPostcard(response.data);
+        } else {
+          console.error('Error fetching postcard:', response.status);
         }
-        const response = await axios.get(`https://127.0.0.1:8000/postcard/${id}`);
-        setPostcard(response.data);
       } catch (error) {
-        console.error('Error fetching postcard:', error);
-        alert('포스트카드를 불러오는 중 오류가 발생했습니다.');
+        console.error('Network error:', error);
       }
     };
 
@@ -89,53 +99,106 @@ const PostcardView = () => {
   };
 
   return (
-    <div>
-      {postcard && (
-        <div
-          ref={videoContainerRef}
-          style={{
-            position: 'relative',
-            width: '360px',
-            height: '640px',
-            margin: '0 auto',
-            backgroundImage: `url(https://localhost:8000/uploads/${postcard.background})`,
-            backgroundSize: 'cover',
-          }}
-        >
-          {/* GIF 이미지 */}
-          {postcard.gif_name && (
-            <img
-              src={`https://localhost:8000/uploads/${postcard.gif_name}`}
-              alt="GIF"
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
+      <div style={{
+        height:'58px',
+        position: 'fixed',
+        top: '0',
+        width: '100vw',
+      }}>
+        <Header title={`'${postcard.name}'의 춤사위`} />
+      </div>
+
+      <div id="createdImages" style={{
+        position: 'fixed',
+        top: '58px',
+        width: '100vw',
+        height: 'calc(100% - 58px)',
+        backgroundColor: 'white',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'flex-start'
+      }}>
+        <div style={{
+          marginTop: '70px',
+        }}>
+            {postcard && (
+            <div
+              ref={videoContainerRef}
               style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '200px',
-                height: '200px',
+                width: '310px',
+                height: '390px',
+                margin: '0 auto',
+                backgroundImage: backgrounds[postcard.number],
+                backgroundSize: 'cover',
               }}
-            />
+            >
+              {/* GIF 이미지 */}
+              {postcard.gif_name && (
+                <img
+                  src={`https://localhost:8000/uploads/${postcard.gif_name}`}
+                  alt="GIF"
+                  style={{
+                    position: 'absolute',
+                    top: '254px',
+                    left: '96px',
+                    transform: 'translate(-50%, -50%)',
+                    width: '116px',
+                    height: '150px',
+                  }}
+                />
+              )}
+            </div>
           )}
-          {/* 텍스트 */}
-          <div
+        </div>
+      
+      
+      <div
             style={{
-              position: 'absolute',
-              bottom: '20px',
-              left: '50%',
-              transform: 'translateX(-50%)',
+              marginTop: '20px',
+              width: '100vw',
               color: 'white',
               fontSize: '20px',
               textAlign: 'center',
+              fontFamily:'Cafe24Simplehae, sans-serif',
+              backgroundColor: 'red',
             }}
-          >
-            <h1>{postcard.name}</h1>
-            <p>{postcard.comment}</p>
-          </div>
-        </div>
-      )}
+      >
+            내용 {postcard.comment}
+      </div>
 
-      <div style={{ textAlign: 'center', marginTop: '20px' }}>
+      <div
+            style={{
+              width: '100vw',
+              color: 'white',
+              fontSize: '20px',
+              textAlign: 'center',
+              fontFamily:'Cafe24Simplehae, sans-serif',
+              backgroundColor: 'red',
+            }}
+      >
+            {postcard.timestamp}
+      </div>
+
+      <div
+            style={{
+              marginTop: '12px',
+              width: '100vw',
+              color: 'white',
+              fontSize: '20px',
+              textAlign: 'center',
+              fontFamily:'Cafe24Simplehae, sans-serif',
+              backgroundColor: 'red',
+            }}
+      >
+            이름 {postcard.name}
+      </div>
+
+      <div style={{ textAlign: 'center'}}>
         {!isRecording && (
           <button onClick={startRecording}>
             Start Recording
@@ -147,6 +210,60 @@ const PostcardView = () => {
           </button>
         )}
       </div>
+      </div>
+
+      <div id="footer" style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        height: '80px',
+        backgroundColor: '#F8F6F1',
+        borderTop: '1px solid #E6E1DC',
+       }}>
+          <button
+              // onClick={}
+              style={{
+                  position: 'absolute',
+                  left: '50%',
+                  bottom: '20px',
+                  transform: 'translateX(-50%)',
+                  width: '170px',
+                  height: '35px',
+                  backgroundColor: '#F8F6F1',
+                  border: '1px solid E6E1DC',
+                  color: '#412823',
+                  boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.25)',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+          }}
+          >
+              저장하기
+          </button>
+
+          <button
+              // onClick={}
+              style={{
+                  position: 'absolute',
+                  left: '50%',
+                  bottom: '20px',
+                  transform: 'translateX(-50%)',
+                  width: '170px',
+                  height: '35px',
+                  backgroundColor: '#F8F6F1',
+                  border: '1px solid E6E1DC',
+                  color: '#412823',
+                  boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.25)',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+          }}
+          >
+              인스타그램 공유하기
+          </button>
+
+
+      </div>
+
     </div>
   );
 };

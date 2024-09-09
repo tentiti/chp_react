@@ -1,3 +1,7 @@
+import eventlet
+eventlet.monkey_patch()
+
+
 import random
 from flask import Flask, request, jsonify, send_from_directory, render_template, url_for
 from flask_sqlalchemy import SQLAlchemy
@@ -10,9 +14,6 @@ from datetime import datetime
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageSequence
-import eventlet
-eventlet.monkey_patch()
-
 
 # 필요한 경우 이벤트렛 패치
 
@@ -188,13 +189,14 @@ def submit_postcard():
 def get_postcard(id):
     try:
         postcard = Postcard.query.get_or_404(id)
+        print(postcard.gif_name, id)
         return jsonify({
             "id": postcard.id,
             "gif_name": postcard.gif_name,
             "png_name": postcard.gif_name.replace('.gif', '.png'),
             "name": postcard.name,
             "comment": postcard.comment,
-            "timestamp": postcard.timestamp.isoformat(),
+            "timestamp": postcard.timestamp.strftime("%Y년 %m월 %d일에 함께한") + f"{postcard.id}번째 춤",
             "number": postcard.number
         }), 200
 
@@ -217,7 +219,7 @@ def get_postcards():
                 "png_name": postcard.gif_name.replace('.gif', '.png'),
                 "name": postcard.name,
                 "comment": postcard.comment,
-                "timestamp": postcard.timestamp.isoformat(),
+                "timestamp": postcard.timestamp.strftime("%Y년 %m월 %d일에 함께한") + f"{postcard.id}번째 춤",
                 "number": postcard.number
             }
             for postcard in postcards
