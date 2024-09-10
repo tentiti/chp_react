@@ -7,6 +7,8 @@ import GlbTest from './components/GlbTest';
 import PlaceSelection from './components/PlaceSelection';
 import PostcardCreation from './components/PostcardCreation';
 import PostcardView from './components/PostcardView';
+import PostcardShareView from './components/PostcardShareView';
+
 // import GlbViewer from './components/GlbViewer';
 import { ThreeProvider } from './components/ThreeContext'; 
 
@@ -27,6 +29,7 @@ function App() {
           <Route path="/postcardcreation" element={<PostcardCreation />} />
           {/* PostcardView를 위한 라우트 설정 */}
           <Route path="/postcardview/:id" element={<PostcardView />} />
+          <Route path="/postcardshareview/:id" element={<PostcardShareView />} />
           {/* <Route path="/GlbViewer" element={<GlbViewer />} /> */}
         </Routes>
       </Router>

@@ -154,26 +154,41 @@ const PostcardShareView = () => {
       }}>
         <Header title={`'${postcard.name}'의 춤사위`} />
       </div>
+      <img 
+            src="/static/stockimages/sharebackground.png" 
+            alt="Postcard Background" 
+            style={{
+              position: 'fixed',
+              top: '58px',
+              width:'100vw',
+              height:'auto',
+              backgroundSize: 'cover', // Ensures the image covers the entire container
+              backgroundPosition: 'center', // Centers the image
+              zIndex: '-1',
+            }}
+      />
 
       <div id="createdImages" style={{
         position: 'fixed',
         top: '58px',
         width: '100vw',
         height: 'calc(100% - 58px)',
-        backgroundColor: 'white',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'flex-start'
+        justifyContent: 'flex-start',
+        backgroundImage: '/static/stockimages/sharebackground.png',
       }}>
+
         <div style={{
-          marginTop: '70px',
+          marginTop: '100px',
+          zIndex: '1',
         }}>
           <div
             ref={videoContainerRef}
             style={{
-              width: '310px',
-              height: '390px',
+              width: '300px',
+              height: '380px',
               margin: '0 auto',
               backgroundImage: `url(${backgrounds[postcard.number]})`,
               backgroundSize: 'cover',
@@ -186,7 +201,7 @@ const PostcardShareView = () => {
                 alt="GIF"
                 style={{
                   position: 'absolute',
-                  top: '254px',
+                  top: '270px',
                   left: '96px',
                   transform: 'translate(-50%, -50%)',
                   width: '116px',
@@ -199,26 +214,35 @@ const PostcardShareView = () => {
       
         <div
           style={{
-            marginTop: '20px',
-            width: '100vw',
-            color: 'white',
-            fontSize: '20px',
+            marginTop: '-3px',
+            width: '80vw',
+            color: '#412823', // Moved this up since it was declared twice
+            fontSize: '16px',
             textAlign: 'center',
-            fontFamily:'Cafe24Simplehae, sans-serif',
-            backgroundColor: 'salmon',
+            lineHeight: '1.6',
+            fontFamily: 'Cafe24Simplehae, sans-serif',
+            wordWrap: 'break-word', // Ensures words break to the next line if too long
+            overflowWrap: 'break-word', // Ensures long words or strings (e.g., URLs) will wrap
+            whiteSpace: 'normal', // Ensures text wraps normally
+            overflow: 'hidden', // Optional: prevents overflow of content
           }}
         >
-          내용 {postcard.comment}
+          {/* 내용 */}
+          {postcard.comment}
         </div>
+
 
         <div
           style={{
-            width: '100vw',
-            color: 'white',
-            fontSize: '20px',
+            marginTop: '5px',
+            width: '80vw',
+            color: '#412823', // Moved this up since it was declared twice
+            fontSize: '8px',
             textAlign: 'center',
-            fontFamily:'Cafe24Simplehae, sans-serif',
-            backgroundColor: 'salmon',
+            lineHeight: '1.6',
+            fontFamily: 'Cafe24Simplehae, sans-serif',
+            wordWrap: 'break-word', // Ensures words break to the next line if too long// Ensures text wraps normally
+            overflow: 'hidden', // Optional: prevents overflow of content
           }}
         >
           {postcard.timestamp}
@@ -226,79 +250,29 @@ const PostcardShareView = () => {
 
         <div
           style={{
-            marginTop: '12px',
-            width: '100vw',
-            color: 'white',
-            fontSize: '20px',
-            textAlign: 'center',
-            fontFamily:'Cafe24Simplehae, sans-serif',
-            backgroundColor: 'salmon',
+            marginTop: '14px',
+            width: 'calc(100vw - 250px)', // Subtract 250px from the full width
+            color: '#412823', // Moved color up since it was declared twice
+            fontSize: '8px',
+            fontFamily: 'pretandard, sans-serif',
+            position: 'relative', // Use relative positioning for left offset
+            left: '105px', // Offset from the left
+            textAlign: 'center', // Centers the text within the remaining space
           }}
         >
-          이름 {postcard.name}
+          {postcard.name}
         </div>
 
-        <div style={{ textAlign: 'center'}}>
-          {!isRecording && (
-            <button onClick={startRecording}>
-              Start Recording
-            </button>
-          )}
-          {recordingBlob && (
-            <button onClick={shareRecording}>
-              Share or Download Video
-            </button>
-          )}
-        </div>
+
+      <footer>
+        <div>2024. 10. 12 - 10.29.</div>
+        <div className="footerBorder">|</div>
+        <a href="https://google.com">김화순 개인전</a>
+        <div className="footerBorder">|</div>
+        <a href="https://google.com">자하미술관</a>
+      </footer>
       </div>
 
-      <div id="footer" style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        height: '80px',
-        backgroundColor: '#F8F6F1',
-        borderTop: '1px solid #E6E1DC',
-      }}>
-        <button
-          style={{
-            position: 'absolute',
-            left: '50%',
-            bottom: '20px',
-            transform: 'translateX(-50%)',
-            width: '170px',
-            height: '35px',
-            backgroundColor: '#F8F6F1',
-            border: '1px solid #E6E1DC',
-            color: '#412823',
-            boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.25)',
-            fontSize: '16px',
-            cursor: 'pointer',
-          }}
-        >
-          저장하기
-        </button>
-
-        <button
-          style={{
-            position: 'absolute',
-            left: '50%',
-            bottom: '20px',
-            transform: 'translateX(-50%)',
-            width: '170px',
-            height: '35px',
-            backgroundColor: '#F8F6F1',
-            border: '1px solid #E6E1DC',
-            color: '#412823',
-            boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.25)',
-            fontSize: '16px',
-            cursor: 'pointer',
-          }}
-        >
-          인스타그램 공유하기
-        </button>
-      </div>
     </div>
   );
 };
