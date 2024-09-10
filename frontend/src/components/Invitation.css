@@ -85,8 +85,8 @@ header .titleArea > div:last-child {
 }
 
 #inv_text {
-  top: 80px; /* 하단 여백 추가 */
-  height: calc(80vh - 170px); /* 하단 여백 추가 */
+  top: 40px; /* 하단 여백 추가 */
+  height: calc(80vh - 150px); /* 하단 여백 추가 */
   overflow-y: scroll;
   position: relative;
   color: white;
@@ -133,4 +133,15 @@ canvas {
   color: #f8f6f1;
   background: #ed9a9a;
   border: 1px solid #e6e1dc;
+}
+
+.background-wrapper {
+  opacity: 0;
+  transform: translateX(100%); /* 오른쪽에서 시작 */
+  transition: transform 0.7s ease-out, opacity 0.7s ease-out; /* 애니메이션 속도 및 효과 설정 */
+}
+
+.background-wrapper.slide-in {
+  opacity: 1;
+  transform: translateX(0); /* 왼쪽으로 슬라이드 */
 }

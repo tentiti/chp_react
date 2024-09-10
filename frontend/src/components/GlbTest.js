@@ -72,7 +72,7 @@ const GlbTest = () => {
     { name: 'Blue', value: '#83C0AA' },
     { name: 'Indigo', value: '#9C746C' },
     { name: 'Violet', value: '#7A6565' },
-    { name: 'Black', value: 'black' },
+    { name: 'Black', value: '#000000' },
   ];
 
   const selectCategory = (category) => {
@@ -85,16 +85,6 @@ const GlbTest = () => {
       [categoryName]: color,
     }));
   };
-
-  //카메라 위치
-  const CAMERA_POSITIONS = {
-    HEAD: { x: 0, y: 2, z: 5 },
-    TOP: { x: 0, y: 1, z: 5 },
-    BOTTOM: { x: 0, y: -1, z: 5 },
-    SHOES: { x: 0, y: -2, z: 5 },
-    ACCESSORY: { x: 1, y: 1, z: 4 },
-    EXPRESSION: { x: 0, y: 2.5, z: 6 },
-  };
   
   const [initialCameraPosition, setInitialCameraPosition] = useState(null);
 
@@ -106,7 +96,7 @@ const GlbTest = () => {
   const [expressionIsErasing, setExpressionIsErasing] = useState(false); // 지우개 여부
   const expressionCanvasRef = useRef(null); // 표정을 그리는 캔버스  
 
-  //색상 변경 함수
+  //캔버스 색상 변경 함수
   const clearCanvasWithColor = (color) => {
     const ctx = expressionCanvasRef.current.getContext('2d');
     ctx.fillStyle = color; // 선택한 색상으로 설정
@@ -121,8 +111,6 @@ const GlbTest = () => {
   };
 
 
-
-
   const loadModel = useCallback((modelPath, categoryName, useColor = false, onLoad) => {
     const loader = new GLTFLoader();
 
@@ -133,7 +121,6 @@ const GlbTest = () => {
       setIsDressSelected(false); // 다른 상의를 선택하면 하의 활성화
     }
   
-
     modelsRef.current = modelsRef.current.filter((item) => {
       if (item.categoryName === categoryName) {
         sceneRef.current.remove(item.model);
@@ -243,14 +230,13 @@ const GlbTest = () => {
     };
 
     initThreeJS();
-    loadModel('/static/models/body__animated_test.glb', 'Base', false, () => setLoadingStatus('Loaded Successfully'));
+    loadModel('/static/models/animating.glb', 'Base', false, () => setLoadingStatus('Loaded Successfully'));
 
     const animate = () => {
       requestAnimationFrame(animate);
     
       const delta = clockRef.current.getDelta();
       modelsRef.current.forEach(({ mixer }) => mixer.update(delta));
-
 
       // OrbitControls 업데이트
       if (controlsRef.current) {
@@ -291,29 +277,152 @@ const GlbTest = () => {
       }
     });
   };
+
   const { setVideoFile } = useVideo(); // 파일 저장 함수
 
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const blobUrl = URL.createObjectURL(file);
-      setVideoFile(blobUrl); // blob URL을 Context에 저장
-    }
+  const startRecordingWithBackgrounds = async (setVideoFile) => {
+    const backgroundImages = [
+      '/static/backgrounds/bg1.png', // 첫 번째 배경 이미지
+      '/static/backgrounds/bg2.png', // 두 번째 배경 이미지
+      '/static/backgrounds/bg3.png', // 세 번째 배경 이미지
+    ];
+  
+    const modelPositions = [
+      { x: 50, y: 100, width: 150, height: 200 }, // 첫 번째 위치 및 크기
+      { x: 60, y: 110, width: 160, height: 210 }, // 두 번째 위치 및 크기
+      { x: 70, y: 120, width: 170, height: 220 }, // 세 번째 위치 및 크기
+    ];
+  
+    // 비동기 방식으로 모든 배경의 MP4 녹화를 시작하고, 각각의 MP4 파일을 setVideoFile로 넘김
+    const mp4Files = await Promise.all(backgroundImages.map((bgImage, index) =>
+      startRecordingForBackground(bgImage, modelPositions[index])
+    ));
+  
+    // MP4 파일 모두 setVideoFile로 전달
+    mp4Files.forEach((mp4Blob, index) => {
+      setVideoFile(mp4Blob, `animation_recording_${index + 1}.mp4`);
+    });
   };
   
-  const startRecording = () => {
-    if (!initialCameraPosition) {
-      setInitialCameraPosition(cameraRef.current.position.clone()); // 초기 카메라 위치 저장
+  const startRecordingForBackground = async (backgroundImageSrc, { x, y, width, height }) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 393;
+    canvas.height = 491;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  
+    const duration = 15; // 15초 동안 녹화
+    const fps = 60; // 프레임 속도는 60fps로 설정
+    const totalFrames = duration * fps;
+    let frameCount = 0;
+  
+    const backgroundImage = new Image();
+    backgroundImage.src = backgroundImageSrc;
+  
+    const loadImage = () => {
+      return new Promise((resolve) => {
+        backgroundImage.onload = () => resolve(backgroundImage);
+      });
+    };
+  
+    await loadImage(); // 배경 이미지가 로드될 때까지 대기
+  
+    // 배경 이미지 크기를 비율에 맞게 조정
+    const { targetWidth, targetHeight, offsetX, offsetY } = getImageFitDimensions(
+      backgroundImage.width,
+      backgroundImage.height,
+      canvas.width,
+      canvas.height
+    );
+  
+    // MP4 녹화 시작
+    const stream = canvas.captureStream(fps);
+    const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/mp4' });
+  
+    let mp4Chunks = [];
+  
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        mp4Chunks.push(event.data);
+      }
+    };
+  
+    return new Promise((resolve) => {
+      mediaRecorder.onstop = () => {
+        const mp4Blob = new Blob(mp4Chunks, { type: 'video/mp4' });
+        resolve(mp4Blob); // MP4 파일 Blob을 반환
+      };
+  
+      mediaRecorder.start(); // MP4 녹화 시작
+  
+      setTimeout(() => {
+        mediaRecorder.stop(); // 15초 후 녹화 중지
+      }, duration * 1000);
+  
+      // 캡처 및 애니메이션 처리
+      const captureFrame = () => {
+        if (frameCount < totalFrames) {
+          const delta = 1 / fps;
+          modelsRef.current.forEach(({ mixer }) => mixer.update(delta));
+  
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(
+            backgroundImage,
+            0,
+            0,
+            backgroundImage.width,
+            backgroundImage.height,
+            offsetX,
+            offsetY,
+            targetWidth,
+            targetHeight
+          ); // 비율에 맞춰 배경 이미지 그리기
+  
+          // 모델 렌더링
+          hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
+  
+          // 캐릭터를 x, y 좌표에 렌더링
+          ctx.drawImage(hiddenCanvasRef.current, x, y, width, height);
+  
+          frameCount++;
+          requestAnimationFrame(captureFrame);
+        }
+      };
+  
+      captureFrame(); // 프레임 캡처 시작
+    });
+  };
+  
+  // 배경 이미지 크기 비율 맞추기 함수
+  const getImageFitDimensions = (imgWidth, imgHeight, canvasWidth, canvasHeight) => {
+    const imgAspectRatio = imgWidth / imgHeight;
+    const canvasAspectRatio = canvasWidth / canvasHeight;
+  
+    let targetWidth, targetHeight, offsetX, offsetY;
+  
+    if (imgAspectRatio > canvasAspectRatio) {
+      // 이미지가 더 넓음
+      targetWidth = canvasWidth;
+      targetHeight = canvasWidth / imgAspectRatio;
+      offsetX = 0;
+      offsetY = (canvasHeight - targetHeight) / 2;
+    } else {
+      // 이미지가 더 높음
+      targetHeight = canvasHeight;
+      targetWidth = canvasHeight * imgAspectRatio;
+      offsetX = (canvasWidth - targetWidth) / 2;
+      offsetY = 0;
     }
-    setIsRecording(true);
-    setIsSplashVisible(true);
-    resetAndStartAnimation();
-
+  
+    return { targetWidth, targetHeight, offsetX, offsetY };
+  };
+  
+  // GIF 생성 로직 (기존 코드 그대로 유지)
+  const startGifRecording = () => {
     const canvas = document.createElement('canvas');
     canvas.width = 400;
     canvas.height = 400;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
-
+  
     const gif = new GIF({
       workers: 2,
       quality: 10,
@@ -321,52 +430,24 @@ const GlbTest = () => {
       height: 400,
       transparent: 'rgba(0,0,0,0)',
     });
-
-    const duration = 5;
-    const fps = 30;
+  
+    const duration = 5; // 녹화 시간
+    const fps = 30; // 초당 프레임
     const totalFrames = duration * fps;
     let frameCount = 0;
-
-      // WebM 관련 추가 코드
-  const stream = hiddenCanvasRef.current.captureStream(fps);
-  const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
   
-  // WebM 파일 데이터를 저장할 배열을 선언 (에러 해결)
-  let webmChunks = [];
-
-  mediaRecorder.ondataavailable = (event) => {
-    if (event.data.size > 0) {
-      webmChunks.push(event.data); // 녹화된 WebM 데이터 저장
-    }
-  };
-
-  mediaRecorder.onstop = () => {
-    const webmBlob = new Blob(webmChunks, { type: 'video/webm' });
-    const webmUrl = URL.createObjectURL(webmBlob);
-
-    // WebM 파일을 로컬 저장소에 다운로드
-    const a = document.createElement('a');
-    a.href = webmUrl;
-    a.download = 'animation_recording.webm';
-    a.click();
-
-    // WebM URL을 다른 페이지로 넘길 수 있게 처리
-    navigate('/place-selection', { state: { webmUrl } });
-  };
-
-  mediaRecorder.start(); // WebM 녹화 시작
-
+    const stream = hiddenCanvasRef.current.captureStream(fps);
+    const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/mp4' });
+  
     const captureFrame = () => {
       if (frameCount < totalFrames) {
         const delta = 1 / fps;
-        modelsRef.current.forEach(({ mixer }) => {
-          if (mixer) mixer.update(delta);
-        });
-
+        modelsRef.current.forEach(({ mixer }) => mixer.update(delta));
+  
         hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(hiddenCanvasRef.current, 0, 0);
-
+  
         gif.addFrame(ctx, { copy: true, delay: 1000 / fps });
         frameCount++;
         requestAnimationFrame(captureFrame);
@@ -374,30 +455,37 @@ const GlbTest = () => {
         gif.render();
       }
     };
-
+  
     gif.on('finished', async (blob) => {
-      setIsRecording(false);
-    
-      // GIF 업로드 처리
-      const gifUploadUrl = await uploadGif(blob);
-    
-      // WebM 파일의 URL 생성 (mediaRecorder.onstop에서 생성된 webmUrl 사용)
-      const webmUrl = URL.createObjectURL(new Blob(webmChunks, { type: 'video/webm' }));
-
-      if (gifUploadUrl && webmUrl) {
-        setIsSplashVisible(false);
-    
-        // navigate 함수로 gifUrl과 webmUrl을 함께 전달
-        navigate('/place-selection', { state: { gifUrl: gifUploadUrl } });
-      } else {
-        console.error('Failed to upload GIF or generate WebM URL');
-        setIsSplashVisible(false);
-      }
+      const gifUploadUrl = await uploadGif(blob); // GIF 업로드 처리
+      console.log('GIF Upload URL:', gifUploadUrl);
+  
+      // GIF 다운로드 트리거
+      const a = document.createElement('a');
+      const gifUrl = URL.createObjectURL(blob);
+      a.href = gifUrl;
+      a.download = 'animation_recording.gif';
+      a.click(); // 다운로드 트리거
     });
-    
-
-    captureFrame();
+  
+    captureFrame(); // GIF 프레임 캡처 시작
   };
+  
+  // GIF 및 MP4 녹화를 동시에 시작하고 MP4 파일을 setVideoFile로 넘김
+  const startRecording = async (setVideoFile) => {
+    console.log("Start recording initiated"); // 디버깅을 위한 로그
+    try {
+      await Promise.all([
+        startGifRecording(), // GIF 녹화
+        startRecordingWithBackgrounds(setVideoFile), // 3개의 MP4 녹화
+      ]);
+      console.log("Recording completed");
+    } catch (error) {
+      console.error("Error during recording:", error);
+    }
+  };
+  
+  
 
   const uploadGif = async (gifBlob) => {
     const formData = new FormData();
@@ -500,8 +588,10 @@ const GlbTest = () => {
     ctx.lineCap = 'round';
   
     if (expressionIsErasing) {
+      ctx.lineWidth = 20;
       ctx.strokeStyle = expressionDrawingColor; // 지우개 기능일 때 흰색으로 칠함
     } else {
+      ctx.lineWidth = 5;
       ctx.strokeStyle = '#000000';
     }
   
@@ -513,50 +603,53 @@ const GlbTest = () => {
 
   const applyExpressionTextureToModel = () => {
     const canvas = expressionCanvasRef.current;
-    const texture = new THREE.CanvasTexture(canvas); // Convert canvas to texture
+    const texture = new THREE.CanvasTexture(canvas);
+  
+    // Y축을 반전시키기 위해 flipY를 false로 설정
+    texture.flipY = false;
     texture.needsUpdate = true;
   
+    // 모델에 텍스처를 적용하는 로직
     modelsRef.current.forEach(({ model }) => {
-      // 모델의 모든 자식 객체 탐색
       model.traverse((child) => {
-        // 'head'라는 부모를 확인
-        if (child.name === 'head') {
-          // 'head'의 자식에서 'sphere001'을 찾음
-          child.children.forEach(sphereMesh => {
-            if (sphereMesh.name === 'Sphere001') {
-              // UV 좌표가 있는지 확인하고 없으면 기본 UV 추가
-              if (sphereMesh.geometry && sphereMesh.geometry.attributes) {
-                if (!sphereMesh.geometry.attributes.uv) {
-                  console.warn("UV attributes are missing, generating default UVs.");
-                  const geometry = sphereMesh.geometry;
+        if (child.name === 'metarig') {
+          const head = child.getObjectByName('head001');
+          if (head) {
+            const mesh3 = head;
+            if (mesh3) {
+              // UV 좌표가 없을 경우 기본 UV 좌표 생성
+              if (mesh3.geometry && mesh3.geometry.attributes) {
+                if (!mesh3.geometry.attributes.uv) {
+                  const geometry = mesh3.geometry;
                   const uv = new Float32Array(geometry.attributes.position.count * 2);
   
+                  // UV 좌표 생성 로직 (y축 반전 적용)
                   for (let i = 0; i < uv.length; i += 2) {
-                    uv[i] = (i / 2) % 2; // u 값
-                    uv[i + 1] = Math.floor((i / 2) / 2); // v 값
+                    uv[i] = (i / 2) % 2;
+                    uv[i + 1] = Math.floor((i / 2) / 2); // 반전된 y좌표
                   }
   
                   geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
                   geometry.attributes.uv.needsUpdate = true;
                 }
   
-                // 재질이 없다면 새 재질 할당
-                if (!sphereMesh.material) {
-                  sphereMesh.material = new THREE.MeshBasicMaterial();
+                // 텍스처 적용
+                if (!mesh3.material) {
+                  mesh3.material = new THREE.MeshBasicMaterial();
                 }
   
-                // 텍스처 적용
-                sphereMesh.material.map = texture;
-                sphereMesh.material.needsUpdate = true;
+                mesh3.material.map = texture;
+                mesh3.material.needsUpdate = true;
               } else {
-                console.warn("Geometry or geometry attributes are undefined for sphere mesh.");
+                console.warn("Geometry or geometry attributes are undefined for mesh3.");
               }
             }
-          });
+          }
         }
       });
     });
   };
+
   
 
     useEffect(() => {
@@ -757,27 +850,33 @@ const GlbTest = () => {
       </div>
 
       {/* 그리기 캔버스 */}
-      <canvas
-        ref={expressionCanvasRef}
-        width='calc(100vw - 30px)' height="190" // 캔버스 내부 크기
-        style={{
-          backgroundColor: '#fff',
-          border: '1px solid black',
-          width: 'calc(100vw - 30px)',  // 전체 가로 너비에서 양쪽 10px씩 여백
-          height: '190px',  // 고정된 높이 설정
-          margin: '0 5px',  // 좌우에 10px 여백
-          display: 'block',  // 중앙 정렬을 위해 block 요소로 설정
-          boxSizing: 'border-box',  // 패딩과 보더 포함된 크기 계산
-        }}
-        // 마우스 이벤트
-        onMouseDown={startExpressionDrawing}
-        onMouseMove={drawExpression}
-        onMouseUp={finishExpressionDrawing}
-        // 터치 이벤트
-        onTouchStart={startExpressionDrawing}
-        onTouchMove={drawExpression}
-        onTouchEnd={finishExpressionDrawing}
-      />
+      <div
+  style={{
+    position: 'relative',
+    width: 'calc(100vw - 30px)',  // 너비를 원하는 크기로 설정
+    height: '190px',  // 고정된 높이
+    overflow: 'hidden',  // 초과된 부분을 숨기기
+  }}
+>
+  <canvas
+    ref={expressionCanvasRef}
+    style={{
+      width: '100%',  // 부모 요소의 가로 너비에 맞춤
+      height: '100%',  // 부모 요소의 세로 높이에 맞춤
+      aspectRatio: '1 / 1',  // 정사각형 비율 유지
+      display: 'block',  // 블록 요소로 설정하여 크기 제어
+    }}
+    // 마우스 이벤트
+    onMouseDown={startExpressionDrawing}
+    onMouseMove={drawExpression}
+    onMouseUp={finishExpressionDrawing}
+    // 터치 이벤트
+    onTouchStart={startExpressionDrawing}
+    onTouchMove={drawExpression}
+    onTouchEnd={finishExpressionDrawing}
+  />
+</div>
+
 
 
       </>

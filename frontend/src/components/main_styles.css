@@ -26,12 +26,12 @@ body {
 
 .container {
   padding-top: 58px;
-  padding-bottom: 70px; /* footer의 높이만큼 패딩 추가 */
+  padding-bottom: 70px;
   position: relative;
   opacity: 1;
   transition: opacity 0.5s ease;
   z-index: 1000;
-  height: calc(100vh - 128px); /* 헤더와 푸터의 높이를 뺀 값 */
+  height: calc(100vh - 128px);
   overflow-y: auto;
 }
 
@@ -55,7 +55,7 @@ body {
 
 .titleArea {
   display: flex;
-  justify-content: space-between; /* 텍스트와 메뉴 버튼을 양쪽 끝에 배치 */
+  justify-content: space-between;
   align-items: center;
   padding: 0 15px;
   width: 100%;
@@ -64,16 +64,16 @@ body {
 
 .mainImage {
   background-color: #f8f6f1;
-  margin: 0; /* 상하 좌우의 기본 마진 제거 */
-  padding: 0; /* 상하 좌우의 기본 패딩 제거 */
+  margin: 0;
+  padding: 0;
   z-index: 1000;
 }
 
 .mainImage img {
-  margin: 0; /* 이미지의 상하 좌우 마진 제거 */
-  padding: 0; /* 이미지의 상하 좌우 패딩 제거 */
+  margin: 0;
+  padding: 0;
   width: 100%;
-  display: block; /* 이미지 주변의 여백을 제거하기 위해 block으로 변경 */
+  display: block;
 }
 
 .image-grid {
@@ -82,7 +82,7 @@ body {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   background-color: #412823;
-  gap: 1px; /* 이미지 사이 간격 설정 */
+  gap: 1px;
   padding: 1px 0;
 }
 
@@ -134,14 +134,15 @@ footer * {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  z-index: 10000; /* 다른 요소를 덮지 않도록 조정 */
-  background-size: cover; /* 배경 이미지가 항상 꽉 차도록 설정 */
-  background-position: center; /* 이미지가 가운데 정렬되도록 설정 */
+  z-index: 10000;
+  background-size: cover;
+  background-position: center;
+  transition: left 0.1s ease-in-out, top 0.1s ease-in-out,
+    background-color 0.3s ease-in-out;
 }
 
 @keyframes floating-animation {
@@ -157,22 +158,17 @@ footer * {
 }
 
 #content {
-  opacity: 0; /* 초기값을 0으로 설정 */
-  transition: opacity 0.5s ease-in-out; /* 트랜지션 설정 */
-  overflow-y: scroll; /* 스크롤 가능하게 설정 */
-}
-
-.floating {
-  transition: left 0.1s ease-in-out, top 0.1s ease-in-out,
-    background-color 0.3s ease-in-out;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+  overflow-y: scroll;
 }
 
 #content.fade-in {
-  animation: fadeIn 0.5s ease-in-out forwards;
+  animation: fadeIn 1s ease-in-out forwards;
 }
 
 #content.fade-out {
-  animation: fadeOut 0.5s ease-in-out forwards;
+  animation: fadeOut 1s ease-in-out forwards;
 }
 
 @keyframes fadeIn {
@@ -193,24 +189,32 @@ footer * {
   }
 }
 
-/* 기본 상태에서 이미지가 투명해지지 않도록 설정 */
 #mainBanner {
-  width: 100%; /* 이미지가 부모 요소 크기에 맞게 조정됨 */
+  width: 100%;
   height: auto;
   opacity: 1;
-  transition: opacity 1s ease-in-out;
+  transition: opacity 0.7s ease-in-out;
 }
 
-/* 페이드 아웃 효과 */
 #mainBanner.fade-out {
   opacity: 0;
 }
 
 a {
-  color: inherit; /* 부모 요소의 색상을 상속받게 설정 */
+  color: inherit;
 }
 
 a:active,
 a:focus {
-  color: #f59191; /* 부모 요소의 색상을 상속받게 설정 */
+  color: #f59191;
+}
+
+/* 슬라이드 애니메이션 정의 */
+.container {
+  transition: transform 0.5s ease-out;
+  transform: translateX(0);  /* 초기 위치 */
+}
+
+.container.slide-out {
+  transform: translateX(-100%);  /* 왼쪽으로 슬라이드 아웃 */
 }

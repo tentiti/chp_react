@@ -5,6 +5,14 @@ import './main_styles.css';
 function Home() {
   const containerRef = useRef(null);
   const [postcards, setPostcards] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);  // 추가된 상태
+  const [fade, setFade] = useState(true);  // 이미지 페이드 효과를 위한 상태
+
+  const bannerImages = [
+    '/static/stockimages/mainbanner1.png',
+    '/static/stockimages/mainbanner2.png',
+    '/static/stockimages/mainbanner3.png'
+  ];  // 사용할 이미지 배열
 
   useEffect(() => {
     // 포스트카드 목록을 서버에서 가져오기
@@ -16,6 +24,25 @@ function Home() {
         console.error("There was an error fetching the postcards!", error);
       });
 
+    // 배너 이미지 전환
+    const imageInterval = setInterval(() => {
+      setFade(false); // 페이드아웃 적용
+      setTimeout(() => {
+        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % bannerImages.length);
+        setFade(true);  // 페이드인 적용
+      }, 500);  // 페이드아웃 후 0.5초 뒤에 이미지 전환
+
+    }, 3000); // 3초마다 이미지 전환
+
+    return () => clearInterval(imageInterval); // 컴포넌트 언마운트 시 인터벌 정리
+  }, [bannerImages.length]);
+
+  // 이미지 로드 실패 시 처리
+  const handleImageError = (e, num) => {
+    e.target.src = `https://placehold.co/200x200?text=error! ${num}`;
+  };
+
+  useEffect(() => {
     // 페이지 로드 시 페이드 인 애니메이션 적용
     const content = document.getElementById('content');
     setTimeout(() => {
@@ -24,8 +51,8 @@ function Home() {
 
     const floatingButton = document.querySelector('.floating');
     if (floatingButton) {
-      const buttonWidth = 50;  // 버튼 너비
-      const buttonHeight = 50; // 버튼 높이
+      const buttonWidth = 60;  // 버튼 너비
+      const buttonHeight = 60; // 버튼 높이
   
       // 초기 위치 설정 시, 버튼 크기를 고려하여 화면 안에 랜덤하게 배치
       let posX = Math.random() * (window.innerWidth - buttonWidth);
@@ -69,12 +96,7 @@ function Home() {
             angle = Math.PI - angle;  // X축 경계에서 튕기기
             floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
             lastXCollision = true;
-  
-            // 충돌 발생 시의 좌표값과 경계값 로그 출력
-            // console.log('Image changed due to X boundary collision!');
-            // console.log(`posX: ${posX}, maxX: ${maxX}`);
           }
-          // posX가 음수이면 0으로 고정
           posX = Math.max(0, Math.min(posX, maxX));
         } else {
           lastXCollision = false;
@@ -86,12 +108,7 @@ function Home() {
             angle = -angle;  // Y축 경계에서 튕기기
             floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
             lastYCollision = true;
-  
-            // 충돌 발생 시의 좌표값과 경계값 로그 출력
-            // console.log('Image changed due to Y boundary collision!');
-            // console.log(`posY: ${posY}, maxY: ${maxY}`);
           }
-          // posY가 음수이면 0으로 고정
           posY = Math.max(0, Math.min(posY, maxY));
         } else {
           lastYCollision = false;
@@ -110,7 +127,6 @@ function Home() {
       floatingButton.style.width = `${buttonWidth}px`;
       floatingButton.style.height = `${buttonHeight}px`;
   
-      // // 무작위 움직임 시작
       requestAnimationFrame(moveFloatingButton);
   
       floatingButton.addEventListener('click', () => {
@@ -118,13 +134,12 @@ function Home() {
       });
     }
 
-  function logClickPosition(event) {
+    function logClickPosition(event) {
       const x = event.clientX;
       const y = event.clientY;
-      console.log(`Clicked at position: X = ${x}, Y = ${y}`);
+      // console.log(`Clicked at position: X = ${x}, Y = ${y}`);
     }
   
-    // 화면 어디서든 클릭하면 좌표 로깅
     window.addEventListener('click', logClickPosition);
 
     function initializeAjaxLinks() {
@@ -146,7 +161,6 @@ function Home() {
 
     initializeAjaxLinks();
 
-    // 새로 추가된 부분: 스크롤 관련 로직
     function adjustContainerHeight() {
       const header = document.querySelector('header');
       const footer = document.querySelector('footer');
@@ -163,7 +177,7 @@ function Home() {
     }
 
     function handleScroll(e) {
-      console.log('Scroll event:', e.target.scrollTop);
+      // console.log('Scroll event:', e.target.scrollTop);
     }
 
     function logHeights() {
@@ -187,11 +201,6 @@ function Home() {
     };
   }, []);
 
-  // 이미지 로드 실패 시 처리
-  const handleImageError = (e, num) => {
-    e.target.src = `https://placehold.co/200x200?text=Error${num}`;
-  };
-
   return (
     <div className="App">
       <div id="headerLoader">
@@ -213,7 +222,12 @@ function Home() {
       <div className="container" id="content" ref={containerRef}>
         <div id="ajax-content">
           <div className="mainImage">
-            <img id="mainBanner" src="/static/stockimages/mainbanner1.png" alt="main" />
+            <img 
+              id="mainBanner" 
+              src={bannerImages[currentImageIndex]} 
+              alt="main" 
+              className={`slider-image ${fade ? 'fade-in' : 'fade-out'}`}  // 조건부 클래스 적용
+            />
           </div>
 
           {/* Postcard Image Grid */}
