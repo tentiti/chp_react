@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import GIF from 'gif.js';
 import './CreateCharacter.css';
 import Header from './Header';
+import { useVideo } from './VideoContext.js'; // Context에서 가져옴
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -101,7 +102,7 @@ const GlbTest = () => {
   //표정 그리기 관련
   const GRAYSCALE_COLORS = ['#FFFFFF', '#E0E0E0', '#C0C0C0', '#808080', '#404040', '#000000'];
 
-  const [expressionDrawingColor, setExpressionDrawingColor] = useState('#000000'); // 초기 색상: 검은색
+  const [expressionDrawingColor, setExpressionDrawingColor] = useState('#FFFFFF'); // 초기 색상: 검은색
   const [expressionIsErasing, setExpressionIsErasing] = useState(false); // 지우개 여부
   const expressionCanvasRef = useRef(null); // 표정을 그리는 캔버스  
 
@@ -290,7 +291,16 @@ const GlbTest = () => {
       }
     });
   };
+  const { setVideoFile } = useVideo(); // 파일 저장 함수
 
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const blobUrl = URL.createObjectURL(file);
+      setVideoFile(blobUrl); // blob URL을 Context에 저장
+    }
+  };
+  
   const startRecording = () => {
     if (!initialCameraPosition) {
       setInitialCameraPosition(cameraRef.current.position.clone()); // 초기 카메라 위치 저장
@@ -312,10 +322,39 @@ const GlbTest = () => {
       transparent: 'rgba(0,0,0,0)',
     });
 
-    const duration = 3;
+    const duration = 5;
     const fps = 30;
     const totalFrames = duration * fps;
     let frameCount = 0;
+
+      // WebM 관련 추가 코드
+  const stream = hiddenCanvasRef.current.captureStream(fps);
+  const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+  
+  // WebM 파일 데이터를 저장할 배열을 선언 (에러 해결)
+  let webmChunks = [];
+
+  mediaRecorder.ondataavailable = (event) => {
+    if (event.data.size > 0) {
+      webmChunks.push(event.data); // 녹화된 WebM 데이터 저장
+    }
+  };
+
+  mediaRecorder.onstop = () => {
+    const webmBlob = new Blob(webmChunks, { type: 'video/webm' });
+    const webmUrl = URL.createObjectURL(webmBlob);
+
+    // WebM 파일을 로컬 저장소에 다운로드
+    const a = document.createElement('a');
+    a.href = webmUrl;
+    a.download = 'animation_recording.webm';
+    a.click();
+
+    // WebM URL을 다른 페이지로 넘길 수 있게 처리
+    navigate('/place-selection', { state: { webmUrl } });
+  };
+
+  mediaRecorder.start(); // WebM 녹화 시작
 
     const captureFrame = () => {
       if (frameCount < totalFrames) {
@@ -338,17 +377,24 @@ const GlbTest = () => {
 
     gif.on('finished', async (blob) => {
       setIsRecording(false);
-
+    
+      // GIF 업로드 처리
       const gifUploadUrl = await uploadGif(blob);
+    
+      // WebM 파일의 URL 생성 (mediaRecorder.onstop에서 생성된 webmUrl 사용)
+      const webmUrl = URL.createObjectURL(new Blob(webmChunks, { type: 'video/webm' }));
 
-      if (gifUploadUrl) {
+      if (gifUploadUrl && webmUrl) {
         setIsSplashVisible(false);
+    
+        // navigate 함수로 gifUrl과 webmUrl을 함께 전달
         navigate('/place-selection', { state: { gifUrl: gifUploadUrl } });
       } else {
-        console.error('Failed to upload GIF');
+        console.error('Failed to upload GIF or generate WebM URL');
         setIsSplashVisible(false);
       }
     });
+    
 
     captureFrame();
   };

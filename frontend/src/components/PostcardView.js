@@ -3,10 +3,10 @@ import * as THREE from 'three';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import RecordRTC from 'recordrtc';
-import SuperGif from 'libgif';
-
+import { useVideo } from './VideoContext';
 
 const PostcardView = () => {
+  const { videoFile } = useVideo(); // Blob URL 가져오기
   const { id } = useParams();
   const [postcard, setPostcard] = useState(null);
   const [blobUrl, setBlobUrl] = useState(null); // State for storing the blob URL
@@ -15,7 +15,7 @@ const PostcardView = () => {
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
   const recorderRef = useRef(null);
-  const gifTextureRef = useRef(null);
+  const videoTextureRef = useRef(null); // Ref for video texture
 
   const updateCanvasSize = () => {
     const width = window.innerWidth; // 100vw
@@ -44,7 +44,7 @@ const PostcardView = () => {
     if (!postcard) return;
 
     const initThreeJS = async () => {
-      const { width, height } = updateCanvasSize(); // Updated canvas size
+      const { width, height } = updateCanvasSize();
 
       sceneRef.current = new THREE.Scene();
       cameraRef.current = new THREE.OrthographicCamera(
@@ -56,69 +56,37 @@ const PostcardView = () => {
       rendererRef.current.setSize(width, height);  // Set to dynamic size
       rendererRef.current.setPixelRatio(window.devicePixelRatio);  // Maintain quality across devices
       rendererRef.current.setClearColor(0xffffff);
-      
 
       // Background
       const loader = new THREE.TextureLoader();
-      const bgTexture = await loader.loadAsync(`/static/stockimages/bg${postcard.number + 1}.png`);
+      const bgTexture = await loader.loadAsync(`/static/stockimages/bg${postcard.number}.png`);
       const bgGeometry = new THREE.PlaneGeometry(width, height);
       const bgMaterial = new THREE.MeshBasicMaterial({ map: bgTexture });
       const bgMesh = new THREE.Mesh(bgGeometry, bgMaterial);
       sceneRef.current.add(bgMesh);
 
-      // GIF
-      if (postcard.gif_name) {
-        const gifUrl = `https://localhost:8000/uploads/${postcard.gif_name}`;
-        const gifFrames = await loadGif(gifUrl);
-        gifTextureRef.current = new THREE.DataTexture(
-          gifFrames[0].data,
-          gifFrames[0].width,
-          gifFrames[0].height,
-          THREE.RGBAFormat
-        );
-        gifTextureRef.current.flipY = true; // Fix upside-down issue
-        gifTextureRef.current.needsUpdate = true;
+      // WebM Video Texture (Using Blob directly)
+      if (videoFile) {
+        const videoUrl = URL.createObjectURL(videoFile); // Blob -> URL 변환
+        const video = document.createElement('video');
+        video.src = videoUrl;
+        video.crossOrigin = 'anonymous';
+        video.loop = true; // Loop the video
+        video.muted = true; // Mute the video if necessary
+        video.play(); // Auto-play the video
 
-        const gifGeometry = new THREE.PlaneGeometry(116, 150);
-        const gifMaterial = new THREE.MeshBasicMaterial({ map: gifTextureRef.current, transparent: true });
-        const gifMesh = new THREE.Mesh(gifGeometry, gifMaterial);
-        gifMesh.position.set(0, -10, 0.1);  // Adjust position as needed
-        sceneRef.current.add(gifMesh);
+        video.addEventListener('canplay', () => {
+          // Only after video is ready, apply it as a texture
+          videoTextureRef.current = new THREE.VideoTexture(video);
+          videoTextureRef.current.needsUpdate = true;
+          videoTextureRef.current.flipY = true;
 
-        // Animate GIF
-        let frameIndex = 0;
-        let lastFrameTime = performance.now();
-        let accumulatedTime = 0;  // 누적된 시간을 저장
-        
-        const animateGif = () => {
-          const currentTime = performance.now();
-          const elapsedTime = currentTime - lastFrameTime;
-          lastFrameTime = currentTime;  // 마지막 프레임 시간 업데이트
-          accumulatedTime += elapsedTime;  // 누적 시간을 증가
-        
-          const currentFrame = gifFrames[frameIndex];
-          const delayInMilliseconds = currentFrame.delay * 100;  // 센티초를 밀리초로 변환
-        
-          // 누적 시간이 현재 프레임의 지연 시간을 초과하면 프레임 전환
-          while (accumulatedTime >= delayInMilliseconds) {
-            frameIndex = (frameIndex + 1) % gifFrames.length;
-            gifTextureRef.current.image.data = gifFrames[frameIndex].data;
-            gifTextureRef.current.needsUpdate = true;
-            
-            accumulatedTime -= delayInMilliseconds;  // 초과된 시간을 차감
-          }
-        
-          // 다음 프레임을 요청
-          requestAnimationFrame(animateGif);
-        };
-        
-        // Start GIF animation
-        animateGif();
-        
-        
-        // Start GIF animation
-        animateGif();
-        
+          const videoGeometry = new THREE.PlaneGeometry(116, 150);
+          const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTextureRef.current, transparent: true });
+          const videoMesh = new THREE.Mesh(videoGeometry, videoMaterial);
+          videoMesh.position.set(0, -10, 0.1);
+          sceneRef.current.add(videoMesh);
+        });
       }
 
       // Text
@@ -131,7 +99,7 @@ const PostcardView = () => {
         ctx.fillStyle = 'black';
         ctx.textAlign = 'center';
         ctx.fillText(text, canvas.width / 2, 100);
-        
+
         const texture = new THREE.CanvasTexture(canvas);
         const geometry = new THREE.PlaneGeometry(width, 200);
         const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
@@ -155,53 +123,8 @@ const PostcardView = () => {
 
     window.addEventListener('resize', () => {
       const { width, height } = updateCanvasSize();
-
     });
-  }, [postcard]);
-
-  const loadGif = (url) => {
-    return new Promise((resolve) => {
-      const img = document.createElement('img');
-      img.src = url;
-  
-      // 이미지 숨기기
-      img.style.display = 'none';
-      document.body.appendChild(img); // Append img to the DOM temporarily
-  
-      const superGif = new SuperGif({
-        gif: img,
-        draw_while_loading: false,  // 로딩 중 그리지 않음
-        auto_play: false,           // 자동 재생 비활성화
-      });
-      superGif.load(() => {
-        const frames = [];
-        for (let i = 0; i < superGif.get_length(); i++) {
-          superGif.move_to(i);
-          const canvas = superGif.get_canvas();
-  
-          // 내부 캔버스 숨기기
-          canvas.style.display = 'none';
-  
-          const ctx = canvas.getContext('2d');
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  
-          frames.push({
-            data: new Uint8Array(imageData.data.buffer),
-            width: canvas.width,
-            height: canvas.height,
-            delay: 100// Default 100ms delay for each frame
-          });
-        }
-  
-        // 이미지와 내부 캔버스를 DOM에서 제거
-        // document.body.removeChild(img);
-  
-        resolve(frames);
-      });
-    });
-  };
-  
-  
+  }, [postcard, videoFile]);
 
   const startRecording = () => {
     const stream = canvasRef.current.captureStream(30);
@@ -214,20 +137,20 @@ const PostcardView = () => {
     recorder.startRecording();
     recorderRef.current = recorder;
 
-    setTimeout(() => stopRecording(), 10000);  // 3 seconds recording
+    setTimeout(() => stopRecording(), 10000);  // 10 seconds recording
   };
 
   const [recordedBlob, setRecordedBlob] = useState(null);
 
   const stopRecording = () => {
     if (recorderRef.current) {
-        recorderRef.current.stopRecording(() => {
-          const blob = recorderRef.current.getBlob();
-          const url = URL.createObjectURL(blob);
-          setBlobUrl(url);
-          setRecordedBlob(blob); // Store the actual blob
-        });
-      }
+      recorderRef.current.stopRecording(() => {
+        const blob = recorderRef.current.getBlob();
+        const url = URL.createObjectURL(blob);
+        setBlobUrl(url);
+        setRecordedBlob(blob); // Store the actual blob
+      });
+    }
   };
 
   const downloadVideo = () => {
@@ -270,17 +193,16 @@ const PostcardView = () => {
   return (
     <div>
       <canvas
-  ref={canvasRef}
-  style={{
-    position: 'absolute',   // 캔버스를 절대 위치로 설정
-    top: '120px',            // 상단에서 58px 만큼 띄움
-    left: '0',              // 화면 왼쪽에 맞춤
-    width: '100vw',         // 화면 너비를 100% 사용
-    height: 'calc(100vw * (16 / 9))',  // 9:16 비율을 유지하면서 높이를 설정
-    overflow: 'hidden'      // 넘침을 방지
-  }}
-/>
-
+        ref={canvasRef}
+        style={{
+          position: 'absolute',   // 캔버스를 절대 위치로 설정
+          top: '120px',            // 상단에서 58px 만큼 띄움
+          left: '0',              // 화면 왼쪽에 맞춤
+          width: '100vw',         // 화면 너비를 100% 사용
+          height: 'calc(100vw * (16 / 9))',  // 9:16 비율을 유지하면서 높이를 설정
+          overflow: 'hidden'      // 넘침을 방지
+        }}
+      />
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
         <button onClick={startRecording} style={{ marginRight: '10px' }}>
           Start Recording

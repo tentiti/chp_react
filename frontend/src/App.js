@@ -8,13 +8,13 @@ import PlaceSelection from './components/PlaceSelection';
 import PostcardCreation from './components/PostcardCreation';
 import PostcardView from './components/PostcardView';
 import PostcardShareView from './components/PostcardShareView';
+import { VideoProvider } from './components/VideoContext'; // Context Provider import
 
-// import GlbViewer from './components/GlbViewer';
-import { ThreeProvider } from './components/ThreeContext'; 
 
 
 function App() {
   return (
+    <VideoProvider>
       <Router>
         <Routes>
           {/* Home 컴포넌트는 기본 경로로 설정 */}
@@ -33,6 +33,8 @@ function App() {
           {/* <Route path="/GlbViewer" element={<GlbViewer />} /> */}
         </Routes>
       </Router>
+    </VideoProvider>
+
   );
 }
 

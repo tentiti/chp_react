@@ -46,7 +46,7 @@ const descriptions = [
 const PlaceSelection = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const gifUrl = location.state?.gifUrl; // Passed GIF URL
+    const { gifUrl } = location.state;
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [fadeIn, setFadeIn] = useState(true);
@@ -92,7 +92,7 @@ const PlaceSelection = () => {
 
     const handleSelectPlace = () => {
         console.log('Selected background:', currentIndex+1);
-        navigate('/postcardcreation', { state: { selectedBackground: currentIndex+1, gifUrl: gifUrl, models:location.state?.models} });
+        navigate('/postcardcreation', { state: { selectedBackground: currentIndex+1, gifUrl: gifUrl } });
     };
     
 
@@ -292,13 +292,12 @@ const PlaceSelection = () => {
                 <button 
                     onClick={scrollToTop} 
                     style={{ 
+                        marginTop:'20px',
                         padding: '10px 20px', 
                         fontSize: '16px', 
                         cursor: 'pointer',
-                        backgroundColor: '#fff',
+                        backgroundColor: '#F8F6F1',
                         border: 'none',
-                        borderRadius: '5px',
-                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)'
                     }}
                 >
                     장소 고르러 돌아가기

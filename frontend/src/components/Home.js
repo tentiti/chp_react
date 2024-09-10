@@ -22,21 +22,20 @@ function Home() {
       content.classList.add('fade-in');
     }, 10);
 
-    // 플로팅 버튼 및 기타 초기화 로직
     const floatingButton = document.querySelector('.floating');
     if (floatingButton) {
-      let posX = Math.random() * window.innerWidth;
-      let posY = Math.random() * window.innerHeight;
+      const buttonWidth = 50;  // 버튼 너비
+      const buttonHeight = 50; // 버튼 높이
+  
+      // 초기 위치 설정 시, 버튼 크기를 고려하여 화면 안에 랜덤하게 배치
+      let posX = Math.random() * (window.innerWidth - buttonWidth);
+      let posY = Math.random() * (window.innerHeight - buttonHeight);
       let speed = 2;
       let angle = Math.random() * 2 * Math.PI;  // 초기 방향 무작위 설정
-
-      const maxX = window.innerWidth - floatingButton.offsetWidth;
-      const maxY = window.innerHeight - floatingButton.offsetHeight - 30;
-
-      // 이미지 변경을 위한 변수
-      let lastImageChangeTime = 0;
-      const imageChangeInterval = 2000;  // 2초(2000ms)마다 이미지 변경
-
+  
+      const maxX = window.innerWidth - buttonWidth;
+      const maxY = window.innerHeight - buttonHeight - 30;
+  
       const buttonImages = [
         '/static/images/buttonImages/button1.png',
         '/static/images/buttonImages/button2.png',
@@ -47,57 +46,86 @@ function Home() {
         '/static/images/buttonImages/button7.png',
         '/static/images/buttonImages/button8.png'
       ];
-
+  
+      let lastXCollision = false;
+      let lastYCollision = false;
+  
       function getRandomButtonImage() {
         const randomIndex = Math.floor(Math.random() * buttonImages.length);
         return buttonImages[randomIndex];
       }
-
+  
       function moveFloatingButton() {
-        const currentTime = Date.now();  // 현재 시간 가져오기
-
         // 무작위로 방향 변경
         angle += (Math.random() - 0.5) * 0.1;
-
+  
         // 좌표 업데이트
         posX += Math.cos(angle) * speed;
         posY += Math.sin(angle) * speed;
-
-        // 경계 충돌 처리 및 이미지 변경 조건
-        if ((posX <= 30 || posX >= maxX) && currentTime - lastImageChangeTime > imageChangeInterval) {
-          angle = Math.PI - angle;  // X축 경계에서 튕기기
-          lastImageChangeTime = currentTime;  // 마지막 이미지 변경 시간 갱신
-          floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
-          console.log('Image changed X!');
+  
+        // X축 경계에서 튕기기 및 충돌 체크
+        if (posX < 0 || posX > maxX) {
+          if (!lastXCollision) {
+            angle = Math.PI - angle;  // X축 경계에서 튕기기
+            floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
+            lastXCollision = true;
+  
+            // 충돌 발생 시의 좌표값과 경계값 로그 출력
+            // console.log('Image changed due to X boundary collision!');
+            // console.log(`posX: ${posX}, maxX: ${maxX}`);
+          }
+          // posX가 음수이면 0으로 고정
+          posX = Math.max(0, Math.min(posX, maxX));
+        } else {
+          lastXCollision = false;
         }
-
-        if ((posY <= 60 || posY >= maxY) && currentTime - lastImageChangeTime > imageChangeInterval) {
-          angle = -angle;  // Y축 경계에서 튕기기
-          lastImageChangeTime = currentTime;  // 마지막 이미지 변경 시간 갱신
-          floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
-          console.log('Image changed Y!');
+  
+        // Y축 경계에서 튕기기 및 충돌 체크
+        if (posY < 0 || posY > maxY) {
+          if (!lastYCollision) {
+            angle = -angle;  // Y축 경계에서 튕기기
+            floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
+            lastYCollision = true;
+  
+            // 충돌 발생 시의 좌표값과 경계값 로그 출력
+            // console.log('Image changed due to Y boundary collision!');
+            // console.log(`posY: ${posY}, maxY: ${maxY}`);
+          }
+          // posY가 음수이면 0으로 고정
+          posY = Math.max(0, Math.min(posY, maxY));
+        } else {
+          lastYCollision = false;
         }
-
+  
         // 새로운 위치로 이동
         floatingButton.style.left = `${posX}px`;
         floatingButton.style.top = `${posY}px`;
-
+  
         requestAnimationFrame(moveFloatingButton);
       }
-
+  
       // 초기 이미지 설정
       floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
       floatingButton.style.backgroundSize = 'cover';
-      floatingButton.style.width = '50px';
-      floatingButton.style.height = '50px';
-
-      // 무작위 움직임 시작
+      floatingButton.style.width = `${buttonWidth}px`;
+      floatingButton.style.height = `${buttonHeight}px`;
+  
+      // // 무작위 움직임 시작
       requestAnimationFrame(moveFloatingButton);
-
+  
       floatingButton.addEventListener('click', () => {
         window.location.href = '/GlbTest';
       });
     }
+
+  function logClickPosition(event) {
+      const x = event.clientX;
+      const y = event.clientY;
+      console.log(`Clicked at position: X = ${x}, Y = ${y}`);
+    }
+  
+    // 화면 어디서든 클릭하면 좌표 로깅
+    window.addEventListener('click', logClickPosition);
 
     function initializeAjaxLinks() {
       document.body.addEventListener('click', function (event) {

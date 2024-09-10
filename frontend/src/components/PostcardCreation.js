@@ -29,14 +29,15 @@ const PostcardCreation = () => {
                 timestamp: currentTime,
                 selectedBackground
             };
+// 개발용 검증 무시
+            const response = await axios.post('/submit-postcard', postData);
+            // const response = await axios.post('/submit-postcard', postData, { httpsAgent: new https.Agent({ rejectUnauthorized: false }) });
 
-            const response = await axios.post('https://localhost:8000/submit-postcard', postData);
             console.log('sent:', postData);
             const postcardId = response.data.id; // 서버에서 반환된 ID
             console.log('Backend response:', response.data);
-            alert();
 
-            navigate(`/postcardview/${postcardId}`, { state: { models:location.state?.models} });
+            navigate(`/postcardview/${postcardId}`, { state: {  } });
 
         } catch (error) {
             console.error('Error submitting postcard:', error);
@@ -63,7 +64,7 @@ const PostcardCreation = () => {
                         width: '323px',
                         height: '532px',
                         left: '50%',
-                        top: '50%',
+                        top: '40%',
                         transform: 'translate(-50%, -50%)',
                     }}
                 />
@@ -73,7 +74,7 @@ const PostcardCreation = () => {
                     position: 'absolute',
                     width: '280px',
                     left: '50%',
-                    top: 'calc(50% - 195px)',
+                    top: 'calc(40% - 195px)',
                     transform: 'translateX(-50%)',
                     fontSize: '14px',
                     lineHeight: '1.9',
@@ -93,7 +94,7 @@ const PostcardCreation = () => {
                             width: '127px',
                             height: '158px',
                             left: '200px',
-                            top: '320px',
+                            top: 'calc(320px - 10%)',
                             backgroundImage: `url(https://placehold.co/127x158?text=${selectedBackground})`,
                             backgroundSize: 'cover',
                         }}
@@ -110,7 +111,7 @@ const PostcardCreation = () => {
                             width: '54px',
                             height: '70px',
                             left: '210px',
-                            top: '370px',
+                            top: 'calc(370px - 10%)',
                             objectFit: 'cover',
                         }}
                     />
@@ -121,7 +122,7 @@ const PostcardCreation = () => {
                     position: 'absolute',
                     width: '280px',
                     left: '50%',
-                    top: 'calc(50% + 107px',
+                    top: 'calc(40% + 107px',
                     transform: 'translateX(-50%)',
                     fontSize: '14px',
                     textAlign: 'center',
@@ -137,7 +138,7 @@ const PostcardCreation = () => {
                 <div style={{
                     position: 'absolute',
                     left: '50%',
-                    top: '310px',
+                    top: 'calc(340px  - 10%)',
                     transform: 'translateX(-50%)',
                     fontSize: '14px',
                     color: '#333',
@@ -159,16 +160,7 @@ const PostcardCreation = () => {
                             fontFamily: "Cafe24Simplehae"
                         }}
                     />
-                </div>
-                <div style={{
-                    position: 'absolute',
-                    left: '50%',
-                    top: '338px',
-                    transform: 'translateX(-50%)',
-                    fontSize: '14px',
-                    color: '#333',
-                    width: '280px'
-                }}>
+                    <br />
                     한마디 : 
                     <input
                         type="text"
@@ -178,6 +170,7 @@ const PostcardCreation = () => {
                         style={{
                             width: '76px',
                             marginLeft: '10px',
+                            marginTop: '10px',
                             border: 'none',
                             borderBottom: '1px solid #555',
                             background: 'transparent',
@@ -195,9 +188,9 @@ const PostcardCreation = () => {
                 <button
                     onClick={handleSubmit}
                     style={{
-                        position: 'absolute',
+                        position: 'fixed',
                         left: '50%',
-                        bottom: '5%',
+                        bottom: '10%',
                         transform: 'translateX(-50%)',
                         width: '170px',
                         height: '35px',

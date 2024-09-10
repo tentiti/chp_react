@@ -214,7 +214,7 @@ const PostcardShareView = () => {
       
         <div
           style={{
-            marginTop: '-3px',
+            marginTop: '-6px',
             width: '80vw',
             color: '#412823', // Moved this up since it was declared twice
             fontSize: '16px',
@@ -225,6 +225,7 @@ const PostcardShareView = () => {
             overflowWrap: 'break-word', // Ensures long words or strings (e.g., URLs) will wrap
             whiteSpace: 'normal', // Ensures text wraps normally
             overflow: 'hidden', // Optional: prevents overflow of content
+            minHeight:'53px',
           }}
         >
           {/* 내용 */}
@@ -250,7 +251,7 @@ const PostcardShareView = () => {
 
         <div
           style={{
-            marginTop: '14px',
+            marginTop: '15px',
             width: 'calc(100vw - 250px)', // Subtract 250px from the full width
             color: '#412823', // Moved color up since it was declared twice
             fontSize: '8px',

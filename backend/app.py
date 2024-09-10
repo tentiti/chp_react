@@ -1,15 +1,15 @@
-from PIL import Image, ImageDraw, ImageSequence
-import numpy as np
-import cv2
-from datetime import datetime
-import uuid
-import os
-from flask_socketio import SocketIO, emit
-from werkzeug.utils import secure_filename
-from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
-from flask import Flask, request, jsonify, send_from_directory, render_template, url_for
 import random
+from flask import Flask, request, jsonify, send_from_directory, render_template, url_for
+from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
+from werkzeug.utils import secure_filename
+from flask_socketio import SocketIO, emit
+import os
+import uuid
+from datetime import datetime
+import cv2
+import numpy as np
+from PIL import Image, ImageDraw, ImageSequence
 import eventlet
 eventlet.monkey_patch()
 
@@ -113,9 +113,9 @@ if not os.path.exists(app.config['IMAGE_UPLOAD_FOLDER']):
 
 # 배경 색상 설정 (number 값에 따라 결정)
 BACKGROUND_COLORS = {
-    1: (255, 0, 0),    # Red
-    2: (0, 255, 0),    # Green
-    3: (0, 0, 255)     # Blue
+    1: (102, 167, 178),    # Red
+    2: (188, 186, 191),    # Green
+    3: (229, 224, 157)     # Blue
 }
 
 
@@ -159,7 +159,7 @@ def submit_postcard():
                 overlay = Image.new('RGBA', random_frame.size)
                 draw = ImageDraw.Draw(overlay)
                 width, height = random_frame.size
-                radius = min(width, height) // 2  # 반지름을 이미지 크기의 절반으로 설정
+                radius = min(width, height) // 2 - 40  # 반지름을 이미지 크기의 절반으로 설정
                 center = (width // 2, height // 2)
                 color = BACKGROUND_COLORS[number] + (255,)  # 불투명한 색상으로 설정
                 draw.ellipse([center[0] - radius, center[1] - radius,
