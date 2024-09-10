@@ -1,19 +1,17 @@
+import random
+from flask import Flask, request, jsonify, send_from_directory, render_template, url_for
+from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
+from werkzeug.utils import secure_filename
+from flask_socketio import SocketIO, emit
+import os
+import uuid
+from datetime import datetime
+import cv2
+import numpy as np
+from PIL import Image, ImageDraw, ImageSequence
 import eventlet
 eventlet.monkey_patch()
-
-from PIL import Image, ImageDraw, ImageSequence
-import numpy as np
-import cv2
-from datetime import datetime
-import uuid
-import os
-from flask_socketio import SocketIO, emit
-from werkzeug.utils import secure_filename
-from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
-from flask import Flask, request, jsonify, send_from_directory, render_template, url_for
-import random
-
 
 
 # 필요한 경우 이벤트렛 패치
@@ -235,4 +233,4 @@ def get_postcards():
 
 if __name__ == '__main__':
     socketio.run(app, debug=True, host='0.0.0.0', port=8000,
-                 keyfile='/Users/hyungyulee/chp_react/backend/key.pem', certfile='/Users/hyungyulee/chp_react/backend/cert.pem')
+                 keyfile='/Users/hyungyulee/chp_react/backend/server.key', certfile='/Users/hyungyulee/chp_react/backend/server.cert')

@@ -6,8 +6,8 @@ import './placeselection.css'; // CSS 파일 불러오기
 
 const backgrounds = [
     "/static/stockimages/bg1.png",
-    "https://placehold.co/300x375?text=bg2",
-    "https://placehold.co/300x375?text=bg3"
+    "/static/stockimages/bg2.png",
+    "/static/stockimages/bg3.png",
 ];
 
 const descriptions = [
@@ -47,6 +47,7 @@ const PlaceSelection = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { gifUrl } = location.state;
+    console.log('GIF URL:', gifUrl);
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [fadeIn, setFadeIn] = useState(true);

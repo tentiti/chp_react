@@ -11,6 +11,9 @@ import { useVideo } from './VideoContext.js'; // Context에서 가져옴
 const API_URL = process.env.REACT_APP_API_URL;
 
 const GlbTest = () => {
+  const [gifUrl, setGifUrl] = useState(null);
+  const [videoFiles, setVideoFiles] = useState([]);
+  
   const navigate = useNavigate();
 
   //초대장 이미지 표시 관련
@@ -278,39 +281,68 @@ const GlbTest = () => {
     });
   };
 
-  const { setVideoFile } = useVideo(); // 파일 저장 함수
+  const { addVideoFile } = useVideo(); // addVideoFile 함수를 가져옵니다
 
-  const startRecordingWithBackgrounds = async (setVideoFile) => {
+  const startRecordingWithBackgrounds = async () => {
+    setIsRecording(true); // 녹화 시작
+    console.log("Recording started");
+  
     const backgroundImages = [
-      '/static/backgrounds/bg1.png', // 첫 번째 배경 이미지
-      '/static/backgrounds/bg2.png', // 두 번째 배경 이미지
-      '/static/backgrounds/bg3.png', // 세 번째 배경 이미지
+      '/static/stockimages/bg1.png',
+      '/static/stockimages/bg2.png',
+      '/static/stockimages/bg3.png',
     ];
   
     const modelPositions = [
-      { x: 50, y: 100, width: 150, height: 200 }, // 첫 번째 위치 및 크기
-      { x: 60, y: 110, width: 160, height: 210 }, // 두 번째 위치 및 크기
-      { x: 70, y: 120, width: 170, height: 220 }, // 세 번째 위치 및 크기
+      { x: 50, y: 100, width: 150, height: 200 },
+      { x: 60, y: 110, width: 160, height: 210 },
+      { x: 70, y: 120, width: 170, height: 220 },
     ];
   
-    // 비동기 방식으로 모든 배경의 MP4 녹화를 시작하고, 각각의 MP4 파일을 setVideoFile로 넘김
-    const mp4Files = await Promise.all(backgroundImages.map((bgImage, index) =>
-      startRecordingForBackground(bgImage, modelPositions[index])
-    ));
+    try {
+      // 비동기 방식으로 모든 배경의 MP4 녹화를 시작하고, 각각의 MP4 파일을 addVideoFile로 넘김
+      const mp4Files = await Promise.all(backgroundImages.map((bgImage, index) =>
+        startRecordingForBackground(bgImage, modelPositions[index])
+      ));
   
-    // MP4 파일 모두 setVideoFile로 전달
-    mp4Files.forEach((mp4Blob, index) => {
-      setVideoFile(mp4Blob, `animation_recording_${index + 1}.mp4`);
-    });
+      console.log("All recordings finished");
+  
+      // MP4 파일 모두 addVideoFile로 저장
+      mp4Files.forEach((mp4Blob, index) => {
+        const fileName = `animation_recording_${index + 1}.mp4`;
+  
+        // Blob이 생성되었는지 확인
+        console.log(`MP4 Blob for background ${index + 1}:`, mp4Blob);
+  
+        if (mp4Blob && mp4Blob.size > 0) {
+          console.log(`Blob size: ${mp4Blob.size} bytes`);
+        } else {
+          console.error('Blob is empty or not created correctly');
+          return;  // Blob이 제대로 생성되지 않았다면 다운로드 진행하지 않음
+        }
+  
+        // Blob을 addVideoFile로 저장
+        addVideoFile(mp4Blob);
+      });
+    } catch (error) {
+      console.error("Error during recording:", error);
+    } finally {
+      setIsRecording(false); // 녹화 종료
+      console.log("Recording stopped");
+    }
   };
   
+  
+  
   const startRecordingForBackground = async (backgroundImageSrc, { x, y, width, height }) => {
+    console.log('Starting recording for background:', backgroundImageSrc); // 추가된 로그
+
     const canvas = document.createElement('canvas');
     canvas.width = 393;
     canvas.height = 491;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
   
-    const duration = 15; // 15초 동안 녹화
+    const duration = 5; // 15초 동안 녹화
     const fps = 60; // 프레임 속도는 60fps로 설정
     const totalFrames = duration * fps;
     let frameCount = 0;
@@ -418,11 +450,12 @@ const GlbTest = () => {
   
   // GIF 생성 로직 (기존 코드 그대로 유지)
   const startGifRecording = () => {
+  return new Promise((resolve) => {
     const canvas = document.createElement('canvas');
     canvas.width = 400;
     canvas.height = 400;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  
+
     const gif = new GIF({
       workers: 2,
       quality: 10,
@@ -430,60 +463,66 @@ const GlbTest = () => {
       height: 400,
       transparent: 'rgba(0,0,0,0)',
     });
-  
+
     const duration = 5; // 녹화 시간
     const fps = 30; // 초당 프레임
     const totalFrames = duration * fps;
     let frameCount = 0;
-  
-    const stream = hiddenCanvasRef.current.captureStream(fps);
-    const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/mp4' });
-  
+
+    gif.on('finished', async (blob) => {
+      const gifUploadUrl = await uploadGif(blob); // GIF 업로드 처리
+      console.log('GIF Upload URL:', gifUploadUrl);
+
+      resolve(gifUploadUrl);  // Resolve with the gifUploadUrl once the upload is complete
+    });
+
     const captureFrame = () => {
       if (frameCount < totalFrames) {
         const delta = 1 / fps;
         modelsRef.current.forEach(({ mixer }) => mixer.update(delta));
-  
+
         hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(hiddenCanvasRef.current, 0, 0);
-  
+
         gif.addFrame(ctx, { copy: true, delay: 1000 / fps });
         frameCount++;
         requestAnimationFrame(captureFrame);
       } else {
-        gif.render();
+        gif.render();  // Trigger the 'finished' event when GIF is rendered
       }
     };
-  
-    gif.on('finished', async (blob) => {
-      const gifUploadUrl = await uploadGif(blob); // GIF 업로드 처리
-      console.log('GIF Upload URL:', gifUploadUrl);
-  
-      // GIF 다운로드 트리거
-      const a = document.createElement('a');
-      const gifUrl = URL.createObjectURL(blob);
-      a.href = gifUrl;
-      a.download = 'animation_recording.gif';
-      a.click(); // 다운로드 트리거
+
+    captureFrame(); // Start capturing GIF frames
+  });
+};
+
+const startRecording = async (setVideoFile) => {
+  console.log("Start recording initiated");
+
+  try {
+    // Wait for both GIF and MP4 recordings to finish
+    const gifUploadUrl = await startGifRecording();  // Return the gif URL directly
+    await startRecordingWithBackgrounds(setVideoFile);  // Handle MP4 recordings
+
+    console.log("Recording completed", gifUploadUrl);
+
+    // Access video files from context
+    const { videoFiles } = useVideo();
+
+    // After recording is done and GIF is uploaded, navigate to placeselection
+    navigate('/place-selection', {
+      state: {
+        gifUrl: gifUploadUrl,  // Use the returned gif URL directly
+        videoFiles: videoFiles,  // Pass the video files from context
+      },
     });
-  
-    captureFrame(); // GIF 프레임 캡처 시작
-  };
-  
-  // GIF 및 MP4 녹화를 동시에 시작하고 MP4 파일을 setVideoFile로 넘김
-  const startRecording = async (setVideoFile) => {
-    console.log("Start recording initiated"); // 디버깅을 위한 로그
-    try {
-      await Promise.all([
-        startGifRecording(), // GIF 녹화
-        startRecordingWithBackgrounds(setVideoFile), // 3개의 MP4 녹화
-      ]);
-      console.log("Recording completed");
-    } catch (error) {
-      console.error("Error during recording:", error);
-    }
-  };
+
+  } catch (error) {
+    console.error("Error during recording:", error);
+  }
+};
+
   
   
 
