@@ -14,7 +14,7 @@ const modelPositions = [
     { x: 67, y: 150, width: 147, height: 190 },
     { x: 168, y: 102, width: 147, height: 190 },
     { x: 196, y: 65, width: 147, height: 190 },
-];
+  ];
 
 const descriptions = [
     {
@@ -102,6 +102,7 @@ const PlaceSelection = () => {
         navigate('/postcardcreation', { state: { selectedBackground: currentIndex+1, gifUrl: gifUrl, videoFiles:videoFiles} });
     };
     
+    const currentModelPosition = modelPositions[currentIndex]; // 현재 인덱스에 맞는 위치 데이터 가져오기
 
     return (
         <div style={{
@@ -143,47 +144,51 @@ const PlaceSelection = () => {
                     justifyContent: 'flex-start', // 수직 정렬을 위로 조정
                     padding: '0 20px'
                 }}>
-
-                    <img 
-                        src={backgrounds[currentIndex]} // Dynamic background image
-                        alt="Background"
-                        style={{ 
-                            margin:'10px',
-                            width:'300px',
-                            height:'375px',
-                            objectFit: 'cover' }}
-                    />
-
-                    {gifUrl ? (
+                    <div id='images' style={{
+                        height:'375px',
+                    }}>
                         <img 
-                            src={gifUrl} 
-                            alt="Generated GIF" 
+                            src={backgrounds[currentIndex]} // Dynamic background image
+                            alt="Background"
                             style={{ 
-                                position:'relative',
-                                top: '-150px', 
-                                left: '10%', 
-                                transform: 'translate(-50%, -50%)', 
-                                width: '100px', 
-                                height: 'auto'
-                            }} 
+                                margin:'10px',
+                                width:'300px',
+                                height:'375px',
+                                objectFit: 'cover' }}
                         />
-                    ) : (                        
-                        <img 
-                            src="`url(https://placehold.co/127x158?text=${selectedBackground})`"
-                            alt="Generated GIF" 
-                            style={{ 
-                                position:'relative',
-                                top: '-150px', 
-                                left: '10%', 
-                                transform: 'translate(-50%, -50%)', 
-                                width: '100px', 
-                                height: 'auto'
-                            }} 
+
+                        {gifUrl ? (
+                            <img
+                            src={gifUrl}
+                            alt="Generated GIF"
+                            style={{
+                            position: 'absolute',
+                            top: `${currentModelPosition.y}px`,
+                            left: `${currentModelPosition.x}px`,
+                            width: `${currentModelPosition.width}px`,
+                            height: `${currentModelPosition.height}px`,
+                            objectFit: 'contain',
+                            }}
                         />
-                    )}
+                        ) : (                        
+                            <img 
+                                src="`url(https://placehold.co/127x158?text=${selectedBackground})`"
+                                alt="Generated GIF" 
+                                style={{ 
+                                    position:'relative',
+                                    top: '-150px', 
+                                    left: '10%', 
+                                    transform: 'translate(-50%, -50%)', 
+                                    width: '100px', 
+                                    height: 'auto'
+                                }} 
+                            />
+                        )}
+                    </div>
+                    
 
                     {/* Dot Indicators */}
-                    <div style={{ display: 'flex', flexDirection:'row', justifyContent: 'center', marginTop: '-100px' }}>
+                    <div style={{ display: 'flex', flexDirection:'row', justifyContent: 'center', marginTop: '10px' }}>
                     {backgrounds.map((_, index) => (
                         <div 
                             key={index} 
@@ -243,7 +248,9 @@ const PlaceSelection = () => {
                     )}
 
                     {/* 작품설명 */}
-                    <div id='workdetails'>
+                    <div id='workdetails' style={{
+                        marginTop: '10px'
+                    }}>
                         <h2 id='worktitle'>{descriptions[currentIndex].title}</h2>
                         <p id='workdate'>{descriptions[currentIndex].date}</p>
                         <p id='workdescription' style={{

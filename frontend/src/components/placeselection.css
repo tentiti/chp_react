@@ -9,6 +9,7 @@
   justify-content: center; /* 수평 가운데 정렬 추가 */
   text-align: center;
   color: #412823;
+  margin-top: 10px;
 }
 #worktitle {
   font-family: "ClimateCrisisKR-1979";
