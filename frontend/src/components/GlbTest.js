@@ -6,14 +6,15 @@ import { useNavigate } from 'react-router-dom';
 import GIF from 'gif.js';
 import './CreateCharacter.css';
 import Header from './Header';
-import { useVideo } from './VideoContext.js'; // Context에서 가져옴
+import { UseVideo } from './VideoContext.js'; // Context에서 가져옴
 
 const API_URL = process.env.REACT_APP_API_URL;
 
 const GlbTest = () => {
   const [gifUrl, setGifUrl] = useState(null);
   const [videoFiles, setVideoFiles] = useState([]);
-  
+  const { addVideoFile } = UseVideo(); // UseVideo를 컴포넌트 내부에서 호출
+
   const navigate = useNavigate();
 
   //초대장 이미지 표시 관련
@@ -225,15 +226,15 @@ const GlbTest = () => {
       cameraRef.current.position.z = 5;
 
       // OrbitControls 초기화
-      controlsRef.current = new OrbitControls(cameraRef.current, rendererRef.current.domElement);
-      controlsRef.current.enableDamping = true; // 부드러운 회전
-      controlsRef.current.dampingFactor = 0.25; // 감속 비율
-      controlsRef.current.enableZoom = true; // 줌 허용
+      // controlsRef.current = new OrbitControls(cameraRef.current, rendererRef.current.domElement);
+      // controlsRef.current.enableDamping = true; // 부드러운 회전
+      // controlsRef.current.dampingFactor = 0.25; // 감속 비율
+      // controlsRef.current.enableZoom = true; // 줌 허용
 
     };
 
     initThreeJS();
-    loadModel('/static/models/animating.glb', 'Base', false, () => setLoadingStatus('Loaded Successfully'));
+    loadModel('/static/models/body__animated_test.glb', 'Base', false, () => setLoadingStatus('Loaded Successfully'));
 
     const animate = () => {
       requestAnimationFrame(animate);
@@ -241,10 +242,10 @@ const GlbTest = () => {
       const delta = clockRef.current.getDelta();
       modelsRef.current.forEach(({ mixer }) => mixer.update(delta));
 
-      // OrbitControls 업데이트
-      if (controlsRef.current) {
-        controlsRef.current.update();
-      }
+      // // OrbitControls 업데이트
+      // if (controlsRef.current) {
+      //   controlsRef.current.update();
+      // }
     
       if (rendererRef.current && sceneRef.current && cameraRef.current) {
         rendererRef.current.clear(); 
@@ -276,15 +277,13 @@ const GlbTest = () => {
       if (mixer && action) {
         mixer.stopAllAction();
         action.reset();
-        action.play();
+        action.play(); 
       }
     });
   };
 
-  const { addVideoFile } = useVideo(); // addVideoFile 함수를 가져옵니다
 
   const startRecordingWithBackgrounds = async () => {
-    setIsRecording(true); // 녹화 시작
     console.log("Recording started");
   
     const backgroundImages = [
@@ -294,12 +293,14 @@ const GlbTest = () => {
     ];
   
     const modelPositions = [
-      { x: 50, y: 100, width: 150, height: 200 },
-      { x: 60, y: 110, width: 160, height: 210 },
-      { x: 70, y: 120, width: 170, height: 220 },
+      { x: 67, y: 150, width: 147, height: 190 },
+      { x: 168, y: 102, width: 147, height: 190 },
+      { x: 196, y: 65, width: 147, height: 190 },
     ];
   
     try {
+      resetAndStartAnimation();  // 애니메이션을 재생하는 함수 호출 추가
+
       // 비동기 방식으로 모든 배경의 MP4 녹화를 시작하고, 각각의 MP4 파일을 addVideoFile로 넘김
       const mp4Files = await Promise.all(backgroundImages.map((bgImage, index) =>
         startRecordingForBackground(bgImage, modelPositions[index])
@@ -323,6 +324,8 @@ const GlbTest = () => {
   
         // Blob을 addVideoFile로 저장
         addVideoFile(mp4Blob);
+         // 자동으로 다운로드
+        downloadRecordedVideo(mp4Blob, fileName);
       });
     } catch (error) {
       console.error("Error during recording:", error);
@@ -332,6 +335,21 @@ const GlbTest = () => {
     }
   };
   
+  const downloadRecordedVideo = (blob, filename = 'recording.mp4') => {
+    const url = URL.createObjectURL(blob); // Blob을 URL로 변환
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = filename;  // 다운로드할 파일 이름 설정
+    document.body.appendChild(a);
+    a.click();
+  
+    // 다운로드 후 URL 객체 해제
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+  };
   
   
   const startRecordingForBackground = async (backgroundImageSrc, { x, y, width, height }) => {
@@ -342,7 +360,7 @@ const GlbTest = () => {
     canvas.height = 491;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
   
-    const duration = 5; // 15초 동안 녹화
+    const duration = 15; // 15초 동안 녹화
     const fps = 60; // 프레임 속도는 60fps로 설정
     const totalFrames = duration * fps;
     let frameCount = 0;
@@ -469,6 +487,8 @@ const GlbTest = () => {
     const totalFrames = duration * fps;
     let frameCount = 0;
 
+    resetAndStartAnimation();
+
     gif.on('finished', async (blob) => {
       const gifUploadUrl = await uploadGif(blob); // GIF 업로드 처리
       console.log('GIF Upload URL:', gifUploadUrl);
@@ -499,6 +519,7 @@ const GlbTest = () => {
 
 const startRecording = async (setVideoFile) => {
   console.log("Start recording initiated");
+  setIsRecording(true); // 녹화 시작
 
   try {
     // Wait for both GIF and MP4 recordings to finish
@@ -508,7 +529,6 @@ const startRecording = async (setVideoFile) => {
     console.log("Recording completed", gifUploadUrl);
 
     // Access video files from context
-    const { videoFiles } = useVideo();
 
     // After recording is done and GIF is uploaded, navigate to placeselection
     navigate('/place-selection', {
@@ -749,12 +769,14 @@ const startRecording = async (setVideoFile) => {
         </div>
       )}
 
-      {isSplashVisible && (
+
+       {/* 녹화 중일 때 보여줄 "녹화중입니다" 이미지 */}
+       {isRecording && (
         <div id="splash-screen" className="splash-screen">
-          <img src="/static/stockimages/making.png" alt="Splash" style={{ position: 'Fixed', width: '100vw', height: '100vh', objectFit: 'cover', zIndex: '999999999' }} />
-          <img src="/static/stockimages/loading-circle.gif" alt="Splash" style={{ width: '80px', position: 'Fixed', left:'calc(50vw - 40px)', top:'55vh',zIndex: '999999999' }} />
-        </div>
-      )}
+        <img src="/static/stockimages/making.png" alt="Splash" style={{ position: 'Fixed', width: '100vw', height: '100vh', objectFit: 'cover', zIndex: '999999999' }} />
+        <img src="/static/stockimages/loading-circle.gif" alt="Splash" style={{ width: '80px', position: 'Fixed', left:'calc(50vw - 36px)', top:'55vh',zIndex: '999999999' }} />
+      </div>
+        )}
 
     <div id="container" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 58px)', overflowX: 'hidden' }}>
       <canvas

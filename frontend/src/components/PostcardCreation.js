@@ -7,7 +7,7 @@ import './CreateCharacter.css';
 const PostcardCreation = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { selectedBackground, gifUrl } = location.state || {};
+    const { selectedBackground, gifUrl, videoFiles } = location.state || {};
 
     const [number, setNumber] = useState('');
     const [name, setName] = useState('');
@@ -37,7 +37,7 @@ const PostcardCreation = () => {
             const postcardId = response.data.id; // 서버에서 반환된 ID
             console.log('Backend response:', response.data);
 
-            navigate(`/postcardview/${postcardId}`, { state: {  } });
+            navigate(`/postcardview/${postcardId}`, { state: {  videoFiles: videoFiles} });
 
         } catch (error) {
             console.error('Error submitting postcard:', error);
@@ -95,7 +95,7 @@ const PostcardCreation = () => {
                             height: '158px',
                             left: '200px',
                             top: 'calc(320px - 10%)',
-                            backgroundImage: `url(https://placehold.co/127x158?text=${selectedBackground})`,
+                            backgroundImage: `url('/static/stockimages/bg${selectedBackground}.png')`, // url()로 감싸줍니다
                             backgroundSize: 'cover',
                         }}
                     />

@@ -16,7 +16,7 @@ export const VideoProvider = ({ children }) => {
   );
 };
 
-export const useVideo = () => {
+export const UseVideo = () => {
   const context = useContext(VideoContext);
   if (!context) {
     throw new Error('useVideo must be used within a VideoProvider');

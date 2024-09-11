@@ -10,6 +10,12 @@ const backgrounds = [
     "/static/stockimages/bg3.png",
 ];
 
+const modelPositions = [
+    { x: 67, y: 150, width: 147, height: 190 },
+    { x: 168, y: 102, width: 147, height: 190 },
+    { x: 196, y: 65, width: 147, height: 190 },
+];
+
 const descriptions = [
     {
         title: "달밤",
@@ -46,7 +52,7 @@ const descriptions = [
 const PlaceSelection = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { gifUrl } = location.state;
+    const { gifUrl, videoFiles } = location.state;
     console.log('GIF URL:', gifUrl);
 
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -93,7 +99,7 @@ const PlaceSelection = () => {
 
     const handleSelectPlace = () => {
         console.log('Selected background:', currentIndex+1);
-        navigate('/postcardcreation', { state: { selectedBackground: currentIndex+1, gifUrl: gifUrl } });
+        navigate('/postcardcreation', { state: { selectedBackground: currentIndex+1, gifUrl: gifUrl, videoFiles:videoFiles} });
     };
     
 
@@ -267,7 +273,7 @@ const PlaceSelection = () => {
             {/* 두 개의 버튼 */}
                 <div  onClick={scrollToBottom}>
                         원본 작품 보러가기<br/>
-                        <img src="/static/stockimages/down.png" alt="Arrow Down" style={{ width: 'auto', height: '13px', marginTop:'10px'}} />
+                        <img src="/static/icons/down.png" alt="Arrow Down" style={{ width: 'auto', height: '13px', marginTop:'10px'}} />
                 </div>
 
                 <hr style={{ 

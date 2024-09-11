@@ -3,11 +3,11 @@ import * as THREE from 'three';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import RecordRTC from 'recordrtc';
-import { useVideo } from './VideoContext';
+import { UseVideo } from './VideoContext';
 import Header from './Header';
 
 const PostcardView = () => {
-  const { videoFile } = useVideo(); // Blob URL 가져오기
+  const { videoFiles } = UseVideo(); // Blob URL 가져오기 (배열로 여러 개의 비디오 파일)
   const { id } = useParams();
   const [postcard, setPostcard] = useState(null);
   const [blobUrl, setBlobUrl] = useState(null); // State for storing the blob URL
@@ -27,7 +27,7 @@ const PostcardView = () => {
   useEffect(() => {
     const fetchPostcard = async () => {
       try {
-        const response = await axios.get(`https://127.0.0.1:8000/postcard/${id}`, { cache: 'no-cache' });
+        const response = await axios.get(`https://localhost:8000/postcard/${id}`, { cache: 'no-cache' });
         if (response.status === 200) {
           setPostcard(response.data);
         } else {
@@ -42,7 +42,7 @@ const PostcardView = () => {
   }, [id]);
 
   useEffect(() => {
-    if (!postcard) return;
+    if (!postcard || !videoFiles || videoFiles.length === 0) return;
 
     const initThreeJS = async () => {
       const { width, height } = updateCanvasSize();
@@ -69,8 +69,8 @@ const PostcardView = () => {
       sceneRef.current.add(bgMesh);
 
       // WebM Video Texture (Using Blob directly)
-      if (videoFile) {
-        const videoUrl = URL.createObjectURL(videoFile); // Blob -> URL 변환
+      if (videoFiles[postcard.number - 1]) {  // postcard.number-1 번째 영상
+        const videoUrl = URL.createObjectURL(videoFiles[postcard.number - 1]); // Blob -> URL 변환
         const video = document.createElement('video');
         video.src = videoUrl;
         video.crossOrigin = 'anonymous';
@@ -126,14 +126,12 @@ const PostcardView = () => {
         // 변환된 좌표에 메시를 배치
         mesh.position.set(xPos, yPos, 0.2);
         sceneRef.current.add(mesh);
-    };
+      };
     
-    // 예시 텍스트 추가 (크기와 좌표 수정)
-    addText(`${postcard.comment}`,  0, -1400, 12); // 크기를 키운 텍스트
-    addText(postcard.timestamp,  0, -1590, 8);   // 타임스탬프도 크기 키움
-    addText(`${postcard.name}`, 108, -1680, 12); // 이름 텍스트도 크기 증가
-    
-      
+      // 예시 텍스트 추가 (크기와 좌표 수정)
+      addText(`${postcard.comment}`,  0, -1400, 12); // 크기를 키운 텍스트
+      addText(postcard.timestamp,  0, -1590, 8);   // 타임스탬프도 크기 키움
+      addText(`${postcard.name}`, 108, -1680, 12); // 이름 텍스트도 크기 증가
     };
 
     initThreeJS();
@@ -162,7 +160,7 @@ const PostcardView = () => {
       canvasRef.current.style.height = `${height}px`;
 
     });
-  }, [postcard, videoFile]);
+  }, [postcard, videoFiles]);
 
   const startRecording = () => {
     const stream = canvasRef.current.captureStream(30);
