@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
-import './main_styles.css';
+import './Home.css';
 
 function Home() {
   const containerRef = useRef(null);

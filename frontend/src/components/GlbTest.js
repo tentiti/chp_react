@@ -544,37 +544,51 @@ const startRecording = async (setVideoFile) => {
 };
 
   
+console.log(API_URL); // Check if API_URL is correct
+
+
+const uploadGif = async (gifBlob) => {
+  const formData = new FormData();
+  formData.append('file', gifBlob, 'transparent_animation.gif');
   
+  try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/upload`, {
+          method: 'POST',
+          body: formData,
+      });
 
-  const uploadGif = async (gifBlob) => {
-    const formData = new FormData();
-    formData.append('file', gifBlob, 'transparent_animation.gif');
-    
-    try {
-        const response = await fetch(`${API_URL}/upload`, {
-            method: 'POST',
-            body: formData,
-        });
+      // Log the response status for additional insight
+      console.log('Response status:', response.status);
+      
+      // If the response is not OK, log more details
+      if (!response.ok) {
+          const errorText = await response.text();  // Get error message from the response body
+          throw new Error(`GIF upload failed: ${response.status} ${response.statusText}. Server response: ${errorText}`);
+      }
 
-        if (!response.ok) {
-            throw new Error('GIF upload failed');
-        }
+      const data = await response.json();
+      console.log('Upload response:', data);
 
-        const data = await response.json();
-        console.log('Upload response:', data);
+      const filename = data.filename;
+      console.log('GIF Filename:', filename);
 
-        const filename = data.filename;
-        console.log('GIF Filename:', filename);
+      const gifUrl = `${API_URL}/uploads/${filename}`;
+      console.log('Constructed GIF URL:', gifUrl);
 
-        const gifUrl = `${API_URL}/uploads/${filename}`;
-        console.log('Constructed GIF URL:', gifUrl);
+      return gifUrl;
 
-        return gifUrl;
-    } catch (error) {
-        console.error('Error uploading GIF:', error);
-        return null;
-    }
+  } catch (error) {
+      // Differentiate between fetch failures and other errors
+      if (error.name === 'TypeError') {
+          console.error('Network or CORS issue, unable to reach server:', error.message);
+      } else {
+          console.error('Error uploading GIF:', error.message);
+      }
+
+      return null;
+  }
 };
+
 
   const closeOverlay = () => {
     setOverlayVisible(false);

@@ -173,7 +173,7 @@ const PlaceSelection = () => {
                         />
                         ) : (                        
                             <img 
-                                src="`url(https://placehold.co/127x158?text=${selectedBackground})`"
+                            src={`https://placehold.co/127x158?text=error`} 
                                 alt="Generated GIF" 
                                 style={{ 
                                     position:'relative',

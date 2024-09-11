@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import RecordRTC from 'recordrtc';
 import { UseVideo } from './VideoContext';
@@ -30,7 +30,7 @@ const PostcardView = () => {
   useEffect(() => {
     const fetchPostcard = async () => {
       try {
-        const response = await axios.get(`https://localhost:8000/postcard/${id}`, { cache: 'no-cache' });
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/postcard/${id}`, { cache: 'no-cache' });
         if (response.status === 200) {
           setPostcard(response.data);
         } else {
@@ -64,6 +64,7 @@ const PostcardView = () => {
       // Background
       const loader = new THREE.TextureLoader();
       const bgTexture = await loader.loadAsync(`/static/stockimages/postcardfinal_${postcard.number}.png`);
+      bgTexture.colorSpace = THREE.SRGBColorSpace;
       bgTexture.minFilter = THREE.LinearFilter;
       bgTexture.magFilter = THREE.LinearFilter;
       const bgGeometry = new THREE.PlaneGeometry(width, height);
@@ -73,43 +74,39 @@ const PostcardView = () => {
 
       if (videoFiles[postcard.number - 1]) {  // postcard.number-1 번째 영상
         const videoUrl = URL.createObjectURL(videoFiles[postcard.number - 1]); // Blob -> URL 변환
-        const video = document.createElement('video');
+        const video = document.createElement('video'); // 비디오 엘리먼트 생성
         video.src = videoUrl;
         video.crossOrigin = 'anonymous';
-        video.loop = true; // Loop the video
-        video.muted = true; // Mute the video if necessary
-        video.play(); // Auto-play the video
+        video.loop = true; // 비디오 루프 설정
+        video.muted = true; // 비디오 음소거 (자동 재생 가능)
+        video.playsInline = true; // 모바일에서 inline 재생 허용 (필수)
+        video.autoplay = true;  // autoplay 설정, 텍스처로 사용 시 필요
       
-        // 비디오 재생 속도를 0.5배속으로 설정
-        video.playbackRate = 0.2;
-      
+        // 비디오 엘리먼트를 DOM에 추가하지 않음
         video.addEventListener('canplay', () => {
-          // 비디오가 준비되면, 텍스처로 적용
           videoTextureRef.current = new THREE.VideoTexture(video);
+          videoTextureRef.current.colorSpace = THREE.SRGBColorSpace;
           videoTextureRef.current.minFilter = THREE.LinearFilter;
           videoTextureRef.current.magFilter = THREE.LinearFilter;
           videoTextureRef.current.format = THREE.RGBAFormat;
       
-          videoTextureRef.current.needsUpdate = true;
-          videoTextureRef.current.flipY = true;
-      
-          // 비디오의 원래 크기 비율을 계산하여 80% 크기로 조정
-          const videoAspectRatio = video.videoWidth / video.videoHeight; // 비디오 원래 비율
+          const videoAspectRatio = video.videoWidth / video.videoHeight;
           const canvasWidth = window.innerWidth;
-          const canvasHeight = window.innerHeight;
-      
-          // 캔버스 대비 80% 크기 설정, 너비는 캔버스의 80%로 하고 높이를 비율에 맞게 조정
           const videoWidth = canvasWidth * 0.8;
           const videoHeight = videoWidth / videoAspectRatio;
       
           const videoGeometry = new THREE.PlaneGeometry(videoWidth, videoHeight);
-          const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTextureRef.current, });
+          const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTextureRef.current });
           const videoMesh = new THREE.Mesh(videoGeometry, videoMaterial);
-          
+      
           videoMesh.position.set(0, 20, 0.1);
           sceneRef.current.add(videoMesh);
+      
+          // 비디오를 Three.js 텍스처로 사용하려면 재생 필요
+          video.play();
         });
       }
+      
       
       // Text
       const addText = (text, x, y, size = 50) => {
@@ -214,10 +211,7 @@ const PostcardView = () => {
       a.download = 'postcard-video.mp4';
       document.body.appendChild(a);
       a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(blobUrl);  // Clean up the object URL
-      }, 100);
+
     }
   };
 
@@ -233,7 +227,7 @@ const PostcardView = () => {
     }
 
     if (navigator.canShare && recordedBlob) {
-      const file = new File([recordedBlob], 'postcard-video.mp4', { type: 'video/mp4' });
+      const file = new File([recordedBlob], `'${postcard?.name}'의 춤사위-mp4'`, { type: 'video/mp4' });
 
       if (navigator.canShare({ files: [file] })) {
         try {
@@ -253,6 +247,7 @@ const PostcardView = () => {
       console.warn('Sharing not supported or no video recorded');
     }
   };
+  const navigate = useNavigate();
 
   return (
     <div style={{
@@ -261,7 +256,7 @@ const PostcardView = () => {
       alignItems: 'center',
       justifyContent: 'center',
     }}>
-      <Header title={`'${postcard?.name}'의 춤사위`} />
+      <Header title={`'${postcard?.name}'의 춤사위`} onMenuClick={() => navigate('/')} />
       <canvas
         ref={canvasRef}
         style={{

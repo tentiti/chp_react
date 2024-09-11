@@ -85,7 +85,7 @@
     overflow: hidden;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    background-color: #412823;
+    background-color: #f8f6f1;
     gap: 1px;
     padding: 1px 0;
   }

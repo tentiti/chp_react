@@ -30,7 +30,7 @@ const PostcardShareView = () => {
   useEffect(() => {
     const fetchPostcard = async () => {
       try {
-        const response = await axios.get(`https://127.0.0.1:8000/postcard/${id}`, { cache: 'no-cache' });
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/postcard/${id}`, { cache: 'no-cache' });
         if (response.status === 200) {
           setPostcard(response.data);
         } else {
@@ -59,7 +59,7 @@ const PostcardShareView = () => {
         top: '0',
         width: '100vw',
       }}>
-        <Header title={`'${postcard.name}'의 춤사위`} />
+      <Header title={`'${postcard.name}'의 춤사위`} needthird={false} />
       </div>
       <img 
             src="/static/stockimages/sharebackground.png" 
@@ -104,7 +104,7 @@ const PostcardShareView = () => {
           >
             {postcard.gif_name && (
               <img
-                src={`https://localhost:8000/uploads/${postcard.gif_name}`}
+                src={`${process.env.REACT_APP_API_URL}/uploads/${postcard.gif_name}`}
                 alt="GIF"
                 style={{
                   position: 'absolute',

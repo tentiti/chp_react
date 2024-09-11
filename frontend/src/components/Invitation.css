@@ -85,18 +85,13 @@ header .titleArea > div:last-child {
 }
 
 #inv_text {
-  top: 40px; /* 하단 여백 추가 */
-  height: calc(80vh - 150px); /* 하단 여백 추가 */
-  overflow-y: scroll;
-  position: relative;
+  height: calc(70vh); /* 하단 여백 추가 */
+  width: auto;
+  /* overflow-y: scroll; */
+  position: fixed;
   color: white;
-  font-family: "Cafe24Simplehae", sans-serif;
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 1.5;
-  text-align: center;
-  padding: 20px;
-  z-index: 999999;
+
+  z-index: 999;
 }
 
 canvas {
@@ -105,10 +100,10 @@ canvas {
 
 #letsmakedance {
   position: fixed;
-  bottom: 20px;
+  bottom: 10%;
   left: 0;
   right: 0;
-  z-index: 1000;
+  z-index: 999;
   display: flex;
   justify-content: center;
 }
