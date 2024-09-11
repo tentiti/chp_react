@@ -4,26 +4,29 @@ import axios from 'axios';
 import Header from './Header';
 import './CreateCharacter.css';
 
-// modelPositions 배열 정의
 const modelPositions = [
-  { x: 67, y: 150, width: 147, height: 190 }, // 첫 번째 배경에 대한 모델 위치
-  { x: 168, y: 102, width: 147, height: 190 }, // 두 번째 배경에 대한 모델 위치
-  { x: 196, y: 65, width: 147, height: 190 }, // 세 번째 배경에 대한 모델 위치
+  { x: 67, y: 150, width: 147, height: 190 },
+  { x: 168, y: 102, width: 147, height: 190 },
+  { x: 196, y: 65, width: 147, height: 190 },
 ];
 
 const PostcardCreation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { selectedBackground, gifUrl, videoFiles } = location.state || {};
+  const [backgroundStyle, setBackgroundStyle] = useState(`linear-gradient(#555, #555) 0 24px, 
+    linear-gradient(#555, #555) 0 52px, 
+    linear-gradient(#555, #555) 0 80px, 
+    linear-gradient(#555, #555) 0 108px`);
 
-  const [number, setNumber] = useState('');
   const [name, setName] = useState('');
   const [comment, setComment] = useState('');
 
   const handleCommentChange = (e) => {
-    if (e.target.value.length <= 90) {
-      setComment(e.target.value);
-    }
+    setComment(e.target.value);
+    if (e.target.value.length >= 1) {
+        setBackgroundStyle('none'); // 배경 제거
+      }
   };
 
   const handleSubmit = async () => {
@@ -45,15 +48,8 @@ const PostcardCreation = () => {
     }
   };
 
-  // 선택된 배경에 맞는 modelPosition 가져오기
-  const currentModelPosition = modelPositions[selectedBackground - 1]; // 선택된 배경 인덱스에 맞는 위치 정보
+  const currentModelPosition = modelPositions[selectedBackground - 1];
 
-  // 배경 이미지 너비 기준으로 비율 계산 함수
-  const calculateProportionalPosition = (value, originalSize, currentSize) => {
-    return (value / originalSize) * currentSize;
-  };
-
-  // 배경 이미지의 실제 너비와 높이
   const backgroundWidth = 127;
   const backgroundHeight = 158;
 
@@ -107,8 +103,8 @@ const PostcardCreation = () => {
           <div
             style={{
               position: 'relative',
-              width: `${backgroundWidth}px`, // 배경의 너비
-              height: `${backgroundHeight}px`, // 배경의 높이
+              width: `${backgroundWidth}px`,
+              height: `${backgroundHeight}px`,
               left: '200px',
               top: 'calc(320px - 10%)',
               backgroundImage: `url('/static/stockimages/bg${selectedBackground}.png')`,
@@ -122,45 +118,16 @@ const PostcardCreation = () => {
                 alt="Selected GIF"
                 style={{
                   position: 'absolute',
-                  // GIF 위치를 배경 너비에 맞게 비례적으로 계산
-                  left: `${calculateProportionalPosition(
-                    currentModelPosition.x,
-                    375,
-                    `${backgroundWidth}`
-                  )}px`, 
-                  top: `${calculateProportionalPosition(
-                    currentModelPosition.y,
-                    375,
-                    `${backgroundWidth}`
-                  )}px`, 
-                  // GIF 크기도 배경 너비에 맞게 비례적으로 계산
-                  width: `${calculateProportionalPosition(54, currentModelPosition.width, backgroundWidth)}px`, 
-                  height: `${calculateProportionalPosition(70, currentModelPosition.height, backgroundHeight)}px`, 
+                  left: `${(currentModelPosition.x / 375) * backgroundWidth}px`,
+                  top: `${(currentModelPosition.y / 375) * backgroundHeight}px`,
+                  width: `${(54 / currentModelPosition.width) * backgroundWidth}px`,
+                  height: `${(70 / currentModelPosition.height) * backgroundHeight}px`,
                   objectFit: 'cover',
                 }}
               />
             )}
           </div>
         )}
-
-        {/* Instruction text */}
-        <div
-          style={{
-            position: 'absolute',
-            width: '280px',
-            left: '50%',
-            top: 'calc(40% + 107px',
-            transform: 'translateX(-50%)',
-            fontSize: '14px',
-            textAlign: 'center',
-            lineHeight: '1.95',
-            color: '#333',
-          }}
-        >
-          이제 춤을 추러 가봅시다.<br />
-          우리의 춤판엔 어떤 사람들이 모였을까요?<br />
-          우리는 어떤 춤을 추게 될까요?
-        </div>
 
         {/* Name and comment inputs */}
         <div
@@ -191,24 +158,34 @@ const PostcardCreation = () => {
             }}
           />
           <br />
-          한마디 :
-          <input
-            type="text"
-            value={comment}
-            onChange={handleCommentChange}
-            maxLength={90}
-            style={{
-              width: '76px',
-              marginLeft: '10px',
-              marginTop: '10px',
-              border: 'none',
-              borderBottom: '1px solid #555',
-              background: 'transparent',
-              fontSize: '14px',
-              outline: 'none',
-              fontFamily: 'Cafe24Simplehae',
-            }}
-          />
+
+          <div style={{ display: 'flex', flexDirection: 'row', marginTop: '12px' }}>
+            한마디 :
+            <textarea
+              maxLength={88}
+              rows={4}
+              value={comment}
+              onChange={handleCommentChange}
+              style={{
+                marginTop: '-7px',
+                marginLeft: '5px',
+                width: '90px',
+                height: '110px', // 대략 4줄의 높이
+                padding: '0',
+                border: 'none',
+                background:backgroundStyle,
+                backgroundSize: '90px 1px',
+                backgroundRepeat: 'no-repeat',
+                lineHeight: '29px', // 줄 간격 설정
+                fontSize: '14px',
+                fontFamily: 'Cafe24Simplehae, sans-serif',
+                resize: 'none',
+                outline: 'none',
+                overflowY: 'hidden',
+              }}
+            />
+          </div>
+
           <div style={{ fontSize: '12px', color: '#777', marginTop: '10px', textAlign: 'left' }}>
             {comment.length}/90
           </div>
