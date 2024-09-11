@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Header from './Header';
+import { UseVideo } from './VideoContext';
 import './CreateCharacter.css';
 
 const modelPositions = [
@@ -39,7 +40,7 @@ const PostcardCreation = () => {
         timestamp: currentTime,
         selectedBackground,
       };
-      const response = await axios.post('/submit-postcard', postData);
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/submit-postcard`, postData);
       const postcardId = response.data.id;
       navigate(`/postcardview/${postcardId}`, { state: { videoFiles: videoFiles } });
     } catch (error) {

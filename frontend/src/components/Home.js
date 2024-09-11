@@ -235,7 +235,7 @@ function Home() {
             {postcards.map((postcard) => (
               <div className="image-item" key={postcard.id}>
                 <img
-                  src={`/uploads/${postcard.png_name}`}  // .png 파일 로드
+                  src={`/uploads/${postcard.png_name}?t=${new Date().getTime()}`} 
                   alt={`grid ${postcard.id}`}
                   onError={(e) => handleImageError(e, postcard.id)}  // 이미지 에러 처리
                   onClick={() => window.location.href = `/postcardshareview/${postcard.id}`}  // 클릭 시 페이지 이동

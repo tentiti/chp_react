@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useState } from 'react';
-import RecordRTC from 'recordrtc';
 import axios from 'axios';
 import Header from './Header';
 import { useParams } from 'react-router-dom';
@@ -22,10 +21,7 @@ const modelPositions = [
 const PostcardShareView = () => {
   const { id } = useParams();
   const [postcard, setPostcard] = useState(null);
-  const recorderRef = useRef(null);
   const videoContainerRef = useRef(null);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingBlob, setRecordingBlob] = useState(null);
 
   useEffect(() => {
     const fetchPostcard = async () => {
@@ -39,6 +35,7 @@ const PostcardShareView = () => {
       } catch (error) {
         console.error('Network error:', error);
       }
+      
     };
 
     fetchPostcard();

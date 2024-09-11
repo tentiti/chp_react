@@ -178,18 +178,36 @@ const PostcardView = () => {
   }, [postcard, videoFiles]);
 
   const startRecording = () => {
-    const stream = canvasRef.current.captureStream(30);
-    const recorder = new RecordRTC(stream, {
+    const canvasStream = canvasRef.current.captureStream(30);
+    
+    // 오디오 엘리먼트 생성 및 재생
+    const audio = new Audio('/static/test.mp3');
+    audio.loop = true;
+    audio.play();
+  
+    // 오디오 트랙을 가져옴
+    const audioContext = new AudioContext();
+    const audioSource = audioContext.createMediaElementSource(audio);
+    const destination = audioContext.createMediaStreamDestination();
+    audioSource.connect(destination);
+  
+    // 비디오 스트림과 오디오 스트림을 결합
+    const combinedStream = new MediaStream([...canvasStream.getTracks(), ...destination.stream.getTracks()]);
+  
+    // RecordRTC 사용
+    const recorder = new RecordRTC(combinedStream, {
       type: 'video',
       mimeType: 'video/mp4',
-      bitsPerSecond: 8000000
+      bitsPerSecond: 8000000,
     });
-
+  
     recorder.startRecording();
     recorderRef.current = recorder;
-
-    setTimeout(() => stopRecording(), 10000);  // 10 seconds recording
+  
+    // 10초 후 녹화 중지
+    setTimeout(() => stopRecording(), 10000);
   };
+  
 
   const stopRecording = () => {
     if (recorderRef.current) {
@@ -208,7 +226,7 @@ const PostcardView = () => {
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = blobUrl;
-      a.download = `'${postcard?.name}'의 춤사위'`;
+      a.download = `${postcard?.name}의 춤사위.mp4`;
       document.body.appendChild(a);
       a.click();
 
@@ -227,7 +245,7 @@ const PostcardView = () => {
     }
 
     if (navigator.canShare && recordedBlob) {
-      const file = new File([recordedBlob], `'${postcard?.name}'의 춤사위-mp4'`, { type: 'video/mp4' });
+      const file = new File([recordedBlob], `${postcard?.name}의 춤사위.mp4`, { type: 'video/mp4' });
 
       if (navigator.canShare({ files: [file] })) {
         try {

@@ -383,23 +383,37 @@ const GlbTest = () => {
       canvas.width,
       canvas.height
     );
+
+      // 녹화 형식을 동적으로 결정 (MP4 또는 WebM)
+    let mimeType = '';
+    if (MediaRecorder.isTypeSupported('video/webm')) {
+      mimeType = 'video/webm';
+    } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+      mimeType = 'video/mp4';
+    } else {
+      console.error('이 브라우저에서 지원하는 비디오 형식을 찾을 수 없습니다.');
+      return;
+    }
   
     // MP4 녹화 시작
     const stream = canvas.captureStream(fps);
-    const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/mp4' });
+    const mediaRecorder = new MediaRecorder(stream, { mimeType });
   
-    let mp4Chunks = [];
+    let chunks = [];
   
     mediaRecorder.ondataavailable = (event) => {
       if (event.data.size > 0) {
-        mp4Chunks.push(event.data);
+        chunks.push(event.data);
       }
     };
   
     return new Promise((resolve) => {
       mediaRecorder.onstop = () => {
-        const mp4Blob = new Blob(mp4Chunks, { type: 'video/mp4' });
-        resolve(mp4Blob); // MP4 파일 Blob을 반환
+        const blob = new Blob(chunks, { type: mimeType });
+        // 파일 확장자 결정
+        let fileExtension = mimeType.includes('mp4') ? 'mp4' : 'webm';
+        const fileName = `animation_recording_${Date.now()}.${fileExtension}`;
+        resolve(blob); // Blob을 반환하는 대신 resolve로 반환
       };
   
       mediaRecorder.start(); // MP4 녹화 시작
@@ -431,7 +445,12 @@ const GlbTest = () => {
           hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
   
           // 캐릭터를 x, y 좌표에 렌더링
-          ctx.drawImage(hiddenCanvasRef.current, x, y, width, height);
+          if (hiddenCanvasRef.current) {
+            ctx.drawImage(hiddenCanvasRef.current, x, y, width, height);
+          } else {
+            console.error('hiddenCanvasRef.current is not defined or not a valid canvas element.');
+          }
+          
   
           frameCount++;
           requestAnimationFrame(captureFrame);
