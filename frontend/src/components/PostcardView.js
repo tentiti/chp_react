@@ -11,12 +11,15 @@ const PostcardView = () => {
   const { id } = useParams();
   const [postcard, setPostcard] = useState(null);
   const [blobUrl, setBlobUrl] = useState(null); // State for storing the blob URL
+  const [isRecording, setIsRecording] = useState(true); // 상태 추가 (녹화 중 여부)
   const canvasRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
   const recorderRef = useRef(null);
   const videoTextureRef = useRef(null); // Ref for video texture
+
+  const [recordedBlob, setRecordedBlob] = useState(null);
 
   const updateCanvasSize = () => {
     const width = window.innerWidth; // 100vw
@@ -68,7 +71,6 @@ const PostcardView = () => {
       const bgMesh = new THREE.Mesh(bgGeometry, bgMaterial);
       sceneRef.current.add(bgMesh);
 
-      // WebM Video Texture (Using Blob directly)
       if (videoFiles[postcard.number - 1]) {  // postcard.number-1 번째 영상
         const videoUrl = URL.createObjectURL(videoFiles[postcard.number - 1]); // Blob -> URL 변환
         const video = document.createElement('video');
@@ -77,25 +79,38 @@ const PostcardView = () => {
         video.loop = true; // Loop the video
         video.muted = true; // Mute the video if necessary
         video.play(); // Auto-play the video
-
+      
+        // 비디오 재생 속도를 0.5배속으로 설정
+        video.playbackRate = 0.2;
+      
         video.addEventListener('canplay', () => {
-          // Only after video is ready, apply it as a texture
+          // 비디오가 준비되면, 텍스처로 적용
           videoTextureRef.current = new THREE.VideoTexture(video);
           videoTextureRef.current.minFilter = THREE.LinearFilter;
           videoTextureRef.current.magFilter = THREE.LinearFilter;
           videoTextureRef.current.format = THREE.RGBAFormat;
-
+      
           videoTextureRef.current.needsUpdate = true;
           videoTextureRef.current.flipY = true;
-
-          const videoGeometry = new THREE.PlaneGeometry(116, 150);
-          const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTextureRef.current, transparent: true });
+      
+          // 비디오의 원래 크기 비율을 계산하여 80% 크기로 조정
+          const videoAspectRatio = video.videoWidth / video.videoHeight; // 비디오 원래 비율
+          const canvasWidth = window.innerWidth;
+          const canvasHeight = window.innerHeight;
+      
+          // 캔버스 대비 80% 크기 설정, 너비는 캔버스의 80%로 하고 높이를 비율에 맞게 조정
+          const videoWidth = canvasWidth * 0.8;
+          const videoHeight = videoWidth / videoAspectRatio;
+      
+          const videoGeometry = new THREE.PlaneGeometry(videoWidth, videoHeight);
+          const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTextureRef.current, });
           const videoMesh = new THREE.Mesh(videoGeometry, videoMaterial);
-          videoMesh.position.set(0, -10, 0.1);
+          
+          videoMesh.position.set(0, 20, 0.1);
           sceneRef.current.add(videoMesh);
         });
       }
-
+      
       // Text
       const addText = (text, x, y, size = 50) => {
         const canvas = document.createElement('canvas');
@@ -107,7 +122,7 @@ const PostcardView = () => {
     
         // 더 큰 텍스트 크기를 사용
         ctx.font = `${size}px Cafe24Simplehae, sans-serif`;
-        ctx.fillStyle = 'black';
+        ctx.fillStyle = 'rgba(65, 40, 35, 1)'; // 수정된 부분
         ctx.textAlign = 'center';
         ctx.fillText(text, canvas.width / 2, 100);  // 텍스트 위치는 가운데로 유지
     
@@ -160,6 +175,9 @@ const PostcardView = () => {
       canvasRef.current.style.height = `${height}px`;
 
     });
+
+    // 로딩과 동시에 녹화 시작
+    startRecording();
   }, [postcard, videoFiles]);
 
   const startRecording = () => {
@@ -176,8 +194,6 @@ const PostcardView = () => {
     setTimeout(() => stopRecording(), 10000);  // 10 seconds recording
   };
 
-  const [recordedBlob, setRecordedBlob] = useState(null);
-
   const stopRecording = () => {
     if (recorderRef.current) {
       recorderRef.current.stopRecording(() => {
@@ -185,6 +201,7 @@ const PostcardView = () => {
         const url = URL.createObjectURL(blob);
         setBlobUrl(url);
         setRecordedBlob(blob); // Store the actual blob
+        setIsRecording(false); // 녹화 완료
       });
     }
   };
@@ -205,6 +222,16 @@ const PostcardView = () => {
   };
 
   const shareVideo = async () => {
+    if (navigator.clipboard) {
+      // 클립보드에 "hello world!" 복사
+      try {
+        await navigator.clipboard.writeText('hello world!');
+        console.log('Text copied to clipboard');
+      } catch (error) {
+        console.error('Failed to copy text:', error);
+      }
+    }
+
     if (navigator.canShare && recordedBlob) {
       const file = new File([recordedBlob], 'postcard-video.mp4', { type: 'video/mp4' });
 
@@ -247,18 +274,14 @@ const PostcardView = () => {
         }}
       />
     
-    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', position:'fixed', bottom:'0', height:'calc(43.75vw - 58px)'}}>
-        <button onClick={startRecording} style={{ marginRight: '10px' }}>
-          Start Recording
-        </button>
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', position:'fixed', bottom:'0', height:'calc(43.75vw - 58px)'}}>
         <button onClick={downloadVideo} style={{ marginRight: '10px' }} disabled={!blobUrl}>
-          Download Video
+          {isRecording ? '공유 영상 준비 중...' : 'Download Video'}
         </button>
         <button onClick={shareVideo} disabled={!blobUrl}>
-          Share Video
+          {isRecording ? '공유 영상 준비 중...' : 'Share Video'}
         </button>
       </div>
-
     </div>
   );
 };

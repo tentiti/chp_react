@@ -146,6 +146,7 @@ const PlaceSelection = () => {
                 }}>
                     <div id='images' style={{
                         height:'375px',
+                        position:'relative'
                     }}>
                         <img 
                             src={backgrounds[currentIndex]} // Dynamic background image

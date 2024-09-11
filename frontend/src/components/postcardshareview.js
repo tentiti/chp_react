@@ -7,9 +7,16 @@ import './PostcardView.css';
 
 const backgrounds = [
   "/static/stockimages/bg1.png",
-  "https://placehold.co/300x375?text=bg1",
-  "https://placehold.co/300x375?text=bg2",
-  "https://placehold.co/300x375?text=bg3",
+  "/static/stockimages/bg1.png",
+  "/static/stockimages/bg2.png",
+  "/static/stockimages/bg3.png",
+];
+
+const modelPositions = [
+  { x: 67, y: 150, width: 147, height: 190 },
+  { x: 67, y: 150, width: 147, height: 190 },
+  { x: 168, y: 102, width: 147, height: 190 },
+  { x: 196, y: 65, width: 147, height: 190 },
 ];
 
 const PostcardShareView = () => {
@@ -40,106 +47,6 @@ const PostcardShareView = () => {
   if (!postcard) {
     return <div>Loading...</div>;
   }
-
-  const startRecording = async () => {
-    const createdImagesElement = document.getElementById('createdImages');
-  
-    if (!createdImagesElement) {
-      console.error('createdImages element not found.');
-      return;
-    }
-  
-    try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({ 
-        video: { 
-          displaySurface: "browser",
-          logicalSurface: true,
-          cursor: "never"
-        } 
-      });
-  
-      // 스트림에서 비디오 트랙을 가져옵니다
-      const videoTrack = stream.getVideoTracks()[0];
-  
-      // 캡처할 영역을 정의합니다
-      const trackSettings = videoTrack.getSettings();
-      const displaySurface = trackSettings.displaySurface;
-  
-      if (displaySurface !== 'browser') {
-        console.error('Please select the browser tab.');
-        stream.getTracks().forEach(track => track.stop());
-        return;
-      }
-  
-      // createdImages 요소의 위치와 크기를 가져옵니다
-      const rect = createdImagesElement.getBoundingClientRect();
-  
-      // 캡처 영역을 설정합니다
-      await videoTrack.applyConstraints({
-        advanced: [{
-          cropTo: {
-            top: rect.top,
-            left: rect.left,
-            width: rect.width,
-            height: rect.height
-          }
-        }]
-      });
-  
-      const newRecorder = new RecordRTC(stream, {
-        type: 'video',
-        mimeType: 'video/webm',
-        bitsPerSecond: 800000,
-      });
-  
-      newRecorder.startRecording();
-      recorderRef.current = newRecorder;
-      setIsRecording(true);
-  
-      setTimeout(() => stopRecording(stream), 3000);
-    } catch (error) {
-      console.error('Error starting recording:', error);
-      alert('녹화를 시작하는 데 문제가 발생했습니다: ' + error.message);
-    }
-  };
-  
-  const stopRecording = (stream) => {
-    if (recorderRef.current) {
-      recorderRef.current.stopRecording(() => {
-        const blob = recorderRef.current.getBlob();
-        setRecordingBlob(blob);
-        setIsRecording(false);
-  
-        // 스트림 정리
-        stream.getTracks().forEach(track => track.stop());
-      });
-    }
-  };
-
-  const shareRecording = async () => {
-    if (!recordingBlob) return;
-
-    const file = new File([recordingBlob], 'postcard-animation.mp4', { type: 'video/mp4' });
-
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({
-          files: [file],
-          title: 'My Postcard Animation',
-          text: 'Check out this cool animation!',
-        });
-      } catch (error) {
-        console.error('Error sharing video:', error);
-      }
-    } else {
-      const url = URL.createObjectURL(recordingBlob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'postcard-animation.mp4';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
 
   return (
     <div style={{
@@ -201,11 +108,10 @@ const PostcardShareView = () => {
                 alt="GIF"
                 style={{
                   position: 'absolute',
-                  top: '270px',
-                  left: '96px',
-                  transform: 'translate(-50%, -50%)',
-                  width: '116px',
-                  height: '150px',
+                  top: `calc(${modelPositions[postcard.number].y}px * 0.8)`,
+                  left: `calc(${modelPositions[postcard.number].x}px * 0.8)`,
+                  width: `calc(${modelPositions[postcard.number].width}px * 0.8)`,
+                  height: `calc(${modelPositions[postcard.number].height}px * 0.8)`,
                 }}
               />
             )}

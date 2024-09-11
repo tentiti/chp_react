@@ -342,7 +342,7 @@ const GlbTest = () => {
     a.href = url;
     a.download = filename;  // 다운로드할 파일 이름 설정
     document.body.appendChild(a);
-    a.click();
+    // a.click();
   
     // 다운로드 후 URL 객체 해제
     setTimeout(() => {
