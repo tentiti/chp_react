@@ -208,7 +208,7 @@ const PostcardView = () => {
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = blobUrl;
-      a.download = 'postcard-video.mp4';
+      a.download = `'${postcard?.name}'의 춤사위'`;
       document.body.appendChild(a);
       a.click();
 
