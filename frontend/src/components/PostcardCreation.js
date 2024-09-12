@@ -40,7 +40,9 @@ const PostcardCreation = () => {
         timestamp: currentTime,
         selectedBackground,
       };
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/submit-postcard`, postData);
+      // const response = await axios.post(`${process.env.REACT_APP_API_URL}/submit-postcard`, postData);
+
+      const response = await axios.post(`/api/submit-postcard`, postData);
       const postcardId = response.data.id;
       navigate(`/postcardview/${postcardId}`, { state: { videoFiles: videoFiles } });
     } catch (error) {

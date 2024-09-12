@@ -26,7 +26,7 @@ const PostcardShareView = () => {
   useEffect(() => {
     const fetchPostcard = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/postcard/${id}`, { cache: 'no-cache' });
+        const response = await axios.get(`/api/postcard/${id}`, { cache: 'no-cache' });
         if (response.status === 200) {
           setPostcard(response.data);
         } else {
@@ -101,7 +101,7 @@ const PostcardShareView = () => {
           >
             {postcard.gif_name && (
               <img
-                src={`${process.env.REACT_APP_API_URL}/uploads/${postcard.gif_name}`}
+                src={`/api/uploads/${postcard.gif_name}`}
                 alt="GIF"
                 style={{
                   position: 'absolute',

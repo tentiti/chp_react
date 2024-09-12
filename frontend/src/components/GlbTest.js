@@ -580,7 +580,7 @@ const uploadGif = async (gifBlob) => {
   formData.append('file', gifBlob, 'transparent_animation.gif');
   
   try {
-      const response = await fetch(`/upload`, {
+      const response = await fetch(`/api/upload`, {
           method: 'POST',
           body: formData,
       });
@@ -600,7 +600,7 @@ const uploadGif = async (gifBlob) => {
       const filename = data.filename;
       console.log('GIF Filename:', filename);
 
-      const gifUrl = `/uploads/${filename}`;
+      const gifUrl = `/api/uploads/${filename}`;
       console.log('Constructed GIF URL:', gifUrl);
 
       return gifUrl;

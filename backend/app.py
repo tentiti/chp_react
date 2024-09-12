@@ -63,17 +63,6 @@ def serve(path):
     else:
         return send_from_directory(app.static_folder, "index.html")
 
-
-@app.route("/invitation")
-def invitation():
-    return render_template("invitation.html")
-
-
-@app.route("/createCharacter")
-def createCharacter():
-    return render_template("createCharacter.html")
-
-
 @app.route("/upload", methods=["POST"])
 def upload_file():
     print("uploading..")

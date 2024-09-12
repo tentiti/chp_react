@@ -216,7 +216,7 @@ function Home() {
             {postcards.map((postcard) => (
               <div className="image-item" key={postcard.id}>
                 <img
-                  src={`/uploads/${postcard.png_name}?t=${new Date().getTime()}`} 
+                  src={`/api/uploads/${postcard.png_name}?t=${new Date().getTime()}`} 
                   alt={`grid ${postcard.id}`}
                   onError={(e) => handleImageError(e, postcard.id)} 
                   onClick={() => window.location.href = `/postcardshareview/${postcard.id}`} 
