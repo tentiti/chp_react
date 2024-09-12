@@ -20,6 +20,8 @@ const PostcardView = () => {
   const videoTextureRef = useRef(null); // Ref for video texture
 
   const [recordedBlob, setRecordedBlob] = useState(null);
+  const [isVideoReady, setIsVideoReady] = useState(false);
+  const audioRef = useRef(null);
 
   const updateCanvasSize = () => {
     const width = window.innerWidth; // 100vw
@@ -82,6 +84,8 @@ const PostcardView = () => {
         video.playsInline = true; // 모바일에서 inline 재생 허용 (필수)
         video.autoplay = true;  // autoplay 설정, 텍스처로 사용 시 필요
       
+        video.playbackRate = 0.8;  // Slow down playback to half speed
+
         // 비디오 엘리먼트를 DOM에 추가하지 않음
         video.addEventListener('canplay', () => {
           videoTextureRef.current = new THREE.VideoTexture(video);
@@ -104,6 +108,7 @@ const PostcardView = () => {
       
           // 비디오를 Three.js 텍스처로 사용하려면 재생 필요
           video.play();
+          setIsVideoReady(true);
         });
       }
       
@@ -167,34 +172,44 @@ const PostcardView = () => {
       cameraRef.current.bottom = height / -2;
       cameraRef.current.updateProjectionMatrix();
       
-      rendererRef.current.setSize(width * 2, height * 2);  // 실제 크기를 더 크게 설정
+      rendererRef.current.setSize(width, height);  // 실제 크기를 더 크게 설정
       canvasRef.current.style.width = `${width}px`;  // CSS에서 크기를 원래대로 유지
       canvasRef.current.style.height = `${height}px`;
 
     });
 
-    // 로딩과 동시에 녹화 시작
-    startRecording();
+
   }, [postcard, videoFiles]);
+
+    // 새로운 useEffect 추가: isVideoReady 상태 변경 감지 및 녹화 시작
+  useEffect(() => {
+    if (isVideoReady) {
+      // alert('녹화를 시작합니다. 10초 후 자동으로 녹화가 중지됩니다.');
+      // 비디오가 준비되면 0.5초 후 녹화 시작
+      setTimeout(() => startRecording(), 500);
+    }
+  }, [isVideoReady]);
 
   const startRecording = () => {
     const canvasStream = canvasRef.current.captureStream(30);
     
-    // 오디오 엘리먼트 생성 및 재생
-    const audio = new Audio('/static/test.mp3');
-    audio.loop = true;
-    audio.play();
-  
-    // 오디오 트랙을 가져옴
-    const audioContext = new AudioContext();
-    const audioSource = audioContext.createMediaElementSource(audio);
+    // Check if the audio context is already created
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Create audio source only if it hasn't been created yet
+    const audioSource = audioContext.createMediaElementSource(audioRef.current);
     const destination = audioContext.createMediaStreamDestination();
+    
+    // Connect audio source to destination
     audioSource.connect(destination);
-  
-    // 비디오 스트림과 오디오 스트림을 결합
+    
+    // Connect the audio context to the destination (speakers)
+    audioSource.connect(audioContext.destination); // Output to speakers
+    
+    // Combine video stream and audio stream
     const combinedStream = new MediaStream([...canvasStream.getTracks(), ...destination.stream.getTracks()]);
   
-    // RecordRTC 사용
+    // Use RecordRTC to record the combined stream
     const recorder = new RecordRTC(combinedStream, {
       type: 'video',
       mimeType: 'video/mp4',
@@ -202,12 +217,13 @@ const PostcardView = () => {
     });
   
     recorder.startRecording();
+    audioRef.current.play(); // Ensure the audio starts playing
     recorderRef.current = recorder;
   
-    // 10초 후 녹화 중지
+    // Stop recording after 10 seconds
     setTimeout(() => stopRecording(), 10000);
-  };
-  
+};
+
 
   const stopRecording = () => {
     if (recorderRef.current) {
@@ -217,6 +233,13 @@ const PostcardView = () => {
         setBlobUrl(url);
         setRecordedBlob(blob); // Store the actual blob
         setIsRecording(false); // 녹화 완료
+
+        // 오디오 재생 중지
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
+
       });
     }
   };
@@ -272,35 +295,65 @@ const PostcardView = () => {
   }, [navigate]);
 
   return (
+
+    
     <div style={{
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
     }}>
+      <audio ref={audioRef} src="/static/test.mp3" loop></audio>
+    
     <Header 
       title={postcard?.name ? `'${postcard.name}'의 춤사위'` : '춤사위'}
       onMenuClick={handleMenuClick}
+      style={{
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        width: '100vw',
+        height: '58px',
+        zIndex: '1000',
+      }}
+      
     />
 
 
-      <canvas
-        ref={canvasRef}
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: 'sticky',   // 캔버스를 절대 위치로 설정      // 상단에서 58px 만큼 띄움
+        top:'58px',
+        left: '0',              // 화면 왼쪽에 맞춤
+        width: '70vw',         // 화면 너비를 100% 사용
+        height: 'calc(70vw * (16 / 9))',  // 9:16 비율을 유지하면서 높이를 설정
+        overflow: 'hidden' ,
+        zIndex:'900',   // 넘침을 방지
+      }}
+    />
+
+          {/* Promotion Image */}
+        <img 
+        src="/static/stockimages/promotion.png" 
+        alt="Promotion"
         style={{
-          position: 'fixed',   // 캔버스를 절대 위치로 설정      // 상단에서 58px 만큼 띄움
-          top:'58px',
-          left: '0',              // 화면 왼쪽에 맞춤
-          width: '100vw',         // 화면 너비를 100% 사용
-          height: 'calc(100vw * (16 / 9))',  // 9:16 비율을 유지하면서 높이를 설정
-          overflow: 'hidden'      // 넘침을 방지
-        }}
+          position: 'absolute', // Position absolutely within the relative parent
+          right: '20px',
+          bottom: '75px',
+          width: '70vw', // Adjust width as necessary
+          height: 'auto', // Adjust height as necessary
+          maxWidth: '100%', // Prevent overflow
+          maxHeight: '100%', // Prevent overflow
+          zIndex: '1100', // Ensure the image is on top
+        }} 
       />
     
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', position:'fixed', bottom:'0', height:'calc(43.75vw - 58px)'}}>
-        <button onClick={downloadVideo} style={{ marginRight: '10px' }} disabled={!blobUrl}>
+      <div id="upbuttons" style={{ display: 'flex', justifyContent: 'center'}}>
+        <button className="upbutton" onClick={downloadVideo} style={{ marginRight: '10px' }} disabled={!blobUrl}>
           {isRecording ? '공유 영상 준비 중...' : 'Download Video'}
         </button>
-        <button onClick={shareVideo} disabled={!blobUrl}>
+        <button className="upbutton" onClick={shareVideo} disabled={!blobUrl}>
           {isRecording ? '공유 영상 준비 중...' : 'Share Video'}
         </button>
       </div>

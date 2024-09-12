@@ -1,9 +1,31 @@
 @font-face {
-    font-family: "Cafe24Simplehae";
-    src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.1/Cafe24Simplehae.woff")
-      format("woff");
-    font-weight: normal;
-    font-style: normal;
-  }
+  font-family: "Cafe24Simplehae";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.1/Cafe24Simplehae.woff")
+    format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
 
-  
+#upbuttons {
+  position: fixed;
+  bottom: 40px;
+  border-top: 1px solid #e6e1dc;
+  padding-top: 10px;
+  width: 100%;
+  z-index: 1000;
+}
+
+.upbutton {
+  /* 버튼 */
+
+  box-sizing: border-box;
+
+  width: 170px;
+  height: 35px;
+
+  background: #f8f6f1;
+  border: 1px solid #e6e1dc;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+
+  color: #412823;
+}
