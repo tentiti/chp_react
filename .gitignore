@@ -15,6 +15,9 @@ npm-debug.log*
 # testing
 /coverage
 
+#certs
+certs/
+
 # production
 /build
 *.glb
