@@ -1,249 +1,274 @@
 @font-face {
-    font-family: "ClimateCrisisKR-1979";
-    src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/ClimateCrisisKR-2030.woff2")
-      format("woff2");
-    font-weight: 400;
-  }
-  
-  @font-face {
-    font-family: "ClimateCrisisKR-1979";
-    src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/ClimateCrisisKR-2040.woff2")
-      format("woff2");
-    font-weight: 200;
-  }
-  
-  @font-face {
-    font-family: "Cafe24Simplehae";
-    src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.1/Cafe24Simplehae.woff")
-      format("woff");
-    font-weight: normal;
-    font-style: normal;
-  }
-  
-  body {
-    font-family: "Inter", sans-serif;
-    color: #412823;
-    background-color: #f8f6f1;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    overflow-y: hidden;
-  }
-  
-  .container {
-    padding-top: 58px;
-    padding-bottom: 70px;
-    position: relative;
-    opacity: 1;
-    transition: opacity 0.5s ease, transform 0.7s ease-out;
-    z-index: 1000;
-    height: calc(100vh - 128px);
-    overflow-y: auto;
-  }
-  
-  .container.slide-out {
-    transform: translateX(-100%);
-  }
-  
-  #headerLoader {
-    background-color: #f8f6f1;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 58px;
-    z-index: 10005;
-  }
-  
-  .titleArea {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 15px;
-    width: 100%;
-    z-index: 1005;
-  }
-  
-  .mainImage {
-    background-color: #f8f6f1;
-    margin: 0;
-    padding: 0;
-    z-index: 1000;
-  }
-  
-  .mainImage img {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    display: block;
-  }
-  
-  .image-grid {
-    width: 100%;
-    overflow: hidden;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    background-color: #f8f6f1;
-    gap: 1px;
-    padding: 1px 0;
-  }
-  
-  .image-item {
-    aspect-ratio: 1 / 1;
-    overflow: hidden;
-    background-color: #f8f6f1;
-  }
-  
-  .image-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 70px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    text-align: center;
-    align-items: center;
-    background-color: #f8f6f1;
-    z-index: 1005;
-    box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.3);
-  }
-  
-  footer * {
-    margin-top: -20px;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-  }
-  
-  .footerBorder {
-    font-size: 11px;
-  }
-  
-  .floating {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    z-index: 10000;
-    background-size: cover;
-    background-position: center;
-    transition: left 0.1s ease-in-out, top 0.1s ease-in-out,
-      background-color 0.3s ease-in-out;
-  }
-  
-  #mainBanner {
-    width: 100%;
-    height: auto;
-    opacity: 1;
-    transition: opacity 0.7s ease-in-out;
-  }
-  
-  #mainBanner.fade-out {
-    opacity: 0;
-  }
-  
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
-  
-  a:active,
-  a:focus {
-    color: #f59191;
-  }
-  
-  .invitation-content {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    transform: translateX(100%);
-    transition: transform 0.7s ease-out, opacity 0.7s ease-out;
-    background-color: #f8f6f1;
-    z-index: 2000;
-    overflow-y: auto;
-  }
-  
-  .invitation-content.slide-in {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  
-  .background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-attachment: fixed;
-    z-index: 1;
-    opacity: 1;
-  }
-  
-  #inv_text {
-    position: relative;
-    color: white;
-    font-family: "Cafe24Simplehae", sans-serif;
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 1.5;
-    text-align: center;
-    padding: 20px;
-    z-index: 2;
-    margin-top: 60px;
-  }
-  
-  #letsmakedance {
-    position: fixed;
-    bottom: 20px;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-  }
-  
-  #letsmakedance a {
-    display: inline-block;
-    width: 170px;
-    height: 35px;
-    line-height: 35px;
-    text-align: center;
-    box-sizing: border-box;
-    background: #f8f6f1;
-    border: 1px solid #e6e1dc;
-    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
-    text-decoration: none;
-    color: inherit;
-  }
-  
-  #letsmakedance a:hover,
-  #letsmakedance a:active,
-  #letsmakedance a:focus {
-    color: #f8f6f1;
-    background: #ed9a9a;
-    border: 1px solid #e6e1dc;
-  }
+  font-family: "ClimateCrisisKR-1979";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/ClimateCrisisKR-2030.woff2")
+    format("woff2");
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "ClimateCrisisKR-1979";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/ClimateCrisisKR-2040.woff2")
+    format("woff2");
+  font-weight: 200;
+}
+
+@font-face {
+  font-family: "Cafe24Simplehae";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.1/Cafe24Simplehae.woff")
+    format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  color: #412823;
+  background-color: #f8f6f1;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-y: hidden;
+}
+
+.container {
+  padding-top: 58px;
+  padding-bottom: 70px;
+  position: relative;
+  opacity: 1;
+  transition: opacity 0.5s ease, transform 0.7s ease-out;
+  z-index: 1000;
+  height: calc(100vh - 128px);
+  overflow-y: auto;
+  background-color: #f8f6f1;
+}
+
+.container.slide-out {
+  transform: translateX(-100%);
+}
+
+#headerLoader {
+  background-color: #f8f6f1;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 58px;
+  z-index: 10005;
+}
+
+.titleArea {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+  width: 100%;
+  z-index: 1005;
+}
+
+.mainImage {
+  background-color: #f8f6f1;
+  margin: 0;
+  padding: 0;
+  z-index: 1000;
+}
+
+.mainImage img {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: block;
+}
+
+.image-grid {
+  width: 100%;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background-color: #f8f6f1;
+  gap: 1px;
+  padding: 1px 0;
+}
+
+.image-item {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background-color: #f8f6f1;
+}
+
+.image-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 70px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  text-align: center;
+  align-items: center;
+  background-color: #f8f6f1;
+  z-index: 1005;
+  box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.3);
+}
+
+footer * {
+  margin-top: -20px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.footerBorder {
+  font-size: 11px;
+}
+
+.floating {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 10000;
+  background-size: cover;
+  background-position: center;
+  transition: left 0.1s ease-in-out, top 0.1s ease-in-out,
+    background-color 0.3s ease-in-out;
+}
+
+#mainBanner {
+  width: 100%;
+  height: auto;
+  opacity: 1;
+  transition: opacity 0.7s ease-in-out;
+}
+
+#mainBanner.fade-out {
+  opacity: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:active,
+a:focus {
+  color: #f59191;
+}
+
+.invitation-content {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: transform 0.7s ease-out, opacity 0.7s ease-out;
+  background-color: #f8f6f1;
+  z-index: 2000;
+  overflow-y: auto;
+}
+
+.invitation-content.slide-in {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed;
+  z-index: 1;
+  opacity: 1;
+}
+
+#inv_text {
+  position: relative;
+  color: white;
+  font-family: "Cafe24Simplehae", sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  padding: 20px;
+  z-index: 2;
+  margin-top: 60px;
+}
+
+#letsmakedance {
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+}
+
+#letsmakedance a {
+  display: inline-block;
+  width: 170px;
+  height: 35px;
+  line-height: 35px;
+  text-align: center;
+  box-sizing: border-box;
+  background: #f8f6f1;
+  border: 1px solid #e6e1dc;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+  text-decoration: none;
+  color: inherit;
+}
+
+#letsmakedance a:hover,
+#letsmakedance a:active,
+#letsmakedance a:focus {
+  color: #f8f6f1;
+  background: #ed9a9a;
+  border: 1px solid #e6e1dc;
+}
+
+.invitation-container {
+  position: fixed;
+  top: 0;
+  right: -100%; /* 기본적으로 화면 밖에 위치 */
+  width: 100%;
+  height: 100%;
+  z-index: 2000;
+  transition: right 0.7s ease;
+}
+
+.invitation-container.visible {
+  right: 0; /* 슬라이드 인 될 때 화면 안으로 들어옴 */
+}
+
+.invitation-content {
+  height: 100%;
+  background-color: #f8f6f1;
+  overflow: hidden;
+}
+
+.invitation-content.slide-in {
+  transform: translateX(0);
+}

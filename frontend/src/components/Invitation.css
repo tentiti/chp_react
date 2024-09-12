@@ -130,13 +130,26 @@ canvas {
   border: 1px solid #e6e1dc;
 }
 
-.background-wrapper {
-  opacity: 0;
-  transform: translateX(100%); /* 오른쪽에서 시작 */
-  transition: transform 0.7s ease-out, opacity 0.7s ease-out; /* 애니메이션 속도 및 효과 설정 */
+.invitation-container {
+  position: fixed;
+  top: 0;
+  right: -100%; /* 기본적으로 화면 밖에 위치 */
+  width: 100%;
+  height: 100%;
+  z-index: 2000;
+  transition: right 0.7s ease;
 }
 
-.background-wrapper.slide-in {
-  opacity: 1;
-  transform: translateX(0); /* 왼쪽으로 슬라이드 */
+.invitation-container.visible {
+  right: 0; /* 슬라이드 인 될 때 화면 안으로 들어옴 */
+}
+
+.invitation-content {
+  height: 100%;
+  background-color: white;
+  overflow: hidden;
+}
+
+.invitation-content.slide-in {
+  transform: translateX(0);
 }

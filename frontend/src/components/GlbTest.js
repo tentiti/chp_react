@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { useNavigate } from 'react-router-dom';
 import GIF from 'gif.js';
@@ -8,9 +8,7 @@ import './CreateCharacter.css';
 import Header from './Header';
 import { UseVideo } from './VideoContext.js'; // Context에서 가져옴
 
-const API_URL = process.env.REACT_APP_API_URL;
-
-const GlbTest = () => {
+const CreateCharacter = () => {
   const [gifUrl, setGifUrl] = useState(null);
   const [videoFiles, setVideoFiles] = useState([]);
   const { addVideoFile } = UseVideo(); // UseVideo를 컴포넌트 내부에서 호출
@@ -79,39 +77,50 @@ const GlbTest = () => {
     { name: 'Black', value: '#000000' },
   ];
 
-  const selectCategory = (category) => {
+  const selectCategory = useCallback((category) => {
     setActiveCategory(category);
-  };
+    
+    // 표정 카테고리를 선택했을 때 캔버스 초기화
+    if (category.name === 'EXPRESSION') {
+      const canvas = expressionCanvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#FFFFFF'; // 흰색으로 설정
+        ctx.fillRect(0, 0, canvas.width, canvas.height); // 캔버스 전체를 흰색으로 채움
+      }
+    }
+  }, []);
 
   const selectColor = (categoryName, color) => {
+    const selectedColor = COLORS.find((c) => c.value === color); // 선택된 색상 정보 가져오기
     setSelectedColors((prevColors) => ({
       ...prevColors,
-      [categoryName]: color,
+      [categoryName]: selectedColor, // name과 value 모두 저장
     }));
   };
+  
   
   const [initialCameraPosition, setInitialCameraPosition] = useState(null);
 
 
   //표정 그리기 관련
-  const GRAYSCALE_COLORS = ['#FFFFFF', '#E0E0E0', '#C0C0C0', '#808080', '#404040', '#000000'];
+  const GRAYSCALE_COLORS = ['#F5F1F1', '#F7EFDA', '#F7E2CD', '#B18A82', '#694F4F', '#000000'];
 
   const [expressionDrawingColor, setExpressionDrawingColor] = useState('#FFFFFF'); // 초기 색상: 검은색
   const [expressionIsErasing, setExpressionIsErasing] = useState(false); // 지우개 여부
   const expressionCanvasRef = useRef(null); // 표정을 그리는 캔버스  
 
-  //캔버스 색상 변경 함수
-  const clearCanvasWithColor = (color) => {
-    const ctx = expressionCanvasRef.current.getContext('2d');
-    ctx.fillStyle = color; // 선택한 색상으로 설정
-    ctx.fillRect(0, 0, expressionCanvasRef.current.width, expressionCanvasRef.current.height); // 캔버스 전체를 색으로 덮기
+  // 캔버스를 특정 색으로 초기화하는 함수
+  const clearCanvasWithColor = (color = '#FFFFFF') => {
+    const canvas = expressionCanvasRef.current;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // 경로를 초기화하고 다시 설정
-    ctx.beginPath(); // 새로운 경로 시작
-    ctx.strokeStyle = '#000000'; // 그리기 색상 다시 설정
-    ctx.lineWidth = 5; // 선 굵기 다시 설정
-    
-    ctx.closePath(); // 경로 종료
+    ctx.beginPath();
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 5;
+    ctx.closePath();
   };
 
 
@@ -234,7 +243,7 @@ const GlbTest = () => {
     };
 
     initThreeJS();
-    loadModel('/static/models/body__animated_test.glb', 'Base', false, () => setLoadingStatus('Loaded Successfully'));
+    loadModel('/static/models/plushair.glb', 'Base', false, () => setLoadingStatus('Loaded Successfully'));
 
     const animate = () => {
       requestAnimationFrame(animate);
@@ -563,7 +572,7 @@ const startRecording = async (setVideoFile) => {
 };
 
   
-console.log(API_URL); // Check if API_URL is correct
+console.log(process.env.REACT_APP_API_URL); // Check if API_URL is correct
 
 
 const uploadGif = async (gifBlob) => {
@@ -571,7 +580,7 @@ const uploadGif = async (gifBlob) => {
   formData.append('file', gifBlob, 'transparent_animation.gif');
   
   try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/upload`, {
+      const response = await fetch(`/upload`, {
           method: 'POST',
           body: formData,
       });
@@ -591,7 +600,7 @@ const uploadGif = async (gifBlob) => {
       const filename = data.filename;
       console.log('GIF Filename:', filename);
 
-      const gifUrl = `${API_URL}/uploads/${filename}`;
+      const gifUrl = `${process.env.REACT_APP_API_URL}/uploads/${filename}`;
       console.log('Constructed GIF URL:', gifUrl);
 
       return gifUrl;
@@ -676,15 +685,23 @@ const uploadGif = async (gifBlob) => {
   
   const drawExpressionAt = (x, y) => {
     const ctx = expressionCanvasRef.current.getContext('2d');
-    ctx.lineWidth = 5;
     ctx.lineCap = 'round';
   
     if (expressionIsErasing) {
+      // 지우개 모드일 때는 선택된 색상으로 그리고 굵기는 20
       ctx.lineWidth = 20;
-      ctx.strokeStyle = expressionDrawingColor; // 지우개 기능일 때 흰색으로 칠함
+      ctx.strokeStyle = expressionDrawingColor;
     } else {
-      ctx.lineWidth = 5;
-      ctx.strokeStyle = '#000000';
+      // 그레이스케일 색상이 4, 5, 6번째일 때는 검정색으로 그리고 굵기는 5
+      const grayscaleIndex = GRAYSCALE_COLORS.indexOf(expressionDrawingColor);
+      if (grayscaleIndex >= 3 && grayscaleIndex <= 5) {
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = '#FFFFFF'; // 검정색으로 그리기
+      } else {
+        // 그 외의 경우 흰색으로 그리고 굵기는 5
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = '#000000'; // 흰색으로 그리기
+      }
     }
   
     ctx.lineTo(x, y);
@@ -692,6 +709,7 @@ const uploadGif = async (gifBlob) => {
     ctx.beginPath();
     ctx.moveTo(x, y);
   };
+  
 
   const applyExpressionTextureToModel = () => {
     const canvas = expressionCanvasRef.current;
@@ -744,23 +762,46 @@ const uploadGif = async (gifBlob) => {
 
   
 
-    useEffect(() => {
-      const canvas = expressionCanvasRef.current;
+useEffect(() => {
+  const canvas = expressionCanvasRef.current;
+
+  if (canvas) {
+    clearCanvasWithColor('#FFFFFF');  // 기본 흰색 배경 설정
     
-      if (canvas) {
-        // 터치 이벤트 리스너에 passive: false 옵션을 추가
-        canvas.addEventListener('touchstart', startExpressionDrawing, { passive: false });
-        canvas.addEventListener('touchmove', drawExpression, { passive: false });
-        canvas.addEventListener('touchend', finishExpressionDrawing, { passive: false });
-    
-        // 컴포넌트 언마운트 시 이벤트 리스너를 제거
-        return () => {
-          canvas.removeEventListener('touchstart', startExpressionDrawing);
-          canvas.removeEventListener('touchmove', drawExpression);
-          canvas.removeEventListener('touchend', finishExpressionDrawing);
-        };
-      }
-    }, []);
+    // 터치 이벤트 리스너에 passive: false 옵션을 추가
+    canvas.addEventListener('touchstart', startExpressionDrawing, { passive: false });
+    canvas.addEventListener('touchmove', drawExpression, { passive: false });
+    canvas.addEventListener('touchend', finishExpressionDrawing, { passive: false });
+
+    // 컴포넌트 언마운트 시 이벤트 리스너를 제거
+    return () => {
+      canvas.removeEventListener('touchstart', startExpressionDrawing);
+      canvas.removeEventListener('touchmove', drawExpression);
+      canvas.removeEventListener('touchend', finishExpressionDrawing);
+    };
+  }
+}, []);
+
+const clearExpressionCanvas = useCallback(() => {
+  const canvas = expressionCanvasRef.current;
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#FFFFFF'; // 흰색으로 설정
+    ctx.fillRect(0, 0, canvas.width, canvas.height); // 캔버스 전체를 흰색으로 채움
+  }
+}, []);
+
+useEffect(() => {
+  if (selectedCategory === 'EXPRESSION') {
+    clearExpressionCanvas();
+  }
+}, [selectedCategory, clearExpressionCanvas]);
+
+const handleCategorySelection = useCallback((category) => {
+  setSelectedCategory(category.name);
+  selectCategory(category);
+}, [selectCategory]);
+
     
     
   
@@ -824,22 +865,18 @@ const uploadGif = async (gifBlob) => {
 
       <div className="controls" style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column-reverse' }}>
       <div id="botbottoms" style={{ display: 'flex', flexDirection: 'Column' }}>
-        <div className="category-selection">
-          {CATEGORIES.map((category) => (
-            <button
-              key={category.name}
-              onClick={() => {
-                setSelectedCategory(category.name); // 선택된 카테고리 업데이트
-                selectCategory(category); // 기존 함수 호출
-              }}
-              className={`color-button ${selectedCategory === category.name ? 'selected' : ''}`} // 선택된 경우 클래스 추가
-              disabled={category.name === 'BOTTOM' && isDressSelected} // 원피스가 선택되면 하의 버튼 비활성화
-            >
-              {CATEGORY_NAME_MAP[category.name]} {/* 한글 카테고리 이름 표시 */}
-            </button>
-          ))}
-          
-        </div>
+      <div className="category-selection">
+        {CATEGORIES.map((category) => (
+          <button
+            key={category.name}
+            onClick={() => handleCategorySelection(category)}
+            className={`color-button ${selectedCategory === category.name ? 'selected' : ''}`}
+            disabled={category.name === 'BOTTOM' && isDressSelected}
+          >
+            {CATEGORY_NAME_MAP[category.name]}
+          </button>
+        ))}
+      </div>
 
         <div className="create-character-container">
           <button className="create-character" onClick={startRecording}>
@@ -982,8 +1019,10 @@ const uploadGif = async (gifBlob) => {
           key={index}
           onClick={() => {
             const modelPath = activeCategory.useColor
-              ? `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}_${selectedColors[activeCategory.name]}.glb`
-              : `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}.glb`;
+            ? `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}_${selectedColors[activeCategory.name]?.name || 'Black'}.glb`
+            : `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}.glb`;
+          
+            console.log(modelPath);
             loadModel(modelPath, activeCategory.name, activeCategory.useColor);
           }}
         >
@@ -1028,5 +1067,5 @@ const uploadGif = async (gifBlob) => {
         );
       };
 
-export default GlbTest;
+export default CreateCharacter;
 

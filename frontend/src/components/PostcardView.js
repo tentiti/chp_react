@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -266,6 +266,10 @@ const PostcardView = () => {
     }
   };
   const navigate = useNavigate();
+  const handleMenuClick = useCallback(() => {
+    console.log('Navigating to Home');
+    navigate('/Home', { replace: true });
+  }, [navigate]);
 
   return (
     <div style={{
@@ -274,7 +278,12 @@ const PostcardView = () => {
       alignItems: 'center',
       justifyContent: 'center',
     }}>
-      <Header title={`'${postcard?.name}'의 춤사위`} onMenuClick={() => navigate('/')} />
+    <Header 
+      title={postcard?.name ? `'${postcard.name}'의 춤사위'` : '춤사위'}
+      onMenuClick={handleMenuClick}
+    />
+
+
       <canvas
         ref={canvasRef}
         style={{
