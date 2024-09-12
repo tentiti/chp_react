@@ -77,6 +77,8 @@ const CreateCharacter = () => {
     { name: 'Black', value: '#000000' },
   ];
 
+  const [selectedHeadIndex, setSelectedHeadIndex] = useState(1); // 선택된 얼굴 색 인덱스 상태 추가
+
   const selectCategory = useCallback((category) => {
     setActiveCategory(category);
     
@@ -102,7 +104,6 @@ const CreateCharacter = () => {
   
   const [initialCameraPosition, setInitialCameraPosition] = useState(null);
 
-
   //표정 그리기 관련
   const GRAYSCALE_COLORS = ['#F5F1F1', '#F7EFDA', '#F7E2CD', '#B18A82', '#694F4F', '#000000'];
 
@@ -116,7 +117,6 @@ const CreateCharacter = () => {
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = color;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
     ctx.beginPath();
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 5;
@@ -147,6 +147,12 @@ const CreateCharacter = () => {
       (gltf) => {
         const model = gltf.scene;
         sceneRef.current.add(model);
+
+              // 모델 내 구성 요소 콘솔에 출력
+      console.log('Model components:');
+      model.traverse((child) => {
+        console.log(child);  // 각 구성 요소 출력
+      });
 
         const mixer = new THREE.AnimationMixer(model);
         let action = null;
@@ -213,6 +219,10 @@ const CreateCharacter = () => {
         preserveDrawingBuffer: true 
       });
 
+      rendererRef.outputColorSpace = THREE.SRGBColorSpace;
+      rendererRef.gammaFactor = 2.2;
+      rendererRef.gammaOutput = true;
+
       rendererRef.current.setSize(400, 400);
       rendererRef.current.setClearColor(0x000000, 0);
 
@@ -225,12 +235,12 @@ const CreateCharacter = () => {
       hiddenRendererRef.current.setSize(400, 400);
       hiddenRendererRef.current.setClearColor(0x000000, 0);
 
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-      sceneRef.current.add(ambientLight);
+      const ambientLight1 = new THREE.AmbientLight(0xffffff, 1.0);
+      sceneRef.current.add(ambientLight1);
 
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      directionalLight.position.set(2, 2, 2);
-      sceneRef.current.add(directionalLight);
+      const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1.0);
+      directionalLight2.position.set(2, 2, 2);
+      sceneRef.current.add(directionalLight2);
 
       cameraRef.current.position.z = 5;
 
@@ -240,10 +250,32 @@ const CreateCharacter = () => {
       // controlsRef.current.dampingFactor = 0.25; // 감속 비율
       // controlsRef.current.enableZoom = true; // 줌 허용
 
+        // AmbientLight (전체적으로 부드러운 조명)
+      const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+      sceneRef.current.add(ambientLight);
+
+      // 여러 개의 PointLight (다양한 위치에서 강한 조명)
+      const pointLight1 = new THREE.PointLight(0xffffff, 1, 100);
+      pointLight1.position.set(10, 10, 10);
+      sceneRef.current.add(pointLight1);
+
+      const pointLight2 = new THREE.PointLight(0xffffff, 1, 100);
+      pointLight2.position.set(-10, 10, 10);
+      sceneRef.current.add(pointLight2);
+
+      const pointLight3 = new THREE.PointLight(0xffffff, 1, 100);
+      pointLight3.position.set(0, -10, 10);
+      sceneRef.current.add(pointLight3);
+
+      // DirectionalLight (태양처럼 넓게 퍼지는 조명)
+      const directionalLight3 = new THREE.DirectionalLight(0xffffff, 1.0);
+      directionalLight3.position.set(5, 10, 5);
+      sceneRef.current.add(directionalLight3);
+
     };
 
     initThreeJS();
-    loadModel('/static/models/plushair.glb', 'Base', false, () => setLoadingStatus('Loaded Successfully'));
+    loadModel('/static/models/animation_1.glb', 'Base', false, () => setLoadingStatus('Loaded Successfully'));
 
     const animate = () => {
       requestAnimationFrame(animate);
@@ -726,12 +758,15 @@ const uploadGif = async (gifBlob) => {
     // Y축을 반전시키기 위해 flipY를 false로 설정
     texture.flipY = false;
     texture.needsUpdate = true;
+
+    // 텍스처의 색상 공간을 sRGB로 설정
+    rendererRef.outputColorSpace = THREE.SRGBColorSpace;
   
     // 모델에 텍스처를 적용하는 로직
     modelsRef.current.forEach(({ model }) => {
       model.traverse((child) => {
-        if (child.name === 'metarig') {
-          const head = child.getObjectByName('head001');
+        if (child.name === 'head_1') {
+          const head = child;
           if (head) {
             const mesh3 = head;
             if (mesh3) {
@@ -810,6 +845,22 @@ const handleCategorySelection = useCallback((category) => {
   selectCategory(category);
 }, [selectCategory]);
 
+const handleHeadSelection = (index) => {
+  setSelectedHeadIndex(index);  // 선택된 얼굴색 인덱스 상태 업데이트
+
+  // 1. 베이직 모델 교체
+  const modelPath = `/static/models/animation_${index + 1}.glb`;  // 해당 인덱스에 맞는 모델 로드
+  loadModel(modelPath, 'Base', false);  // 모델 로드
+
+  // 2. 표정 캔버스 배경 이미지 교체
+  const faceBackground = `static/stockimages/facebackground_${index + 1}.png`;  // 해당 인덱스에 맞는 배경 이미지 선택
+  const faceBackgroundImage = document.querySelector("#face-background");  // 배경 이미지를 가리키는 요소 선택
+  if (faceBackgroundImage) {
+    faceBackgroundImage.src = faceBackground;  // 표정 캔버스 배경 이미지 변경
+  }
+};
+
+
     
     
   
@@ -821,7 +872,7 @@ const handleCategorySelection = useCallback((category) => {
         <div id="overlay" className="overlay">
           <div className="overlay-content">
             <img
-              src="../static/stockimages/make_invitation.png"
+              src="../static/stockimages/maker_invitation.png"
               alt="Invitation"
             />
 
@@ -908,6 +959,7 @@ const handleCategorySelection = useCallback((category) => {
             onClick={() => {
               setExpressionDrawingColor(color);
               clearCanvasWithColor(color);
+              handleHeadSelection(index);
             }}
             className="color-button"
             style={{
@@ -988,33 +1040,53 @@ const handleCategorySelection = useCallback((category) => {
 
       </div>
 
-      {/* 그리기 캔버스 */}
       <div
-  style={{
-    position: 'relative',
-    width: 'calc(100vw - 30px)',  // 너비를 원하는 크기로 설정
-    height: '190px',  // 고정된 높이
-    overflow: 'hidden',  // 초과된 부분을 숨기기
-  }}
->
-  <canvas
-    ref={expressionCanvasRef}
-    style={{
-      width: '100%',  // 부모 요소의 가로 너비에 맞춤
-      height: '100%',  // 부모 요소의 세로 높이에 맞춤
-      aspectRatio: '1 / 1',  // 정사각형 비율 유지
-      display: 'block',  // 블록 요소로 설정하여 크기 제어
-    }}
-    // 마우스 이벤트
-    onMouseDown={startExpressionDrawing}
-    onMouseMove={drawExpression}
-    onMouseUp={finishExpressionDrawing}
-    // 터치 이벤트
-    onTouchStart={startExpressionDrawing}
-    onTouchMove={drawExpression}
-    onTouchEnd={finishExpressionDrawing}
-  />
-</div>
+        style={{
+          position: 'relative',
+          width: 'calc(100vw - 30px)',  // 너비를 원하는 크기로 설정
+          height: '190px',  // 고정된 높이
+          overflow: 'hidden',  // 초과된 부분을 숨기기
+        }}
+      >
+        {/* 배경 이미지 */}
+        <img
+          src="static/stockimages/facebackground.png"
+          alt="Face Background"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none', // 이미지에 클릭이 되지 않게 설정
+            zIndex: 1000,
+          }}
+        />
+
+        {/* 표정 그리기용 캔버스 */}
+        <canvas
+          ref={expressionCanvasRef}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'transparent', // 배경을 투명하게 설정
+            zIndex: 2,  // 캔버스가 이미지 위에 렌더링되도록 설정
+            display: 'block',
+          }}
+          // 마우스 이벤트
+          onMouseDown={startExpressionDrawing}
+          onMouseMove={drawExpression}
+          onMouseUp={finishExpressionDrawing}
+          // 터치 이벤트
+          onTouchStart={startExpressionDrawing}
+          onTouchMove={drawExpression}
+          onTouchEnd={finishExpressionDrawing}
+        />
+      </div>
+
 
 
 

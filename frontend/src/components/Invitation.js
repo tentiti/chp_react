@@ -38,15 +38,26 @@ function Invitation({ onBack }) {
         </div>
       </header>
 
+      <img
+        src="/static/stockimages/moon.png"
+        alt="moon"
+        style={{
+          position: 'sticky',
+          left: '46.06%',
+          right: '6.62%',
+          top: '14.91%',
+          bottom: '64.08%',
+          width:'47.33%',
+          // background: 'rgba(0, 0, 0, 0.23)',
+          filter: 'blur(5px)',
+          zIndex: 1
+        }}
+      />
+
       <div id="inv_text">
         <img 
           src="/static/stockimages/invitext.png" 
           alt="invitation text" 
-          style={{ 
-            width: '100%', 
-            height: 'auto',
-            overflow: 'hidden',
-          }} 
         />
       </div>
 

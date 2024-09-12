@@ -182,15 +182,16 @@ function Home() {
       {!isInvitationVisible && (
         <div id="headerLoader">
           <header>
-            <div className="titleArea" style={{ backgroundColor: '#f8f6f1', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-              <div style={{ fontFamily: 'ClimateCrisisKR-1979', flexGrow: 0 }}>
-                <span style={{ fontWeight: 200, fontSize: '12px', color: '#412823' }}>이제</span><br />
-                <span style={{ fontWeight: 400, fontSize: '16px', color: '#412823' }}>댄스타임</span>
-              </div>
-              <div onClick={handleMenuClick} style={{ marginLeft: 'auto', cursor: 'pointer' }}>
-                <img src="/static/icons/hamburger.png" alt="menu" id="menu-button" />
-              </div>
+          <div className="titleArea" style={{ backgroundColor: '#f8f6f1', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', width: '100%' }}>
+            <div style={{ fontFamily: 'ClimateCrisisKR-1979', flexGrow: 0, textAlign: 'left' }}>
+              <span style={{ fontWeight: 200, fontSize: '12px', color: '#412823' }}>이제</span><br />
+              <span style={{ fontWeight: 400, fontSize: '16px', color: '#412823' }}>댄스타임</span>
             </div>
+            <div onClick={handleMenuClick} style={{ marginLeft: 'auto', cursor: 'pointer' }}>
+              <img src="/static/icons/hamburger.png" alt="menu" id="menu-button" />
+            </div>
+          </div>
+
           </header>
 
 
