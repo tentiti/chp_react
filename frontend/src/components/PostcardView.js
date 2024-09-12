@@ -83,8 +83,9 @@ const PostcardView = () => {
         video.muted = true; // 비디오 음소거 (자동 재생 가능)
         video.playsInline = true; // 모바일에서 inline 재생 허용 (필수)
         video.autoplay = true;  // autoplay 설정, 텍스처로 사용 시 필요
+        video.playbackRate = 0.4;  // Slow down playback to half speed
       
-        video.playbackRate = 0.8;  // Slow down playback to half speed
+        
 
         // 비디오 엘리먼트를 DOM에 추가하지 않음
         video.addEventListener('canplay', () => {
@@ -105,7 +106,7 @@ const PostcardView = () => {
       
           videoMesh.position.set(0, 20, 0.1);
           sceneRef.current.add(videoMesh);
-      
+          
           // 비디오를 Three.js 텍스처로 사용하려면 재생 필요
           video.play();
           setIsVideoReady(true);
@@ -117,38 +118,66 @@ const PostcardView = () => {
       const addText = (text, x, y, size = 50) => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-    
-        // 캔버스 크기를 더 크게 설정 (더 높은 해상도)
-        canvas.width = 393;  // 더 큰 너비
-        canvas.height = 700; // 더 큰 높이
-    
-        // 더 큰 텍스트 크기를 사용
-        ctx.font = `${size}px Cafe24Simplehae, sans-serif`;
-        ctx.fillStyle = 'rgba(65, 40, 35, 1)'; // 수정된 부분
+      
+        // Further increase canvas size for higher resolution
+        canvas.width = 2048;
+        canvas.height = 2048;
+      
+        // Increase font size significantly
+        const fontSize = size * 3; // Doubled from previous version
+        ctx.font = `bold ${fontSize}px Cafe24Simplehae, sans-serif`;
+        ctx.fillStyle = 'rgba(65, 40, 35, 1)';
         ctx.textAlign = 'center';
-        ctx.fillText(text, canvas.width / 2, 100);  // 텍스트 위치는 가운데로 유지
-    
-        // 캔버스 크기에 맞춘 좌표 변환
-        const xPos = (x / 393) * width;  // 비율대로 크기 변환
-        const yPos = (y / 700) * 200;
-    
-        // 텍스처 생성
+        ctx.textBaseline = 'middle';
+      
+        // Enhance text shadow for better visibility
+        // ctx.shadowColor = 'rgba(255, 255, 255, 0.7)';
+        // ctx.shadowBlur = 6;
+        // ctx.shadowOffsetX = 3;
+        // ctx.shadowOffsetY = 3;
+      
+        // Anti-aliasing
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+      
+        const maxLineLength = 45; // 정확하게 40글자로 자름
+        const lines = [];
+        let currentLine = '';
+        
+        for (let i = 0; i < text.length; i += maxLineLength) {
+          const line = text.slice(i, i + maxLineLength);
+          lines.push(line);
+        }
+        
+        const lineHeight = fontSize * 2.8; // 줄 간격
+        lines.forEach((line, index) => {
+          ctx.fillText(line, canvas.width / 2, (canvas.height / 2) + (index - lines.length / 2) * lineHeight);
+        });
+        
+      
+        // Adjust positioning to account for larger text
+        const xPos = (x / 393) * width;
+        const yPos = (y / 700) * height * 1.2; // Moved text slightly down
+      
         const texture = new THREE.CanvasTexture(canvas);
-    
-        // PlaneGeometry의 크기도 텍스트가 충분히 보이도록 설정 (비율 맞추기)
-        const geometry = new THREE.PlaneGeometry(400, 600);  // 더 큰 크기 설정
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.format = THREE.RGBAFormat;
+      
+        const aspectRatio = canvas.width / canvas.height;
+        const geometry = new THREE.PlaneGeometry(600 * aspectRatio, 600); // Increased size
         const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
         const mesh = new THREE.Mesh(geometry, material);
-    
-        // 변환된 좌표에 메시를 배치
+      
         mesh.position.set(xPos, yPos, 0.2);
         sceneRef.current.add(mesh);
       };
     
+    
       // 예시 텍스트 추가 (크기와 좌표 수정)
-      addText(`${postcard.comment}`,  0, -1400, 12); // 크기를 키운 텍스트
-      addText(postcard.timestamp,  0, -1590, 8);   // 타임스탬프도 크기 키움
-      addText(`${postcard.name}`, 108, -1680, 12); // 이름 텍스트도 크기 증가
+      addText(`${postcard.comment}`,  0, -178, 12); // 크기를 키운 텍스트
+      addText(postcard.timestamp,  0, -206, 8);   // 타임스탬프도 크기 키움
+      addText(`${postcard.name}`, 108, -233, 12); // 이름 텍스트도 크기 증가
     };
 
     initThreeJS();
@@ -194,7 +223,8 @@ const PostcardView = () => {
     const canvasStream = canvasRef.current.captureStream(30);
     
     // Check if the audio context is already created
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    // const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const audioContext = new (window.AudioContext)();
 
     // Create audio source only if it hasn't been created yet
     const audioSource = audioContext.createMediaElementSource(audioRef.current);

@@ -199,8 +199,10 @@ const CreateCharacter = () => {
     let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
     cameraZ *= 1.5;
 
-    cameraRef.current.position.set(center.x, center.y, center.z + cameraZ);
-    cameraRef.current.lookAt(center);
+    // cameraRef.current.position.set(center.x, center.y, center.z + cameraZ);
+    cameraRef.current.position.set(0, 1, 50);
+    // cameraRef.current.lookAt(center);
+    cameraRef.current.lookAt(new THREE.Vector3(0, 3.2, 0));
     cameraRef.current.updateProjectionMatrix();
   }, []);
 
@@ -210,7 +212,7 @@ const CreateCharacter = () => {
     const initThreeJS = () => {
       sceneRef.current = new THREE.Scene();
       sceneRef.current.background = null;
-      cameraRef.current = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+      cameraRef.current = new THREE.PerspectiveCamera(10, 1, 0.1, 1000);
 
       rendererRef.current = new THREE.WebGLRenderer({ 
         antialias: true, 
@@ -388,7 +390,7 @@ const CreateCharacter = () => {
     a.href = url;
     a.download = filename;  // 다운로드할 파일 이름 설정
     document.body.appendChild(a);
-    a.click();
+    // a.click();
   
     // 다운로드 후 URL 객체 해제
     setTimeout(() => {
@@ -563,9 +565,9 @@ const CreateCharacter = () => {
     resetAndStartAnimation();
 
     gif.on('finished', async (blob) => {
-      const gifUploadUrl = await uploadGif(blob); // GIF 업로드 처리
-      console.log('GIF Upload URL:', gifUploadUrl);
-
+      let gifUploadUrl = await uploadGif(blob); // GIF 업로드 처리
+      console.log('1 GIF Upload URL:', gifUploadUrl);
+      gifUploadUrl = gifUploadUrl.stillfilename
       resolve(gifUploadUrl);  // Resolve with the gifUploadUrl once the upload is complete
     });
 
@@ -631,7 +633,7 @@ const uploadGif = async (gifBlob) => {
       });
 
       // Log the response status for additional insight
-      console.log('Response status:', response.status);
+      // console.log('Response status:', response.status);
       
       // If the response is not OK, log more details
       if (!response.ok) {
@@ -643,12 +645,12 @@ const uploadGif = async (gifBlob) => {
       console.log('Upload response:', data);
 
       const filename = data.filename;
-      console.log('GIF Filename:', filename);
+      // console.log('GIF Filename:', filename);
 
       const gifUrl = `/api/uploads/${filename}`;
-      console.log('Constructed GIF URL:', gifUrl);
+      // console.log('Constructed GIF URL:', gifUrl);
 
-      return gifUrl;
+      return data;
 
   } catch (error) {
       // Differentiate between fetch failures and other errors

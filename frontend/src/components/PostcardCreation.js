@@ -117,7 +117,7 @@ const PostcardCreation = () => {
             {/* GIF */}
             {gifUrl && currentModelPosition && (
               <img
-                src={gifUrl}
+              src={`/api/uploads/${gifUrl}`}
                 alt="Selected GIF"
                 style={{
                   position: 'absolute',
@@ -165,7 +165,7 @@ const PostcardCreation = () => {
           <div style={{ display: 'flex', flexDirection: 'row', marginTop: '12px' }}>
             한마디 :
             <textarea
-              maxLength={88}
+              maxLength={85}
               rows={4}
               value={comment}
               onChange={handleCommentChange}
@@ -190,7 +190,7 @@ const PostcardCreation = () => {
           </div>
 
           <div style={{ fontSize: '12px', color: '#777', marginTop: '10px', textAlign: 'left' }}>
-            {comment.length}/90
+            {comment.length}/85
           </div>
         </div>
 

@@ -67,17 +67,43 @@ def serve(path):
 @app.route("/api/upload", methods=["POST"])
 def upload_file():
     print("uploading..")
+    
     if "file" not in request.files:
         return jsonify({"error": "No file part"}), 400
+    
     file = request.files["file"]
     if file.filename == "":
         return jsonify({"error": "No selected file"}), 400
+    
+    # 원본 파일 저장
     filename = secure_filename(file.filename)
     file_ext = os.path.splitext(filename)[1]
     unique_filename = str(uuid.uuid4()) + file_ext
-    file.save(os.path.join(app.config["UPLOAD_FOLDER"], unique_filename))
-    print(unique_filename)
-    return jsonify({"filename": unique_filename}), 200
+    file_path = os.path.join(app.config["UPLOAD_FOLDER"], unique_filename)
+    file.save(file_path)
+    
+    # 첫 프레임 추출하여 PNG로 저장
+    if file_ext.lower() == '.gif':
+        try:
+            gif = Image.open(file_path)
+            gif.seek(0)  # 첫 번째 프레임으로 이동
+            still_filename = str(uuid.uuid4()) + ".png"
+            still_file_path = os.path.join(app.config["UPLOAD_FOLDER"], still_filename)
+            
+            # 첫 프레임을 PNG로 저장
+            gif.save(still_file_path, "PNG")
+        except Exception as e:
+            return jsonify({"error": f"Failed to process GIF: {str(e)}"}), 500
+    else:
+        return jsonify({"error": "Uploaded file is not a GIF"}), 400
+    
+    print(f"Original GIF filename: {unique_filename}")
+    print(f"First frame PNG filename: {still_filename}")
+    
+    return jsonify({
+        "filename": unique_filename,
+        "stillfilename": still_filename
+    }), 200
 
 
 @app.route("/api/comment", methods=["POST"])

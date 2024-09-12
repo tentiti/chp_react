@@ -160,7 +160,7 @@ const PlaceSelection = () => {
 
                         {gifUrl ? (
                             <img
-                            src={gifUrl}
+                            src={`/api/uploads/${gifUrl}`}
                             alt="Generated GIF"
                             style={{
                             position: 'absolute',
