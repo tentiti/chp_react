@@ -21,6 +21,7 @@ npm-debug.log*
 *.db
 *.mp4
 *.gif
+!loading-circle.gif
 
 # misc
 .DS_Store
