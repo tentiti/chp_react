@@ -572,7 +572,7 @@ const startRecording = async (setVideoFile) => {
 };
 
   
-console.log(process.env.REACT_APP_API_URL); // Check if API_URL is correct
+// console.log(process.env.REACT_APP_API_URL); // Check if API_URL is correct
 
 
 const uploadGif = async (gifBlob) => {

@@ -63,7 +63,8 @@ def serve(path):
     else:
         return send_from_directory(app.static_folder, "index.html")
 
-@app.route("/upload", methods=["POST"])
+
+@app.route("/api/upload", methods=["POST"])
 def upload_file():
     print("uploading..")
     if "file" not in request.files:
@@ -79,7 +80,7 @@ def upload_file():
     return jsonify({"filename": unique_filename}), 200
 
 
-@app.route("/comment", methods=["POST"])
+@app.route("/api/comment", methods=["POST"])
 def post_comment():
     data = request.get_json()
     video_name = data["video_name"]
@@ -93,7 +94,7 @@ def post_comment():
     return jsonify({"message": "Comment added"}), 200
 
 
-@app.route("/uploads/<filename>", methods=["GET"])
+@app.route("/api/uploads/<filename>", methods=["GET"])
 def get_video(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
@@ -114,7 +115,7 @@ BACKGROUND_COLORS = {
 }
 
 
-@app.route("/submit-postcard", methods=["POST"])
+@app.route("/api/submit-postcard", methods=["POST"])
 def submit_postcard():
     try:
         # JSON 데이터 파싱
@@ -204,7 +205,7 @@ def submit_postcard():
         return jsonify({"error": "Failed to submit postcard"}), 500
 
 
-@app.route("/postcard/<int:id>", methods=["GET"])
+@app.route("/api/postcard/<int:id>", methods=["GET"])
 def get_postcard(id):
     try:
         postcard = Postcard.query.get_or_404(id)
