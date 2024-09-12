@@ -13,6 +13,7 @@
   padding-top: 10px;
   width: 100%;
   z-index: 1000;
+  background: #f8f6f1;
 }
 
 .upbutton {
@@ -28,4 +29,5 @@
   box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
 
   color: #412823;
+  z-index: 1000;
 }
