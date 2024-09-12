@@ -369,13 +369,21 @@ const CreateCharacter = () => {
     canvas.height = 491;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
   
-    const duration = 15; // 15초 동안 녹화
+    const duration = 5; // 15초 동안 녹화
     const fps = 60; // 프레임 속도는 60fps로 설정
     const totalFrames = duration * fps;
     let frameCount = 0;
   
     const backgroundImage = new Image();
     backgroundImage.src = backgroundImageSrc;
+
+    backgroundImage.onload = () => {
+      console.log(`Background image ${backgroundImageSrc} loaded successfully`);
+    };
+    
+    backgroundImage.onerror = (error) => {
+      console.error(`Failed to load background image ${backgroundImageSrc}`, error);
+    };
   
     const loadImage = () => {
       return new Promise((resolve) => {
