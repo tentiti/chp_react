@@ -233,6 +233,11 @@ const CreateCharacter = () => {
         preserveDrawingBuffer: true 
       });
       hiddenRendererRef.current.setSize(400, 400);
+
+        // 카메라 업데이트 후 정사각형 비율로 맞추기
+      cameraRef.current.aspect = 1; // 정사각형 비율 (aspect 1:1)
+      cameraRef.current.updateProjectionMatrix();
+
       hiddenRendererRef.current.setClearColor(0x000000, 0);
 
       const ambientLight1 = new THREE.AmbientLight(0xffffff, 1.0);
@@ -383,7 +388,7 @@ const CreateCharacter = () => {
     a.href = url;
     a.download = filename;  // 다운로드할 파일 이름 설정
     document.body.appendChild(a);
-    // a.click();
+    a.click();
   
     // 다운로드 후 URL 객체 해제
     setTimeout(() => {
@@ -401,7 +406,7 @@ const CreateCharacter = () => {
     canvas.height = 491;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
   
-    const duration = 5; // 15초 동안 녹화
+    const duration = 5; // 5초 동안 녹화
     const fps = 60; // 프레임 속도는 60fps로 설정
     const totalFrames = duration * fps;
     let frameCount = 0;
@@ -495,7 +500,7 @@ const CreateCharacter = () => {
   
           // 캐릭터를 x, y 좌표에 렌더링
           if (hiddenCanvasRef.current) {
-            ctx.drawImage(hiddenCanvasRef.current, x, y, width, height);
+            ctx.drawImage(hiddenCanvasRef.current, x, y, width, width);
           } else {
             console.error('hiddenCanvasRef.current is not defined or not a valid canvas element.');
           }
