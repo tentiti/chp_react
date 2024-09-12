@@ -600,7 +600,7 @@ const uploadGif = async (gifBlob) => {
       const filename = data.filename;
       console.log('GIF Filename:', filename);
 
-      const gifUrl = `${process.env.REACT_APP_API_URL}/uploads/${filename}`;
+      const gifUrl = `/uploads/${filename}`;
       console.log('Constructed GIF URL:', gifUrl);
 
       return gifUrl;
