@@ -55,15 +55,17 @@ function Home() {
     if (floatingButton) {
       const buttonWidth = 60;
       const buttonHeight = 60;
-
+      const collisionMargin = 5; // 끝에서 충돌이 발생할 여유 범위
+      const collisionCooldown = 1000; // 충돌 후 1초 동안 재충돌 방지
+  
       let posX = Math.random() * (window.innerWidth - buttonWidth);
       let posY = Math.random() * (window.innerHeight - buttonHeight);
       let speed = 2;
       let angle = Math.random() * 2 * Math.PI;
-
+  
       const maxX = window.innerWidth - buttonWidth;
       const maxY = window.innerHeight - buttonHeight - 30;
-
+  
       const buttonImages = [
         '/static/images/buttonImages/button1.png',
         '/static/images/buttonImages/button2.png',
@@ -74,59 +76,71 @@ function Home() {
         '/static/images/buttonImages/button7.png',
         '/static/images/buttonImages/button8.png'
       ];
-
-      let lastXCollision = false;
-      let lastYCollision = false;
-
+  
+      let lastXCollisionTime = 0;
+      let lastYCollisionTime = 0;
+  
+      let hasXCollision = false;  // X축 충돌 플래그
+      let hasYCollision = false;  // Y축 충돌 플래그
+  
       function getRandomButtonImage() {
         const randomIndex = Math.floor(Math.random() * buttonImages.length);
         return buttonImages[randomIndex];
       }
-
+  
       function moveFloatingButton() {
+        const now = Date.now(); // 현재 시간을 가져옴
+  
         angle += (Math.random() - 0.5) * 0.1;
         posX += Math.cos(angle) * speed;
         posY += Math.sin(angle) * speed;
-
-        if (posX < 0 || posX > maxX) {
-          if (!lastXCollision) {
-            angle = Math.PI - angle;
+  
+        // X 축 경계 충돌 처리 (충돌 마진 추가 및 시간 제한)
+        if (!hasXCollision && (posX <= collisionMargin || posX >= maxX - collisionMargin)) {
+          if (now - lastXCollisionTime > collisionCooldown) {
+            angle = Math.PI - angle;  // X축 반전
             floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
-            lastXCollision = true;
+            lastXCollisionTime = now; // 충돌 시간 업데이트
+            hasXCollision = true; // X 충돌 발생
           }
-          posX = Math.max(0, Math.min(posX, maxX));
-        } else {
-          lastXCollision = false;
+        } else if (posX > collisionMargin && posX < maxX - collisionMargin) {
+          hasXCollision = false; // 경계를 벗어나면 충돌 해제
         }
-
-        if (posY < 0 || posY > maxY) {
-          if (!lastYCollision) {
-            angle = -angle;
+  
+        posX = Math.max(0, Math.min(posX, maxX)); // X축 위치 보정
+  
+        // Y 축 경계 충돌 처리 (충돌 마진 추가 및 시간 제한)
+        if (!hasYCollision && (posY <= collisionMargin || posY >= maxY - collisionMargin)) {
+          if (now - lastYCollisionTime > collisionCooldown) {
+            angle = -angle;  // Y축 반전
             floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
-            lastYCollision = true;
+            lastYCollisionTime = now; // 충돌 시간 업데이트
+            hasYCollision = true; // Y 충돌 발생
           }
-          posY = Math.max(0, Math.min(posY, maxY));
-        } else {
-          lastYCollision = false;
+        } else if (posY > collisionMargin && posY < maxY - collisionMargin) {
+          hasYCollision = false; // 경계를 벗어나면 충돌 해제
         }
-
+  
+        posY = Math.max(0, Math.min(posY, maxY)); // Y축 위치 보정
+  
         floatingButton.style.left = `${posX}px`;
         floatingButton.style.top = `${posY}px`;
-
+  
         requestAnimationFrame(moveFloatingButton);
       }
-
-      floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
+  
+      // floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
       floatingButton.style.backgroundSize = 'cover';
       floatingButton.style.width = `${buttonWidth}px`;
       floatingButton.style.height = `${buttonHeight}px`;
-
+  
       requestAnimationFrame(moveFloatingButton);
-
+  
       floatingButton.addEventListener('click', () => {
         window.location.href = '/CreateCharacter';
       });
     }
+  
 
     function initializeAjaxLinks() {
       document.body.addEventListener('click', function (event) {

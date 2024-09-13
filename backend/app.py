@@ -135,8 +135,8 @@ if not os.path.exists(app.config["IMAGE_UPLOAD_FOLDER"]):
 
 # 배경 색상 설정 (number 값에 따라 결정)
 BACKGROUND_COLORS = {
-    1: (229, 224, 157),  # Red
-    2: (188, 186, 191),  # Green
+    2: (229, 224, 157),  # Red
+    1: (188, 186, 191),  # Green
     3: (102, 167, 178),  # Blue
 }
 

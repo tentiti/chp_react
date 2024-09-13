@@ -21,7 +21,7 @@ const descriptions = [
         title: "달밤",
         date: "2020.08.",
         text: "작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 아름다운 표현들 등등등 그렇다는 것.작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. ",
-        image: "https://placehold.co/390x500?text=ex1",
+        image: "https://placehold.co/390x650?text=ex1",
         additionalImages: [
             "https://placehold.co/190x200?text=ex2",
             "https://placehold.co/190x200?text=ex3"
@@ -52,7 +52,7 @@ const descriptions = [
 const PlaceSelection = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { gifUrl, videoFiles } = location.state;
+    const { gifUrl, realgifUrl, videoFiles } = location.state;
     console.log('GIF URL:', gifUrl);
 
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -99,7 +99,7 @@ const PlaceSelection = () => {
 
     const handleSelectPlace = () => {
         console.log('Selected background:', currentIndex+1);
-        navigate('/postcardcreation', { state: { selectedBackground: currentIndex+1, gifUrl: gifUrl, videoFiles:videoFiles} });
+        navigate('/postcardcreation', { state: { selectedBackground: currentIndex+1, gifUrl: gifUrl, realgifUrl: realgifUrl, videoFiles:videoFiles, } });
     };
     
     const currentModelPosition = modelPositions[currentIndex]; // 현재 인덱스에 맞는 위치 데이터 가져오기
@@ -319,11 +319,11 @@ const PlaceSelection = () => {
                 </button>
             </div>
             <img src={descriptions[currentIndex].image} alt="Example" style={{ width: '100%', marginTop: '20px' }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+            {/* <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
                 {descriptions[currentIndex].additionalImages.map((img, index) => (
                     <img key={index} src={img} alt={`Additional ${index}`} style={{ width: '49%' }} />
                 ))}
-            </div>
+            </div> */}
         </div>
         </div>
         </div>

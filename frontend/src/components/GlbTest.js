@@ -36,6 +36,7 @@ const CreateCharacter = () => {
   const clockRef = useRef(new THREE.Clock());
   const modelsRef = useRef([]);
   const controlsRef = useRef(null); // OrbitControls를 위한 Ref 추가
+  const [clickedIndex, setClickedIndex] = useState(null); // 클릭된 이미지의 인덱스를 저장하는 상태
 
   const [loadingStatus, setLoadingStatus] = useState('Loading...');
   const [activeCategory, setActiveCategory] = useState(null);
@@ -58,13 +59,14 @@ const CreateCharacter = () => {
   };
 
   const CATEGORIES = [
-    { name: 'HEAD', assets: ['head1.png', 'head2.png', 'head3.png', 'head4.png','head5.png','head6.png', 'head7.png', 'head8.png','head9.png'], useColor: true },
-    { name: 'TOP', assets: ['top1.png', 'top2.png', 'top3.png'], useColor: false },
-    { name: 'BOTTOM', assets: ['bottom1.png', 'bottom2.png', 'bottom3.png'], useColor: false },
-    { name: 'SHOES', assets: ['shoes1.png', 'shoes2.png', 'shoes3.png'], useColor: false },
-    { name: 'ACCESSORY', assets: ['accessory1.png', 'accessory2.png', 'accessory3.png'], useColor: false },
+    { name: 'HEAD', assets: ['head1.png', 'head2.png', 'head3.png', 'head4.png', 'head5.png', 'head6.png', 'head7.png', 'head8.png', 'head9.png', 'head10.png', 'head11.png', 'head12.png'], useColor: true }, // 12개
+    { name: 'TOP', assets: ['top1.png', 'top2.png', 'top3.png', 'top4.png', 'top5.png', 'top6.png', 'top7.png', 'top8.png', 'top9.png', 'top10.png', 'top11.png', 'top12.png', 'top13.png', 'top14.png', 'top15.png', 'top16.png', 'top17.png', 'top18.png', 'top19.png', 'top20.png', 'top21.png', 'top22.png', 'top23.png', 'top24.png'], useColor: false }, // 24개
+    { name: 'BOTTOM', assets: ['bottom1.png', 'bottom2.png', 'bottom3.png', 'bottom4.png', 'bottom5.png', 'bottom6.png', 'bottom7.png', 'bottom8.png', 'bottom9.png', 'bottom10.png', 'bottom11.png', 'bottom12.png', 'bottom13.png', 'bottom14.png', 'bottom15.png', 'bottom16.png', 'bottom17.png', 'bottom18.png', 'bottom19.png', 'bottom20.png', 'bottom21.png', 'bottom22.png'], useColor: false }, // 22개
+    { name: 'SHOES', assets: ['shoes1.png', 'shoes2.png', 'shoes3.png', 'shoes4.png', 'shoes5.png', 'shoes6.png', 'shoes7.png', 'shoes8.png'], useColor: false }, // 8개
+    { name: 'ACCESSORY', assets: ['accessory1.png', 'accessory2.png', 'accessory3.png', 'accessory4.png', 'accessory5.png', 'accessory6.png', 'accessory7.png', 'accessory8.png', 'accessory9.png', 'accessory10.png', 'accessory11.png', 'accessory12.png', 'accessory13.png', 'accessory14.png', 'accessory15.png', 'accessory16.png', 'accessory17.png', 'accessory18.png'], useColor: false }, // 18개
     { name: 'EXPRESSION', assets: [], useColor: false },
   ];
+  
 
   const COLORS = [
     { name: 'Red', value: '#F5A0A0' },
@@ -105,23 +107,36 @@ const CreateCharacter = () => {
   const [initialCameraPosition, setInitialCameraPosition] = useState(null);
 
   //표정 그리기 관련
-  const GRAYSCALE_COLORS = ['#F5F1F1', '#F7EFDA', '#F7E2CD', '#B18A82', '#694F4F', '#000000'];
+  const GRAYSCALE_COLORS = ['#F5F1F1', '#F7EFDA', '#F7E2CD', '#B18A82', '#8B7A7A', '#FFBEBE'];
 
   const [expressionDrawingColor, setExpressionDrawingColor] = useState('#FFFFFF'); // 초기 색상: 검은색
   const [expressionIsErasing, setExpressionIsErasing] = useState(false); // 지우개 여부
   const expressionCanvasRef = useRef(null); // 표정을 그리는 캔버스  
 
   // 캔버스를 특정 색으로 초기화하는 함수
-  const clearCanvasWithColor = (color = '#FFFFFF') => {
+  // const clearCanvasWithColor = (color = '#FFFFFF') => {
+  //   const canvas = expressionCanvasRef.current;
+  //   const ctx = canvas.getContext('2d');
+  //   ctx.fillStyle = color;
+  //   ctx.fillRect(0, 0, canvas.width, canvas.height);
+  //   ctx.beginPath();
+  //   ctx.strokeStyle = '#000000';
+  //   ctx.lineWidth = 5;
+  //   ctx.closePath();
+  // };
+
+  const clearCanvasWithColor = (color = 'transparent') => {
     const canvas = expressionCanvasRef.current;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = color;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.beginPath();
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 5;
-    ctx.closePath();
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // 캔버스를 완전히 초기화
+    if (color !== 'transparent') { // 투명 색상이 아닌 경우에만 색상 채우기
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, canvas.width, canvas.height); // 배경색을 채움
+    }
+    ctx.beginPath();  // 그리기 준비
   };
+  
+  
 
 
   const loadModel = useCallback((modelPath, categoryName, useColor = false, onLoad) => {
@@ -567,7 +582,7 @@ const CreateCharacter = () => {
     gif.on('finished', async (blob) => {
       let gifUploadUrl = await uploadGif(blob); // GIF 업로드 처리
       console.log('1 GIF Upload URL:', gifUploadUrl);
-      gifUploadUrl = gifUploadUrl.stillfilename
+      // gifUploadUrl = gifUploadUrl.stillfilename
       resolve(gifUploadUrl);  // Resolve with the gifUploadUrl once the upload is complete
     });
 
@@ -608,7 +623,8 @@ const startRecording = async (setVideoFile) => {
     // After recording is done and GIF is uploaded, navigate to placeselection
     navigate('/place-selection', {
       state: {
-        gifUrl: gifUploadUrl,  // Use the returned gif URL directly
+        gifUrl: gifUploadUrl.stillfilename,  // Use the returned gif URL directly
+        realgifUrl: gifUploadUrl.filename,
         videoFiles: videoFiles,  // Pass the video files from context
       },
     });
@@ -758,6 +774,59 @@ const uploadGif = async (gifBlob) => {
   };
   
 
+  // const applyExpressionTextureToModel = () => {
+  //   const canvas = expressionCanvasRef.current;
+  //   const texture = new THREE.CanvasTexture(canvas);
+  
+  //   // Y축을 반전시키기 위해 flipY를 false로 설정
+  //   texture.flipY = false;
+  //   texture.needsUpdate = true;
+
+  //   // 텍스처의 색상 공간을 sRGB로 설정
+  //   rendererRef.outputColorSpace = THREE.SRGBColorSpace;
+  //   texture.format = THREE.RGBAFormat;
+    
+  //   // 모델에 텍스처를 적용하는 로직
+  //   modelsRef.current.forEach(({ model }) => {
+  //     model.traverse((child) => {
+  //       if (child.name === 'head_1') {
+  //         const head = child;
+  //         if (head) {
+  //           const mesh3 = head;
+  //           if (mesh3) {
+  //             // UV 좌표가 없을 경우 기본 UV 좌표 생성
+  //             if (mesh3.geometry && mesh3.geometry.attributes) {
+  //               if (!mesh3.geometry.attributes.uv) {
+  //                 const geometry = mesh3.geometry;
+  //                 const uv = new Float32Array(geometry.attributes.position.count * 2);
+  
+  //                 // UV 좌표 생성 로직 (y축 반전 적용)
+  //                 for (let i = 0; i < uv.length; i += 2) {
+  //                   uv[i] = (i / 2) % 2;
+  //                   uv[i + 1] = Math.floor((i / 2) / 2); // 반전된 y좌표
+  //                 }
+  
+  //                 geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  //                 geometry.attributes.uv.needsUpdate = true;
+  //               }
+  
+  //               // 텍스처 적용
+  //               if (!mesh3.material) {
+  //                 mesh3.material = new THREE.MeshBasicMaterial();
+  //               }
+  
+  //               mesh3.material.map = texture;
+  //               mesh3.material.needsUpdate = true;
+  //             } else {
+  //               console.warn("Geometry or geometry attributes are undefined for mesh3.");
+  //             }
+  //           }
+  //         }
+  //       }
+  //     });
+  //   });
+  // };
+
   const applyExpressionTextureToModel = () => {
     const canvas = expressionCanvasRef.current;
     const texture = new THREE.CanvasTexture(canvas);
@@ -765,58 +834,50 @@ const uploadGif = async (gifBlob) => {
     // Y축을 반전시키기 위해 flipY를 false로 설정
     texture.flipY = false;
     texture.needsUpdate = true;
+    texture.format = THREE.RGBAFormat; // 알파 채널 사용 설정
+    texture.premultipliedAlpha = true; // 알파 값이 곱해진 프리멀티플라이드 알파 사용
 
-    // 텍스처의 색상 공간을 sRGB로 설정
-    rendererRef.outputColorSpace = THREE.SRGBColorSpace;
-  
     // 모델에 텍스처를 적용하는 로직
     modelsRef.current.forEach(({ model }) => {
       model.traverse((child) => {
-        if (child.name === 'head_1') {
-          const head = child;
-          if (head) {
-            const mesh3 = head;
-            if (mesh3) {
-              // UV 좌표가 없을 경우 기본 UV 좌표 생성
-              if (mesh3.geometry && mesh3.geometry.attributes) {
-                if (!mesh3.geometry.attributes.uv) {
-                  const geometry = mesh3.geometry;
-                  const uv = new Float32Array(geometry.attributes.position.count * 2);
-  
-                  // UV 좌표 생성 로직 (y축 반전 적용)
-                  for (let i = 0; i < uv.length; i += 2) {
-                    uv[i] = (i / 2) % 2;
-                    uv[i + 1] = Math.floor((i / 2) / 2); // 반전된 y좌표
-                  }
-  
-                  geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
-                  geometry.attributes.uv.needsUpdate = true;
-                }
-  
-                // 텍스처 적용
-                if (!mesh3.material) {
-                  mesh3.material = new THREE.MeshBasicMaterial();
-                }
-  
-                mesh3.material.map = texture;
-                mesh3.material.needsUpdate = true;
-              } else {
-                console.warn("Geometry or geometry attributes are undefined for mesh3.");
-              }
+        if (child.name === 'head_1') {  // head_1에 텍스처 적용
+          const mesh = child;
+          if (mesh) {
+            // 기존 텍스처에 새 텍스처를 덮지 않고 병합하여 투명 부분만 추가
+            if (mesh.material) {
+              mesh.material.map = texture;
+              mesh.material.transparent = true;  // 투명도 처리
+              mesh.material.blending = THREE.NormalBlending;  // 알파 블렌딩 활성화
+              mesh.material.opacity = 1.0;  // 완전한 불투명도
+              mesh.material.alphaTest = 0.1;    // 알파값 임계치
+              mesh.material.depthWrite = false;  // 깊이 쓰기를 비활성화
+              mesh.material.depthTest = true;    // 깊이 테스트 활성화
+              mesh.material.needsUpdate = true;
+              mesh.renderOrder = 1; // 렌더링 순서 설정 (순서를 높임)
+          } else {
+              mesh.material = new THREE.MeshBasicMaterial({
+                map: texture,
+                transparent: true,
+                blending: THREE.NormalBlending, // 알파 블렌딩을 사용
+                opacity: 1.0, // 불투명도 설정
+                alphaTest: 0.1, // 알파값 임계치 설정
+                depthWrite: false, // 깊이 쓰기 비활성화
+                depthTest: true,   // 깊이 테스트 활성화
+                premultipliedAlpha: true, // 알파값 곱하기
+              });
             }
           }
         }
       });
     });
   };
-
   
 
 useEffect(() => {
   const canvas = expressionCanvasRef.current;
 
   if (canvas) {
-    clearCanvasWithColor('#FFFFFF');  // 기본 흰색 배경 설정
+    clearCanvasWithColor('#F5F1F1');  // 기본 흰색 배경 설정
     
     // 터치 이벤트 리스너에 passive: false 옵션을 추가
     canvas.addEventListener('touchstart', startExpressionDrawing, { passive: false });
@@ -836,7 +897,7 @@ const clearExpressionCanvas = useCallback(() => {
   const canvas = expressionCanvasRef.current;
   if (canvas) {
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#FFFFFF'; // 흰색으로 설정
+    ctx.fillStyle = '#F5F1F1'; // 흰색으로 설정
     ctx.fillRect(0, 0, canvas.width, canvas.height); // 캔버스 전체를 흰색으로 채움
   }
 }, []);
@@ -1101,28 +1162,39 @@ const handleHeadSelection = (index) => {
       ) : (
       <>
       {activeCategory && activeCategory.assets.map((asset, index) => (
-        <div
-          className="pictures"
-          key={index}
-          onClick={() => {
-            const modelPath = activeCategory.useColor
+      <div
+        className="pictures"
+        key={index}
+        style={{
+          maxWidth: '100%',
+          maxHeight: '100%',
+          borderRadius: '18px',
+          border: clickedIndex === index ? '1px solid salmon' : 'none', // 클릭된 항목에 경계선 추가
+        }}
+        onClick={() => {
+          setClickedIndex(index); // 클릭한 인덱스를 상태에 저장
+          const modelPath = activeCategory.useColor
             ? `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}_${selectedColors[activeCategory.name]?.name || 'Black'}.glb`
             : `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}.glb`;
-          
-            console.log(modelPath);
-            loadModel(modelPath, activeCategory.name, activeCategory.useColor);
+
+          console.log(modelPath);
+          loadModel(modelPath, activeCategory.name, activeCategory.useColor);
+        }}
+      >
+        <img
+          src={`https://placehold.co/200x200?text=${
+            activeCategory.useColor
+              ? `${activeCategory.name.toLowerCase()}_${index + 1}_${selectedColors[activeCategory.name]?.name || 'Black'}`
+              : `${activeCategory.name.toLowerCase()}_${index + 1}`
+          }`}
+          alt={`Asset ${index}`}
+          style={{
+            maxWidth: '100%',
+            maxHeight: '100%',
+            borderRadius: '18px',
           }}
-        >
-          <img
-            src={`https://placehold.co/200x200?text=${asset}`} 
-            alt={`Asset ${index}`}
-            style={{
-              maxWidth: '100%',
-              maxHeight: '100%',
-              borderRadius: '18px',
-            }}
-          />
-        </div>
+        />
+      </div>
       ))}
       </>
       )}

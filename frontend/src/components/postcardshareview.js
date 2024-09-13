@@ -49,6 +49,9 @@ const PostcardShareView = () => {
     <div style={{
       display: 'flex',
       flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      left: '0',
     }}>
       <div style={{
         height:'58px',
@@ -108,7 +111,7 @@ const PostcardShareView = () => {
                   top: `calc(${modelPositions[postcard.number].y}px * 0.8)`,
                   left: `calc(${modelPositions[postcard.number].x}px * 0.8)`,
                   width: `calc(${modelPositions[postcard.number].width}px * 0.8)`,
-                  height: `calc(${modelPositions[postcard.number].height}px * 0.8)`,
+                  height: `calc(${modelPositions[postcard.number].width}px * 0.8)`,
                 }}
               />
             )}

@@ -327,67 +327,68 @@ const PostcardView = () => {
   return (
 
     
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}>
-      <audio ref={audioRef} src="/static/test.mp3" loop></audio>
-    
+<div style={{
+  // position: 'relative', // 상위 컨테이너를 상대적으로 설정하여 하위 요소 배치
+}}>
+  <audio ref={audioRef} src="/static/test.mp3" loop></audio>
+  <div style={{
+    height: '58px',
+    backgroundColor: '#F8F6F1',
+    position: 'fixed',
+    top: '0',
+    zIndex: '1000', 
+  }}>
     <Header 
       title={postcard?.name ? `'${postcard.name}'의 춤사위'` : '춤사위'}
       onMenuClick={handleMenuClick}
-      style={{
-        position: 'fixed',
-        top: '0',
-        left: '0',
-        width: '100vw',
-        height: '58px',
-        zIndex: '1000',
-      }}
-      
+      style={{ }}
     />
+  </div>
 
 
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'sticky',   // 캔버스를 절대 위치로 설정      // 상단에서 58px 만큼 띄움
-        top:'58px',
-        left: '0',              // 화면 왼쪽에 맞춤
-        width: '70vw',         // 화면 너비를 100% 사용
-        height: 'calc(70vw * (16 / 9))',  // 9:16 비율을 유지하면서 높이를 설정
-        overflow: 'hidden' ,
-        zIndex:'900',   // 넘침을 방지
-      }}
-    />
+  <canvas
+    ref={canvasRef}
+    style={{
+      position: 'relative', // 상대적 위치로 설정하여 헤더 아래에 표시
+      left: '0',
+      width: '70vw',
+      height: 'calc(70vw * (16 / 9))',
+      overflow: 'hidden',
+      zIndex: '900',        // 헤더보다 아래에 표시되도록 설정
+      transform: 'translateY(-5%)',
+    }}
+  />
 
-          {/* Promotion Image */}
-        <img 
-        src="/static/stockimages/promotion.png" 
-        alt="Promotion"
-        style={{
-          position: 'absolute', // Position absolutely within the relative parent
-          right: '20px',
-          bottom: '75px',
-          width: '70vw', // Adjust width as necessary
-          height: 'auto', // Adjust height as necessary
-          maxWidth: '100%', // Prevent overflow
-          maxHeight: '100%', // Prevent overflow
-          zIndex: '1100', // Ensure the image is on top
-        }} 
-      />
+
+  {/* Promotion Image */}
+  <img 
+    src="/static/stockimages/promotion.png" 
+    alt="Promotion"
+    style={{
+      position: 'fixed',
+      right: '20px',
+      bottom: 'calc(25vw * (16 / 9) - 100px)',
     
-      <div id="upbuttons" style={{ display: 'flex', justifyContent: 'center'}}>
-        <button className="upbutton" onClick={downloadVideo} style={{ marginRight: '10px' }} disabled={!blobUrl}>
-          {isRecording ? '공유 영상 준비 중...' : 'Download Video'}
-        </button>
-        <button className="upbutton" onClick={shareVideo} disabled={!blobUrl}>
-          {isRecording ? '공유 영상 준비 중...' : 'Share Video'}
-        </button>
-      </div>
-    </div>
+      width: '70vw',
+      height: 'auto',
+      zIndex: '1100',
+    }} 
+  />
+  <div id="upbuttons" style={{ 
+    display: 'flex', 
+    justifyContent: 'center',
+     marginTop: '20px',
+     height: 'calc(25vw * (16 / 9) - 140px)'
+     }}>
+    <button className="upbutton" onClick={downloadVideo} disabled={!blobUrl}>
+      {isRecording ? '공유 영상 준비 중...' : 'Download Video'}
+    </button>
+    <button className="upbutton" onClick={shareVideo} disabled={!blobUrl}>
+      {isRecording ? '공유 영상 준비 중...' : 'Share Video'}
+    </button>
+  </div>
+</div>
+
   );
 };
 

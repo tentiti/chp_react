@@ -14,7 +14,7 @@ const modelPositions = [
 const PostcardCreation = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { selectedBackground, gifUrl, videoFiles } = location.state || {};
+  const { selectedBackground, gifUrl, realgifUrl, videoFiles } = location.state || {};
   const [backgroundStyle, setBackgroundStyle] = useState(`linear-gradient(#555, #555) 0 24px, 
     linear-gradient(#555, #555) 0 52px, 
     linear-gradient(#555, #555) 0 80px, 
@@ -34,7 +34,7 @@ const PostcardCreation = () => {
     try {
       const currentTime = new Date().toISOString();
       const postData = {
-        gifName: gifUrl,
+        gifName: realgifUrl,
         name,
         comment,
         timestamp: currentTime,
