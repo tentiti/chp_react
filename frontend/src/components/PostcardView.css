@@ -6,26 +6,12 @@
   font-style: normal;
 }
 
-#upbuttons {
-  position: fixed;
-  bottom: 40px;
-  border-top: 1px solid #e6e1dc;
-  padding-top: 10px;
-  width: 100%;
-  z-index: 1000;
-  background: #f8f6f1;
-}
-
 .upbutton {
   /* 버튼 */
 
   box-sizing: border-box;
-
-  width: 40%;
-  margin: 0 5%;
-  min-height: 40px;
-
-  height: "70%";
+  height: 35px;
+  width: 40vw;
 
   background: #f8f6f1;
   border: 1px solid #e6e1dc;
@@ -33,4 +19,10 @@
 
   color: #412823;
   z-index: 1000;
+}
+
+button:active {
+  background: #e9a7a7 !important; /* 우선순위 강제 */
+  color: #e6e1dc !important;
+  border-color: #e6e1dc !important;
 }

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Header from './Header';
-import { UseVideo } from './VideoContext';
 import './CreateCharacter.css';
 
 const modelPositions = [
@@ -15,19 +14,24 @@ const PostcardCreation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { selectedBackground, gifUrl, realgifUrl, videoFiles } = location.state || {};
-  const [backgroundStyle, setBackgroundStyle] = useState(`linear-gradient(#555, #555) 0 24px, 
-    linear-gradient(#555, #555) 0 52px, 
-    linear-gradient(#555, #555) 0 80px, 
-    linear-gradient(#555, #555) 0 108px`);
 
   const [name, setName] = useState('');
   const [comment, setComment] = useState('');
+  const [isNameEmpty, setIsNameEmpty] = useState(true);
+  const [isCommentEmpty, setIsCommentEmpty] = useState(true);
+
+  const handleNameChange = (e) => {
+    const value = e.target.value;
+    setName(value);
+    setIsNameEmpty(value.length === 0);
+  };
 
   const handleCommentChange = (e) => {
-    setComment(e.target.value);
-    if (e.target.value.length >= 1) {
-        setBackgroundStyle('none'); // 배경 제거
-      }
+    const value = e.target.value;
+    if (value.length <= 75) {
+      setComment(value);
+      setIsCommentEmpty(value.length === 0);
+    }
   };
 
   const handleSubmit = async () => {
@@ -40,8 +44,6 @@ const PostcardCreation = () => {
         timestamp: currentTime,
         selectedBackground,
       };
-      // const response = await axios.post(`${process.env.REACT_APP_API_URL}/submit-postcard`, postData);
-
       const response = await axios.post(`/api/submit-postcard`, postData);
       const postcardId = response.data.id;
       navigate(`/postcardview/${postcardId}`, { state: { videoFiles: videoFiles } });
@@ -53,179 +55,275 @@ const PostcardCreation = () => {
 
   const currentModelPosition = modelPositions[selectedBackground - 1];
 
-  const backgroundWidth = 127;
-  const backgroundHeight = 158;
-
   return (
-    <div>
-      <Header title="답신 보내기" />
-      <div
-        id="container"
-        style={{
-          position: 'sticky',
-          width: '100%',
-          height: '100vh',
-          fontFamily: 'Cafe24Simplehae, sans-serif',
-          backgroundColor: '#F8F6F1',
-        }}
-      >
-        {/* Postcard background */}
-        <img
-          src="../static/stockimages/postcard.png"
-          alt="Postcard Background"
-          style={{
-            position: 'absolute',
-            width: '323px',
-            height: '532px',
-            left: '50%',
-            top: '40%',
-            transform: 'translate(-50%, -50%)',
-          }}
+    <div className="postcard-page">
+      <div style={{
+          fontFamily: 'Pretendard, sans-serif',
+        }}>
+      <Header title="답신 보내기" 
         />
-
-        {/* Main text */}
-        <div
-          style={{
-            position: 'absolute',
-            width: '280px',
-            left: '50%',
-            top: 'calc(40% - 195px)',
-            transform: 'translateX(-50%)',
-            fontSize: '14px',
-            lineHeight: '1.9',
-            color: '#333',
-            textAlign: 'center',
-          }}
-        >
-          춤을 추실 준비가 되셨나요?<br />
-          마지막으로 이름과 한마디를 적어주세요.
         </div>
 
-        {/* Selected background and GIF in a container */}
-        {selectedBackground && (
-          <div
-            style={{
-              position: 'relative',
-              width: `${backgroundWidth}px`,
-              height: `${backgroundHeight}px`,
-              left: '200px',
-              top: 'calc(320px - 10%)',
-              backgroundImage: `url('/static/stockimages/trans_bg${selectedBackground}.png')`,
-              backgroundSize: 'cover',
-            }}
-          >
-            {/* GIF */}
-            {gifUrl && currentModelPosition && (
-              <img
-              src={`/api/uploads/${gifUrl}`}
-                alt="Selected GIF"
+      <div className="postcard-container">
+        <div className="postcard-content">
+          <img
+            src="../static/stockimages/postcard.png"
+            alt="Postcard Background"
+            className="postcard-background"
+          />
+          <div className="guide-text">
+            춤을 추실 준비가 되셨나요?<br />
+            마지막으로 이름과 한마디를 적어주세요.
+          </div>
+          {selectedBackground && (
+            <div className="background-container">
+              <div 
+                className="background-image"
                 style={{
-                  position: 'absolute',
-                  left: `${(currentModelPosition.x / 375) * backgroundWidth}px`,
-                  top: `${(currentModelPosition.y / 375) * backgroundHeight}px`,
-                  width: `${(54 / currentModelPosition.width) * backgroundWidth}px`,
-                  height: `${(70 / currentModelPosition.height) * backgroundHeight}px`,
-                  objectFit: 'cover',
+                  backgroundImage: `url('/static/stockimages/trans_bg${selectedBackground}.png')`
                 }}
               />
-            )}
+              {gifUrl && currentModelPosition && (
+                <img
+                  src={`/api/uploads/${gifUrl}`}
+                  alt="Selected GIF"
+                  className="gif-overlay"
+                  style={{
+                    left: `${(currentModelPosition.x / 322) * 100}%`,
+                    top: `${(currentModelPosition.y / 532) * 100}%`,
+                    width: `${(currentModelPosition.width / 322) * 100}%`,
+                  }}
+                />
+              )}
+            </div>
+          )}
+          <div className="forms" style={{
+            width: '48%'
+          }}>
+          <div className="input-section">
+            <div className="input-group">
+              <label htmlFor="name">이름 :</label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={handleNameChange}
+                className={isNameEmpty ? 'empty' : ''}
+              />
+            </div>
+            <div className="input-group">
+              <label htmlFor="comment">한마디 :</label>
+              <div className="textarea-container">
+                <div className={`textarea-background ${isCommentEmpty ? '' : 'hidden'}`}></div>
+                <textarea
+                  id="comment"
+                  maxLength={75}
+                  value={comment}
+                  onChange={handleCommentChange}
+                  className={`lined-textarea ${isCommentEmpty ? 'empty' : ''}`}
+                />
+              </div>
+              <div className="char-count">{comment.length}/75</div>
+            </div>
           </div>
-        )}
-
-        {/* Name and comment inputs */}
-        <div
-          style={{
-            position: 'absolute',
-            left: '50%',
-            top: 'calc(340px  - 10%)',
-            transform: 'translateX(-50%)',
-            fontSize: '14px',
-            color: '#333',
-            width: '280px',
-          }}
-        >
-          이름 :
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            style={{
-              width: '90px',
-              marginLeft: '10px',
-              border: 'none',
-              borderBottom: '1px solid #555',
-              background: 'transparent',
-              fontSize: '14px',
-              outline: 'none',
-              fontFamily: 'Cafe24Simplehae',
-            }}
-          />
-          <br />
-
-          <div style={{ display: 'flex', flexDirection: 'row', marginTop: '12px' }}>
-            한마디 :
-            <textarea
-              maxLength={85}
-              rows={4}
-              value={comment}
-              onChange={handleCommentChange}
-              style={{
-                marginTop: '-7px',
-                marginLeft: '5px',
-                width: '90px',
-                height: '110px', // 대략 4줄의 높이
-                padding: '0',
-                border: 'none',
-                background:backgroundStyle,
-                backgroundSize: '90px 1px',
-                backgroundRepeat: 'no-repeat',
-                lineHeight: '29px', // 줄 간격 설정
-                fontSize: '14px',
-                fontFamily: 'Cafe24Simplehae, sans-serif',
-                resize: 'none',
-                outline: 'none',
-                overflowY: 'hidden',
-              }}
-            />
           </div>
 
-          <div style={{ fontSize: '12px', color: '#777', marginTop: '10px', textAlign: 'left' }}>
-            {comment.length}/85
+          <div id="finalwords">
+            이제 춤을 추러 가봅시다.<br />
+            우리의 춤판엔 어떤 사람들이 모였을까요?<br />
+            우리는 어떤 춤을 추게 될까요?
           </div>
         </div>
-
-        {/* Submit Button */}
-        <div style = {{
-          position: 'sticky',
-          height: '60px',
-          bottom:'0px',
-          borderTop: '1px solid #E6E1DC',
-          backgroundColor: 'red',
-          display: 'flex',
-          justifyItems: 'center'
-        }}>
-
+        <div id="submitcontainer">
+          <button className="submit-button" onClick={handleSubmit}>
+            포스트카드 제출
+          </button>
         </div>
-        <button
-          onClick={handleSubmit}
-          style={{
-            position: 'fixed',
-            left: '50%',
-            bottom: '10%',
-            transform: 'translateX(-50%)',
-            width: '170px',
-            height: '35px',
-            backgroundColor: '#F8F6F1',
-            border: '1px solid #E6E1DC',
-            color: '#412823',
-            boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.25)',
-            fontSize: '16px',
-            cursor: 'pointer',
-          }}
-        >
-          포스트카드 제출
-        </button>
       </div>
+      <style jsx>{`
+        .postcard-page {
+          font-family: 'Cafe24Simplehae', sans-serif;
+          background-color: #F8F6F1;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+        }
+        .postcard-container {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          box-sizing: border-box;
+        }
+        .postcard-content {
+          width: 322px;
+          height: 532px;
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+        .postcard-background {
+          width: 100%;
+          height: 100%;
+          position: absolute;
+          top: 0;
+          left: 0;
+          object-fit: cover;
+        }
+        .guide-text {
+          position: absolute;
+          top: 13%;
+          left: 5%;
+          right: 5%;
+          font-size: 0.7em;
+          color: #333;
+          text-align: center;
+          line-height: 2.4;
+        }
+        .background-container {
+          position: absolute;
+          top: 33.5%;
+          left: 52%;
+          width: 42%;
+          height: 31.5%;
+        }
+        .background-image {
+          width: 100%;
+          height: 100%;
+          background-size: contain;
+          background-repeat: no-repeat;
+          background-position: center;
+        }
+        .gif-overlay {
+          position: absolute;
+          object-fit: contain;
+        }
+        .input-section {
+          position: absolute;
+          top: 30%;
+          left: 10%;
+          right: 10%;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .input-group {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .input-group label {
+          font-size: 0.7em;
+          color: #333;
+          margin-bottom: 4.4%;
+        }
+        .input-group input,
+        .input-group textarea {
+          width: 50%;
+          border: none;
+          background: transparent;
+          font-size: 0.7em;
+          outline: none;
+          font-family: 'Cafe24Simplehae', sans-serif;
+        }
+        .input-group input {
+          margin-left: 2%;
+          width: 48%;
+          margin-top: 1%;
+          margin-bottom: 2%;
+          padding: 2px 0;
+          border-bottom: 1px solid #555;
+          transition: border-bottom 0.3s ease;
+        }
+        .input-group input:not(.empty) {
+          border-bottom: none;
+        }
+        .textarea-container {
+          position: absolute;
+          width: 50%;
+          top: 99%;
+          height: 170px;
+        }
+
+        .textarea-background {
+          position: absolute;
+          top: -5%;
+          left: 5%;
+          right: 0;
+          bottom: 0;
+          pointer-events: none;
+          height: calc(1.7rem * 4);
+          background-image: 
+            linear-gradient(transparent 95%, #555 96%);
+          background-size: 100% 1.7rem;
+          z-index: 0;
+          transition: opacity 0.3s ease;
+        }
+        .textarea-background.hidden {
+          opacity: 0;
+        }
+
+        .input-group textarea.lined-textarea {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          resize: none;
+          background: transparent;
+          border: none;
+          line-height: 1.7rem;
+          padding: 0 3px;
+          z-index: 1;
+          font-family: 'Cafe24Simplehae', sans-serif;
+          color: #333;
+        }
+
+        .char-count {
+          position: absolute;
+          top: 68%;
+          left: 40%;
+          font-size: 0.7em;
+          color: #777;
+          text-align: right;
+        } 
+
+        #finalwords {
+          position: absolute;
+          width: 281px;
+          height: 80px;
+          font-size: 0.7rem;
+          color: #333;
+          text-align: center;
+          line-height: 2.45;
+          letter-spacing: -0.5px;
+          top: 70%;
+          left: 50%;
+          transform: translateX(-50%);
+        }
+
+        #submitcontainer {
+          position: fixed;
+          bottom: 0;
+          height: 60px;
+          display: flex;
+          justify-content: center !important;
+          align-items: center !important;
+          border-top: 1px solid #E6E1DC;
+          width: 100%;
+        }
+        .submit-button {
+          width: 170px;
+          height: 35px;
+          background-color: #F8F6F1;
+          border: 1px solid #E6E1DC;
+          color: #412823;
+          font-size: 0.9em;
+          cursor: pointer;
+          box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+        }
+      `}</style>
     </div>
   );
 };

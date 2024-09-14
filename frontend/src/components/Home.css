@@ -23,7 +23,7 @@
 body {
   font-family: "Inter", sans-serif;
   color: #412823;
-  background-color: #f8f6f1;
+  background-color: transparent;
   margin: 0;
   padding: 0;
   display: flex;
@@ -33,7 +33,7 @@ body {
 }
 
 .container {
-  padding-top: 58px;
+  padding-top: 85px;
   padding-bottom: 70px;
   position: relative;
   opacity: 1;
@@ -108,7 +108,7 @@ footer {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 70px;
+  height: 50px;
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
@@ -120,7 +120,6 @@ footer {
 }
 
 footer * {
-  margin-top: -20px;
   height: 100%;
   display: flex;
   align-items: center;
@@ -163,7 +162,6 @@ footer * {
 
 a {
   color: inherit;
-  text-decoration: none;
 }
 
 a:active,
@@ -271,4 +269,13 @@ a:focus {
 
 .invitation-content.slide-in {
   transform: translateX(0);
+}
+
+header {
+  border: none !important;
+}
+
+.titleArea {
+  background: transparent !important;
+  background-color: transparent !important;
 }

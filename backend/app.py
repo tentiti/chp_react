@@ -67,43 +67,40 @@ def serve(path):
 @app.route("/api/upload", methods=["POST"])
 def upload_file():
     print("uploading..")
-    
+
     if "file" not in request.files:
         return jsonify({"error": "No file part"}), 400
-    
+
     file = request.files["file"]
     if file.filename == "":
         return jsonify({"error": "No selected file"}), 400
-    
+
     # 원본 파일 저장
     filename = secure_filename(file.filename)
     file_ext = os.path.splitext(filename)[1]
     unique_filename = str(uuid.uuid4()) + file_ext
     file_path = os.path.join(app.config["UPLOAD_FOLDER"], unique_filename)
     file.save(file_path)
-    
+
     # 첫 프레임 추출하여 PNG로 저장
-    if file_ext.lower() == '.gif':
+    if file_ext.lower() == ".gif":
         try:
             gif = Image.open(file_path)
             gif.seek(0)  # 첫 번째 프레임으로 이동
             still_filename = str(uuid.uuid4()) + ".png"
             still_file_path = os.path.join(app.config["UPLOAD_FOLDER"], still_filename)
-            
+
             # 첫 프레임을 PNG로 저장
             gif.save(still_file_path, "PNG")
         except Exception as e:
             return jsonify({"error": f"Failed to process GIF: {str(e)}"}), 500
     else:
         return jsonify({"error": "Uploaded file is not a GIF"}), 400
-    
+
     print(f"Original GIF filename: {unique_filename}")
     print(f"First frame PNG filename: {still_filename}")
-    
-    return jsonify({
-        "filename": unique_filename,
-        "stillfilename": still_filename
-    }), 200
+
+    return jsonify({"filename": unique_filename, "stillfilename": still_filename}), 200
 
 
 @app.route("/api/comment", methods=["POST"])
@@ -176,8 +173,8 @@ def submit_postcard():
 
             # 이미지 자르기 (중앙을 기준으로 이미지 크기의 20%를 잘라냄)
             width, height = random_frame.size
-            crop_margin_width = int(width * 0.1)  # 양쪽에서 10%씩 잘라냄
-            crop_margin_height = int(height * 0.1)  # 위아래에서 10%씩 잘라냄
+            crop_margin_width = int(width * 0.07)  # 양쪽에서 10%씩 잘라냄
+            crop_margin_height = int(height * 0.07)  # 위아래에서 10%씩 잘라냄
 
             left = crop_margin_width
             upper = crop_margin_height
@@ -195,7 +192,7 @@ def submit_postcard():
                 width, height = random_frame.size
 
                 # 반지름을 이미지 크기의 3분의 2로 설정
-                radius = min(width, height) * (2 / 3) // 2
+                radius = min(width, height) * (2 / 3) / 1.9
                 center = (width // 2, height // 2)
                 color = BACKGROUND_COLORS[number] + (255,)  # 불투명한 색상으로 설정
                 draw.ellipse(

@@ -138,7 +138,7 @@ const PostcardView = () => {
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
       
-        const maxLineLength = 45; // 정확하게 40글자로 자름
+        const maxLineLength = 38; // 정확하게 40글자로 자름
         const lines = [];
         let currentLine = '';
         
@@ -335,6 +335,7 @@ const PostcardView = () => {
     
 <div style={{
   // position: 'relative', // 상위 컨테이너를 상대적으로 설정하여 하위 요소 배치
+  backgroundImage: `url('/static/stockimages/background_paper.png')`,
 }}>
   <audio ref={audioRef} src="/static/test.mp3" loop></audio>
   <div style={{
@@ -345,7 +346,7 @@ const PostcardView = () => {
     zIndex: '1000', 
   }}>
     <Header 
-      title={postcard?.name ? `'${postcard.name}'의 춤사위'` : '춤사위'}
+      title={postcard?.name ? `'${postcard.name}'의 춤사위` : '춤사위'}
       onMenuClick={handleMenuClick}
       style={{ }}
     />
@@ -381,11 +382,13 @@ const PostcardView = () => {
     }} 
   />
   <div id="upbuttons" style={{ 
+    position: 'fixed',
+    bottom: '0',
+    width: '100%',
+    height: '60px',
     display: 'flex', 
-    justifyContent: 'center',
-     marginTop: '20px',
-     height: 'calc(25vw * (16 / 9) - 140px)'
-     }}>
+    justifyContent: 'space-around',
+    }}>
     <button className="upbutton" onClick={downloadVideo} disabled={!blobUrl}>
       {isRecording ? '공유 영상 준비 중...' : 'Download Video'}
     </button>

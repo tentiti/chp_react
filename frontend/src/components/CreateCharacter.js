@@ -4,7 +4,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { useNavigate } from 'react-router-dom';
 import GIF from 'gif.js';
 import './CreateCharacter.css';
-import Header from './Header';
+import Header from './Header.js';
 import { UseVideo } from './VideoContext.js'; // Context에서 가져옴
 
 const CreateCharacter = () => {
@@ -35,7 +35,22 @@ const CreateCharacter = () => {
   const clockRef = useRef(new THREE.Clock());
   const modelsRef = useRef([]);
   const controlsRef = useRef(null); // OrbitControls를 위한 Ref 추가
-  const [clickedIndex, setClickedIndex] = useState(null); // 클릭된 이미지의 인덱스를 저장하는 상태
+  // const [clickedIndex, setClickedIndex] = useState(null); // 클릭된 이미지의 인덱스를 저장하는 상태
+  const [selectedIndices, setSelectedIndices] = useState({
+    HEAD: null,
+    TOP: null,
+    BOTTOM: null,
+    SHOES: null,
+    ACCESSORY: null,
+  });
+
+  // 선택한 카테고리의 인덱스를 업데이트하는 함수
+const handleAssetSelection = (category, index) => {
+  setSelectedIndices((prevSelectedIndices) => ({
+    ...prevSelectedIndices,
+    [category]: index,  // 해당 카테고리의 선택된 인덱스를 업데이트
+  }));
+};
 
   const [loadingStatus, setLoadingStatus] = useState('Loading...');
   const [activeCategory, setActiveCategory] = useState(null);
@@ -76,14 +91,14 @@ const CreateCharacter = () => {
   ];
 
   const COLORS = [
-    { name: 'Red', bigCircle: '#F5A0A0', smallCircle: '#FF0000' },
-    { name: 'Orange', bigCircle: '#E1E17B', smallCircle: '#FFA500' },
-    { name: 'Yellow', bigCircle: '#CCA9FA', smallCircle: '#FFFF00' },
-    { name: 'Green', bigCircle: '#8FDCDC', smallCircle: '#008000' },
-    { name: 'Blue', bigCircle: '#83C0AA', smallCircle: '#0000FF' },
-    { name: 'Indigo', bigCircle: '#9C746C', smallCircle: '#4B0082' },
-    { name: 'Violet', bigCircle: '#7A6565', smallCircle: '#EE82EE' },
-    { name: 'Black', bigCircle: '#000000', smallCircle: '#FFFFFF' },
+    { name: 'Red', bigCircle: '#E88181', smallCircle: '#F5A0A0' },
+    { name: 'Orange', bigCircle: '#D5CF78', smallCircle: '#E1E17B' },
+    { name: 'Yellow', bigCircle: '#B078F9', smallCircle: '#CCA9FA' },
+    { name: 'Green', bigCircle: '#F170BE', smallCircle: '#F8BAF1' },
+    { name: 'Blue', bigCircle: '#66C7DD', smallCircle: '#A1EEFF' },
+    { name: 'Indigo', bigCircle: '#83C0AA', smallCircle: '#96ECA9' },
+    { name: 'Violet', bigCircle: '#9B7565', smallCircle: '#B18A82' },
+    { name: 'Black', bigCircle: '#554343', smallCircle: '#694F4F' },
   ];
 
   const [selectedHeadIndex, setSelectedHeadIndex] = useState(1); // 선택된 얼굴 색 인덱스 상태 추가
@@ -115,12 +130,12 @@ const CreateCharacter = () => {
 
   //표정 그리기 관련
   const GRAYSCALE_COLORS = [
-    { color: '#F5F1F1', bigColor: '#F5F1F1', smallColor: '#FFFFF' },
-    { color: '#F7EFDA', bigColor: '#FF0000', smallColor: '#0000FF' },
-    { color: '#F7E2CD', bigColor: '#F7E2CD', smallColor: '#E2CDB8' },
-    { color: '#B18A82', bigColor: '#B18A82', smallColor: '#9C756D' },
-    { color: '#8B7A7A', bigColor: '#8B7A7A', smallColor: '#766565' },
-    { color: '#FFBEBE', bigColor: '#FFBEBE', smallColor: '#EAA9A9' }
+    { color: '#F5F1F1', bigColor: '#EFE8E8', smallColor: '#F8F6F1' },
+    { color: '#F7EFDA', bigColor: '#F6EABC', smallColor: '#FFF6D2' },
+    { color: '#F7E2CD', bigColor: '#FFD4B3', smallColor: '#FFE5D2' },
+    { color: '#B18A82', bigColor: '#CA9572', smallColor: '#DBA988' },
+    { color: '#8B7A7A', bigColor: '#A36D4C', smallColor: '#C68862' },
+    { color: '#FFBEBE', bigColor: '#6B4311', smallColor: '#925E1D' }
   ];
   
   const [expressionDrawingColor, setExpressionDrawingColor] = useState('#FFFFFF'); // 초기 색상: 검은색
@@ -1166,147 +1181,172 @@ const handleHeadSelection = (index) => {
       <canvas ref={hiddenCanvasRef} style={{ display: 'none' }} />
 
       <div className="controls" style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column-reverse' }}>
+      
       <div id="botbottoms" style={{ display: 'flex', flexDirection: 'Column' }}>
-      <div className="category-selection">
-        {CATEGORIES.map((category) => (
-          <button
-            key={category.name}
-            onClick={() => handleCategorySelection(category)}
-            className={`color-button ${selectedCategory === category.name ? 'selected' : ''}`}
-            disabled={category.name === 'BOTTOM' && isDressSelected}
-          >
-            {CATEGORY_NAME_MAP[category.name]}
-          </button>
-        ))}
-      </div>
+      
+        <div className="category-selection">
+          {CATEGORIES.map((category) => (
+            <button
+              key={category.name}
+              onClick={() => handleCategorySelection(category)}
+              className={`color-button ${selectedCategory === category.name ? 'selected' : ''}`}
+              disabled={category.name === 'BOTTOM' && isDressSelected}
+            >
+              {CATEGORY_NAME_MAP[category.name]}
+            </button>
+          ))}
+        </div>
 
         <div className="create-character-container">
           <button className="create-character" onClick={startRecording}>
             캐릭터 생성하기
           </button>
         </div>
+
       </div>
 
       {/* Asset Grid (표정 카테고리를 선택했을 때와 그렇지 않을 때) */}
-      <div className={`asset-grid ${selectedCategory === 'EXPRESSION' ? 'expanded' : ''}`} style={{ }}>
+      <div className={`asset-grid ${selectedCategory === 'EXPRESSION' ? 'expanded' : ''}`} style={{ 
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
       {selectedCategory === 'EXPRESSION' ? (
         <>
-      {/* 버튼과 캔버스를 가로로 배치하는 컨테이너 */}
-      <div id="expressionTools" style={{ 
-        position:'sticky', 
-        display: 'flex', 
-        flexDirection:'row', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        zIndex: '999999'}}>
-        {/* 색상 선택 버튼 */}
-        <div className="expression-color-selection" style={{ 
+
+        {/* 버튼들을 가로로 배치하는 컨테이너 */}
+        <div id="expressionTools" style={{ 
+          position:'sticky', 
+
+          width: '100vw',
+          height:'60px',
+
           display: 'flex', 
+          flexDirection:'row', 
           justifyContent: 'space-between', 
-          marginBottom: '10px', 
-          width: '75%',
-        }}>
-        {GRAYSCALE_COLORS.map((colorObj, index) => (
-          <button
-            key={index}
-            onClick={() => {
-              setExpressionDrawingColor(colorObj.color);
-              clearCanvasWithColor(colorObj.color);
-              handleHeadSelection(index);
-            }}
-            className="color-button"
-            style={{
-              display: 'flex',
-              pointerEvents: 'auto',
-              justifyContent: 'center',
-              alignItems: 'center',
-              border: 'none',
-              background: 'none',
-              padding: '0',
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              boxSizing: 'border-box',
-            }}
+          alignItems: 'center', 
+          paddingTop: '5px',
+          paddingLeft:'10px',
+          MarginTop:'20px',
+          MarginBottom:'20px',
+          boxSizing: 'border-box',
+          zIndex: '999999',
+          borderTop: '1px solid #E6E1DC',
+          borderBottom: '1px solid #E6E1DC',
+          }}
           >
-            <div
-              className="big-circle"
+
+          {/* 색상 선택 버튼 */}
+          <div className="expression-color-selection" style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            marginBottom: '10px', 
+            width: '75%',
+          }}>
+            
+          {GRAYSCALE_COLORS.map((colorObj, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                setExpressionDrawingColor(colorObj.color);
+                clearCanvasWithColor(colorObj.color);
+                handleHeadSelection(index);
+              }}
+              className="color-button"
               style={{
-                backgroundColor: colorObj.bigColor,
                 display: 'flex',
+                pointerEvents: 'auto',
                 justifyContent: 'center',
                 alignItems: 'center',
+                border: 'none',
+                background: 'none',
+                padding: '0',
                 width: '32px',
                 height: '32px',
                 borderRadius: '50%',
+                boxSizing: 'border-box',
               }}
             >
-            <div
-                className="small-circle"
+              <div
+                className="big-circle"
                 style={{
-                  backgroundColor: colorObj.smallColor,
-                  width: '60%',
-                  height: '60%',
+                  backgroundColor: colorObj.bigColor,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  width: '32px',
+                  height: '32px',
                   borderRadius: '50%',
                 }}
-              />
-            </div>
-        </button> 
-        ))}
-      </div>
+                >
+              <div
+                  className="small-circle"
+                  style={{
+                    backgroundColor: colorObj.smallColor,
+                    width: '70%',
+                    height: '70%',
+                    borderRadius: '50%',
+                  }}
+                >
+                </div>
+              </div>
+          </button> 
+          ))}
+        </div>
 
         {/* 연필/지우개 토글 버튼 */}
 
         <div className="expression-tool-selection" style={{ 
           display: 'flex', 
-          justifyContent: 'center', 
-          marginBottom: '10px' }}>
-        <button
-          onClick={() => setExpressionIsErasing(!expressionIsErasing)}
-          style={{
-            width: '32px',           // 너비 32px
-            height: '32px',          // 높이 32px
-            borderRadius: '50%',     // 둥근 원 모양
-            backgroundColor: '#000', // 배경색 검정
-            backgroundImage: `url(${expressionIsErasing ? 'static/stockimages/eraser.png' : 'static/stockimages/pencil.png'})`, // 조건에 따라 배경 이미지 변경
-            backgroundPosition: 'center',
-            backgroundSize: '70%',
-            backgroundRepeat: 'no-repeat',
-            boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', // 그림자 효과
-            border: 'none',         // 테두리 없음
-            cursor: 'pointer',      // 마우스 커서 변경
-          }}
-        />
-      </div>
+          justifyContent: 'space-evenly', 
+          marginLeft: '10px',
+          width: 'calc(25%)'}}
+          >
+          <button
+            onClick={() => setExpressionIsErasing(!expressionIsErasing)}
+            style={{
+              width: '32px',           // 너비 32px
+              height: '32px',          // 높이 32px
+              borderRadius: '50%',     // 둥근 원 모양
+              backgroundColor: '#000', // 배경색 검정
+              backgroundImage: `url(${expressionIsErasing ? 'static/stockimages/eraser.png' : 'static/stockimages/pencil.png'})`, // 조건에 따라 배경 이미지 변경
+              backgroundPosition: 'center',
+              backgroundSize: '70%',
+              backgroundRepeat: 'no-repeat',
+              boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', // 그림자 효과
+              border: 'none',         // 테두리 없음
+              cursor: 'pointer',      // 마우스 커서 변경
+            }}
+          />
 
+          {/* 적용 버튼 */}
+          <div className="apply-button" style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+            <button
+              onClick={applyExpressionTextureToModel}
+              style={{
+                width: '32px',           // 너비 32px
+                height: '32px',          // 높이 32px
+                borderRadius: '50%',     // 둥근 원 모양
+                backgroundColor: '#000', // 배경색 검정
+                backgroundImage: 'url(static/stockimages/apply.png)', // apply.png 이미지 사용
+                backgroundPosition: 'center',
+                backgroundSize: '70%',   // 이미지 크기를 50%로 설정
+                backgroundRepeat: 'no-repeat',
+                boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', // 그림자 효과
+                border: 'none',         // 테두리 없음
+                cursor: 'pointer',      // 마우스 커서 변경
+              }}
+            />
+          </div>
 
-      {/* 적용 버튼 */}
-      <div className="apply-button" style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-        <button
-          onClick={applyExpressionTextureToModel}
-          style={{
-            width: '32px',           // 너비 32px
-            height: '32px',          // 높이 32px
-            borderRadius: '50%',     // 둥근 원 모양
-            backgroundColor: '#000', // 배경색 검정
-            backgroundImage: 'url(static/stockimages/apply.png)', // apply.png 이미지 사용
-            backgroundPosition: 'center',
-            backgroundSize: '70%',   // 이미지 크기를 50%로 설정
-            backgroundRepeat: 'no-repeat',
-            boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', // 그림자 효과
-            border: 'none',         // 테두리 없음
-            cursor: 'pointer',      // 마우스 커서 변경
-          }}
-        />
-      </div>
+        </div>
 
       </div>
 
       <div
         style={{
           position: 'relative',
-          width: 'calc(100vw - 30px)',  // 너비를 원하는 크기로 설정
-          height: '190px',  // 고정된 높이
+          width: '100vw',  // 너비를 원하는 크기로 설정
+          height: '280px',  // 고정된 높이
           overflow: 'hidden',  // 초과된 부분을 숨기기
         }}
       >
@@ -1331,11 +1371,8 @@ const handleHeadSelection = (index) => {
           width={400}  // 실제 캔버스의 해상도를 높임
           height={400} // 실제 캔버스의 해상도를 높임
           style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: 'calc(100vw - 30px)',  // 너비를 원하는 크기로 설정
-          height: '190px',  // 고정된 높이
+            width: '100vw',  // 너비를 원하는 크기로 설정
+            height: '400px',  // 고정된 높이
             background: 'transparent', // 배경을 투명하게 설정
             zIndex: 2,  // 캔버스가 이미지 위에 렌더링되도록 설정
             display: 'block',
@@ -1344,17 +1381,15 @@ const handleHeadSelection = (index) => {
           onMouseDown={startExpressionDrawing}
           onMouseMove={drawExpression}
           onMouseUp={finishExpressionDrawing}
-          // 터치 이벤트
+          // 터치 이벤트 
           onTouchStart={startExpressionDrawing}
           onTouchMove={drawExpression}
           onTouchEnd={finishExpressionDrawing}
         />
       </div>
 
+    </>
 
-
-
-      </>
       ) : (
       <>
       {activeCategory && activeCategory.assets.map((asset, index) => (
@@ -1365,11 +1400,11 @@ const handleHeadSelection = (index) => {
           maxWidth: '100%',
           maxHeight: '100%',
           borderRadius: '18px',
-          border: clickedIndex === index ? '3px solid #E9A7A7' : 'none', // 클릭된 항목에 경계선 추가
-          backgroundColor: clickedIndex === index ? '#FF0000' : 'transparent', // 클릭된 항목에 경계선 추가
+          border: selectedIndices[activeCategory.name] === index ? '3px solid #E9A7A7' : 'none', // 선택된 항목에 경계선 추가
+          backgroundColor: selectedIndices[activeCategory.name] === index ? '#FF0000' : 'transparent', // 선택된 항목에 배경색 추가
         }}
         onClick={() => {
-          setClickedIndex(index); // 클릭한 인덱스를 상태에 저장
+          handleAssetSelection(activeCategory.name, index); // 카테고리별 선택된 인덱스 업데이트
           const modelPath = activeCategory.useColor
             ? `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}_${selectedColors[activeCategory.name]?.name || 'Black'}.glb`
             : `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}.glb`;

@@ -50,16 +50,13 @@ const PlaceSelection = () => {
     const descriptionRef = useRef(null);
 
     const handleNext = () => {
-        if (currentIndex < backgrounds.length - 1) {
-            setCurrentIndex(currentIndex + 1);
-        }
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % backgrounds.length);
     };
-
+    
     const handlePrevious = () => {
-        if (currentIndex > 0) {
-            setCurrentIndex(currentIndex - 1);
-        }
+        setCurrentIndex((prevIndex) => (prevIndex - 1 + backgrounds.length) % backgrounds.length);
     };
+    
 
     const handleScroll = () => {
         setScrollTop(window.scrollY);
@@ -79,10 +76,12 @@ const PlaceSelection = () => {
 
     const scrollToBottom = () => {
         containerRef.current.scrollTo({ top: containerRef.current.scrollHeight, behavior: 'smooth' });
+        setIsScrolledToBottom(true); // 스크롤 후 상태 변경
     };
 
     const scrollToTop = () => {
         containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        setIsScrolledToBottom(false); // 다시 스크롤을 위로 올리면 상태를 초기화
     };
 
     const handleSelectPlace = () => {
@@ -92,19 +91,23 @@ const PlaceSelection = () => {
     
     const currentModelPosition = modelPositions[currentIndex]; // 현재 인덱스에 맞는 위치 데이터 가져오기
 
+    const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
+    
     return (
         <div style={{
             display: 'flex',
             flexDirection: 'column',
             height: '100vh',
             justifyContent: 'space-between',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            overFlowX: 'hidden',
         }}>
+
             <div style={{
                 position: 'fixed',
                 top:0,
                 height: '58px',
-                width: '100%',
+                width: '100vw',
                 backgroundColor: '#F8F6F1',
                 zIndex: 1000,
             }}>
@@ -119,22 +122,26 @@ const PlaceSelection = () => {
                 overflowY: 'auto',
             }}>
             <div id="containers" ref={containerRef} style={{
+                position: 'relative',
+                top: 0,
                 flexGrow: 1,
                 overflowY: 'auto', // Scrollable container
-                justifyContent: 'flex-end', // 추가: 컨텐츠가 아래로 붙도록 설정
+                justifyContent: 'flex-start', // 추가: 컨텐츠가 아래로 붙도록 설정
+                minheight: 'calc(100vh * 2 - 276px)',
+                display:'flex',
+                flexDirection:'column', 
+                textAlign: 'center', 
+                alignItems: 'center',
+                justifyContent: 'flex-start', // 수직 정렬을 위로 조정
+                padding: '0 20px',
+                overFlowX: 'hidden',
             }}>
 
-                <div id='topsection' style={{ 
-                    display:'flex',
-                    flexDirection:'column', 
-                    textAlign: 'center', 
-                    alignItems: 'center',
-                    justifyContent: 'flex-start', // 수직 정렬을 위로 조정
-                    padding: '0 20px'
-                }}>
+
                     <div id='images' style={{
                         height:'375px',
-                        position:'relative'
+                        position:'relative',
+                        overFlowX: 'hidden',
                     }}>
                         <img 
                             src={backgrounds[currentIndex]} // Dynamic background image
@@ -177,13 +184,14 @@ const PlaceSelection = () => {
                     
 
                     {/* Dot Indicators */}
-                    <div style={{ display: 'flex', flexDirection:'row', justifyContent: 'center', marginTop: '10px' }}>
+                    <div style={{ display: 'flex', flexDirection:'row', justifyContent: 'center', marginTop: '10px',
+                        overFlowX: 'hidden', }}>
                     {backgrounds.map((_, index) => (
                         <div 
                             key={index} 
                             style={{
-                                width: '10px',
-                                height: '10px',
+                                width: '6px',
+                                height: '6px',
                                 borderRadius: '50%',
                                 backgroundColor: index === currentIndex ? 'rgba(65,30,45,1)' : 'rgba(65,30,45,0.3)', // Current index indicator
                                 margin: '0 5px',
@@ -195,35 +203,33 @@ const PlaceSelection = () => {
 
                     {/* 구분선 추가 */}
                     <hr style={{ 
-                        width: '95%', 
+                        width: '100vw', 
                         margin: '10px auto', 
-                        border: '1px solid #E6E1DC' // 구분선 색상 및 투명도 조정
+                        border: '0.5px solid #E6E1DC' // 구분선 색상 및 투명도 조정
                     }} />
                     {/* Left Arrow */}
-                    {currentIndex > 0 && (
                         <div 
                             style={{ 
                                 position: 'absolute', 
                                 top: '290px', 
-                                left: '10px', 
+                                left: '30px', 
                                 transform: 'translateY(-50%)', 
                                 cursor: 'pointer',
                                 zIndex: 1000,
                                 fontSize:'22px',
-                                color:'rgba(65,30,45,0.3)'
+                                color:'rgba(65,30,45,0.3)',
+                                zIndex: 1000,  
                             }}
                             onClick={handlePrevious}
                         >
                             &#9664; {/* Unicode for left arrow */}
                         </div>
-                    )}
                     {/* Right Arrow */}
-                    {currentIndex < backgrounds.length - 1 && (
                         <div 
                             style={{ 
                                 position: 'absolute', 
                                 top: '290px', 
-                                right: '10px', 
+                                right: '30px', 
                                 transform: 'translateY(-50%)', 
                                 cursor: 'pointer',
                                 zIndex: 1000,
@@ -234,16 +240,16 @@ const PlaceSelection = () => {
                         >
                             &#9654; {/* Unicode for right arrow */}
                         </div>
-                    )}
 
                     {/* 작품설명 */}
                     <div id='workdetails' style={{
-                        marginTop: '10px'
+                        overFlowX: 'hidden',
                     }}>
                         <h2 id='worktitle'>{descriptions[currentIndex].title}</h2>
                         <p id='workdate'>{descriptions[currentIndex].date}</p>
                         <p id='workdescription' style={{
-                            height:'100px'
+                            height:'110px',
+                            overflowY: 'auto',
                         }}>{descriptions[currentIndex].text}</p>
                     </div>
 
@@ -254,66 +260,69 @@ const PlaceSelection = () => {
                         display: 'block', // 요소를 블록 요소로 만들어서 전체 너비 차지
                         width:'100%',
                         textAlign: 'right', // 텍스트를 오른쪽 정렬
-                        zIndex: 10 // 다른 요소 위에 표시하도록 z-index 설정
+                        zIndex: 10, // 다른 요소 위에 표시하도록 z-index 설정
+                        marginRight: '10px',
+                        
                     }}>
                         * 해당 배경은 김화순 작가의 작품을 오마주하여 제작하였습니다.
                     </span>
-
-                    <hr style={{ 
-                        width: '95%', 
-                        margin: '10px auto', 
-                        border: '1px solid  #E6E1DC', // 구분선 색상 및 투명도 조정
-                        borderRadius: '10px' // 양끝 둥글게 설정
-                    }} />
             
-            {/* 두 개의 버튼 */}
-                <div  onClick={scrollToBottom}>
-                        원본 작품 보러가기<br/>
-                        <img src="/static/icons/down.png" alt="Arrow Down" style={{ width: 'auto', height: '13px', marginTop:'10px'}} />
-                </div>
+                    <div 
+            onClick={isScrolledToBottom ? scrollToTop : scrollToBottom} 
+            style={{
+                position: 'sticky',
+                bottom:'58px',
+                height: '65px',
+                width: '100vw',
+                borderTop: '1px solid #E6E1DC',
+                paddingTop: '10px',
+                backgroundColor: '#F8F6F1',
+                cursor: 'pointer', // 클릭할 수 있음을 나타냄
+                textAlign: 'center', // 텍스트 및 이미지 중앙 정렬,
+                overFlowX: 'hidden',
+            }}
+        >
+            {isScrolledToBottom ? '장소 고르러 돌아가기' : '원본 작품 보러가기'}<br/>
+            <img 
+                src="/static/icons/down.png" 
+                alt="Arrow" 
+                style={{
+                    width: 'auto', 
+                    height: '13px', 
+                    marginTop:'10px', 
+                    transform: isScrolledToBottom ? 'rotate(180deg)' : 'none', // 이미지 상하 반전
+                }} 
+            />
+        </div>
 
-                <hr style={{ 
-                            width: 'calc(100vw - 40px)', 
-                            border: '1px solid  #E6E1DC', // 구분선 색상 및 투명도 조정
-                            borderRadius: '10px' // 양끝 둥글게 설정
-                        }} />
+            <img src={descriptions[currentIndex].image} alt="Example" style={{ 
+                width: '100%', 
+                height: 'auto',
+                marginTop: '20px',  
+                marginBottom: '22px',
+                paddingBottom: '58px'
+                }} />
+        </div>
+
+        </div>
+        <div style ={{
+                    position: 'fixed',
+                    bottom:'0',
+                    left: '0',
+                    borderTop: '1px solid #E6E1DC',
+                    width: '100vw',
+                    height: '10vh',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    backgroundColor: '#F8F6F1',
+                    overFlowX: 'hidden',
+                }}>
 
                 <button id="scrolldownbutton"
                     onClick={handleSelectPlace} 
                 >
-                    이 장소로 선택하기
+                    여기서 춤추기
                 </button>
-        </div>
-                
-        <div id = "bottomsection" ref={descriptionRef} style={{ 
-            minHeight: 'calc(100vh - 58px)',
-            padding: '20px', 
-            background: 'linear-gradient(#f4f4f4, #000000)', // 변경: 그라데이션 추가
-        }}>
-
-            <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                <button 
-                    onClick={scrollToTop} 
-                    style={{ 
-                        marginTop:'20px',
-                        padding: '10px 20px', 
-                        fontSize: '16px', 
-                        cursor: 'pointer',
-                        backgroundColor: '#F8F6F1',
-                        border: 'none',
-                    }}
-                >
-                    장소 고르러 돌아가기
-                </button>
-            </div>
-            <img src={descriptions[currentIndex].image} alt="Example" style={{ width: '100%', marginTop: '20px' }} />
-            {/* <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
-                {descriptions[currentIndex].additionalImages.map((img, index) => (
-                    <img key={index} src={img} alt={`Additional ${index}`} style={{ width: '49%' }} />
-                ))}
-            </div> */}
-        </div>
-        </div>
         </div>
         </div>
     );

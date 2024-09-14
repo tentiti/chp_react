@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from './components/Home';
 import Invitation from './components/Invitation';
-import CreateCharacter from './components/GlbTest';
+import CreateCharacter from './components/CreateCharacter';
 import PlaceSelection from './components/PlaceSelection';
 import PostcardCreation from './components/PostcardCreation';
 import PostcardView from './components/PostcardView';

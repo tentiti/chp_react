@@ -53,8 +53,8 @@ function Home() {
   useEffect(() => {
     const floatingButton = document.querySelector('.floating');
     if (floatingButton) {
-      const buttonWidth = 60;
-      const buttonHeight = 60;
+      const buttonWidth = 70;
+      const buttonHeight = 70;
       const collisionMargin = 5; // 끝에서 충돌이 발생할 여유 범위
       const collisionCooldown = 1000; // 충돌 후 1초 동안 재충돌 방지
   
@@ -194,19 +194,20 @@ function Home() {
     <div className="App">
     {/* Home의 헤더: Invitation이 활성화되면 숨겨짐 */} 
       {!isInvitationVisible && (
-        <div id="headerLoader">
-          <header>
-          <div className="titleArea" style={{ backgroundColor: '#f8f6f1', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', width: '100%' }}>
+        <div id="headerLoader" style={{ backgroundColor: isInvitationVisible ? 'transparent' : '#f8f6f1' }}>
+        <header style={{ backgroundColor: 'transparent' }}>
+          <div className="titleArea" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', width: '100%', backgroundColor: 'transparent' }}>
             <div style={{ fontFamily: 'ClimateCrisisKR-1979', flexGrow: 0, textAlign: 'left' }}>
-              <span style={{ fontWeight: 200, fontSize: '12px', color: '#412823' }}>이제</span><br />
-              <span style={{ fontWeight: 400, fontSize: '16px', color: '#412823' }}>댄스타임</span>
+              <span style={{ fontWeight: 200, fontSize: '15px', color: '#412823', lineHeight: '0.9', display: 'block' }}>이제</span>
+              <span style={{ fontWeight: 400, fontSize: '24px', color: '#412823', lineHeight: '0.9', display: 'block' }}>댄스타임</span>
             </div>
-            <div onClick={handleMenuClick} style={{ marginLeft: 'auto', cursor: 'pointer' }}>
+
+            <div onClick={handleMenuClick} style={{ marginLeft: 'auto', cursor: 'pointer', display:'flex', justifyContent:'center', alignContent:"center"}}>
               <img src="/static/icons/hamburger.png" alt="menu" id="menu-button" />
             </div>
           </div>
+        </header>
 
-          </header>
 
 
       <div className="floating"></div>  
@@ -249,7 +250,7 @@ function Home() {
         </div>
       )}
 
-      <footer>
+      <footer style={{letterSpacing:'-0.025em'}}>
         <div>2024. 10. 12 - 10.29.</div>
         <div className="footerBorder">|</div>
         <a href="https://google.com">김화순 개인전</a>
