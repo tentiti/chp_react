@@ -83,9 +83,7 @@ const PostcardView = () => {
         video.muted = true; // 비디오 음소거 (자동 재생 가능)
         video.playsInline = true; // 모바일에서 inline 재생 허용 (필수)
         video.autoplay = true;  // autoplay 설정, 텍스처로 사용 시 필요
-        video.playbackRate = 0.4;  // Slow down playback to half speed
-      
-        
+        video.playbackRate = 0.5;  // Slow down playback to half speed
 
         // 비디오 엘리먼트를 DOM에 추가하지 않음
         video.addEventListener('canplay', () => {
@@ -247,11 +245,17 @@ const PostcardView = () => {
     });
   
     recorder.startRecording();
-    audioRef.current.play(); // Ensure the audio starts playing
+    if (audioRef.current) {
+      audioRef.current.play().catch(err => {
+        console.error("Audio playback failed:", err);
+      });
+    } else {
+      console.error("Audio element is not initialized");
+    }
     recorderRef.current = recorder;
   
     // Stop recording after 10 seconds
-    setTimeout(() => stopRecording(), 10000);
+    setTimeout(() => stopRecording(), 18750);
 };
 
 
@@ -271,6 +275,8 @@ const PostcardView = () => {
         }
 
       });
+    } else {
+      console.error("Recorder is not initialized");
     }
   };
 

@@ -110,7 +110,7 @@ const PostcardCreation = () => {
               height: `${backgroundHeight}px`,
               left: '200px',
               top: 'calc(320px - 10%)',
-              backgroundImage: `url('/static/stockimages/bg${selectedBackground}.png')`,
+              backgroundImage: `url('/static/stockimages/trans_bg${selectedBackground}.png')`,
               backgroundSize: 'cover',
             }}
           >
@@ -195,6 +195,17 @@ const PostcardCreation = () => {
         </div>
 
         {/* Submit Button */}
+        <div style = {{
+          position: 'sticky',
+          height: '60px',
+          bottom:'0px',
+          borderTop: '1px solid #E6E1DC',
+          backgroundColor: 'red',
+          display: 'flex',
+          justifyItems: 'center'
+        }}>
+
+        </div>
         <button
           onClick={handleSubmit}
           style={{
@@ -205,7 +216,7 @@ const PostcardCreation = () => {
             width: '170px',
             height: '35px',
             backgroundColor: '#F8F6F1',
-            border: '1px solid E6E1DC',
+            border: '1px solid #E6E1DC',
             color: '#412823',
             boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.25)',
             fontSize: '16px',

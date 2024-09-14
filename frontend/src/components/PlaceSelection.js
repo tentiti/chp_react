@@ -5,9 +5,9 @@ import './CreateCharacter.css'; // CSS 파일 불러오기
 import './placeselection.css'; // CSS 파일 불러오기
 
 const backgrounds = [
-    "/static/stockimages/bg1.png",
-    "/static/stockimages/bg2.png",
-    "/static/stockimages/bg3.png",
+    "/static/stockimages/trans_bg1.png",
+    "/static/stockimages/trans_bg2.png",
+    "/static/stockimages/trans_bg3.png",
 ];
 
 const modelPositions = [
@@ -21,31 +21,19 @@ const descriptions = [
         title: "달밤",
         date: "2020.08.",
         text: "작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 아름다운 표현들 등등등 그렇다는 것.작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. ",
-        image: "https://placehold.co/390x650?text=ex1",
-        additionalImages: [
-            "https://placehold.co/190x200?text=ex2",
-            "https://placehold.co/190x200?text=ex3"
-        ]
+        image: "https://placehold.co/780x1300?text=work1",
     },
     {
         title: "저녁 풍경",
         date: "2021.06.",
         text: "작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 아름다운 표현들 등등등 그렇다는 것.작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. ",
-        image: "https://placehold.co/390x500?text=ex4",
-        additionalImages: [
-            "https://placehold.co/190x200?text=ex5",
-            "https://placehold.co/190x200?text=ex6"
-        ]
+        image: "https://placehold.co/600x800?text=work2",
     },
     {
         title: "아침의 시작",
         date: "2022.01.",
         text: "작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 아름다운 표현들 등등등 그렇다는 것.작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것. ",
-        image: "https://placehold.co/390x500?text=ex7",
-        additionalImages: [
-            "https://placehold.co/190x200?text=ex8",
-            "https://placehold.co/190x200?text=ex9"
-        ]
+        image: "https://placehold.co/900x900?text=work3",
     }
 ];
 

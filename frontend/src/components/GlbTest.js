@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
-// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { useNavigate } from 'react-router-dom';
 import GIF from 'gif.js';
@@ -58,25 +57,33 @@ const CreateCharacter = () => {
     EXPRESSION: '표정',
   };
 
+  // const CATEGORIES = [
+  //   { name: 'HEAD', assets: ['head1.png', 'head2.png', 'head3.png', 'head4.png', 'head5.png', 'head6.png', 'head7.png', 'head8.png', 'head9.png', 'head10.png', 'head11.png', 'head12.png'], useColor: true }, // 12개
+  //   { name: 'TOP', assets: ['top1.png', 'top2.png', 'top3.png', 'top4.png', 'top5.png', 'top6.png', 'top7.png', 'top8.png', 'top9.png', 'top10.png', 'top11.png', 'top12.png', 'top13.png', 'top14.png', 'top15.png', 'top16.png', 'top17.png', 'top18.png', 'top19.png', 'top20.png', 'top21.png', 'top22.png', 'top23.png', 'top24.png'], useColor: false }, // 24개
+  //   { name: 'BOTTOM', assets: ['bottom1.png', 'bottom2.png', 'bottom3.png', 'bottom4.png', 'bottom5.png', 'bottom6.png', 'bottom7.png', 'bottom8.png', 'bottom9.png', 'bottom10.png', 'bottom11.png', 'bottom12.png', 'bottom13.png', 'bottom14.png', 'bottom15.png', 'bottom16.png', 'bottom17.png', 'bottom18.png', 'bottom19.png', 'bottom20.png', 'bottom21.png', 'bottom22.png'], useColor: false }, // 22개
+  //   { name: 'SHOES', assets: ['shoes1.png', 'shoes2.png', 'shoes3.png', 'shoes4.png', 'shoes5.png', 'shoes6.png', 'shoes7.png', 'shoes8.png'], useColor: false }, // 8개
+  //   { name: 'ACCESSORY', assets: ['accessory1.png', 'accessory2.png', 'accessory3.png', 'accessory4.png', 'accessory5.png', 'accessory6.png', 'accessory7.png', 'accessory8.png', 'accessory9.png', 'accessory10.png', 'accessory11.png', 'accessory12.png', 'accessory13.png', 'accessory14.png', 'accessory15.png', 'accessory16.png', 'accessory17.png', 'accessory18.png'], useColor: false }, // 18개
+  //   { name: 'EXPRESSION', assets: [], useColor: false },
+  // ];
+  
   const CATEGORIES = [
-    { name: 'HEAD', assets: ['head1.png', 'head2.png', 'head3.png', 'head4.png', 'head5.png', 'head6.png', 'head7.png', 'head8.png', 'head9.png', 'head10.png', 'head11.png', 'head12.png'], useColor: true }, // 12개
-    { name: 'TOP', assets: ['top1.png', 'top2.png', 'top3.png', 'top4.png', 'top5.png', 'top6.png', 'top7.png', 'top8.png', 'top9.png', 'top10.png', 'top11.png', 'top12.png', 'top13.png', 'top14.png', 'top15.png', 'top16.png', 'top17.png', 'top18.png', 'top19.png', 'top20.png', 'top21.png', 'top22.png', 'top23.png', 'top24.png'], useColor: false }, // 24개
-    { name: 'BOTTOM', assets: ['bottom1.png', 'bottom2.png', 'bottom3.png', 'bottom4.png', 'bottom5.png', 'bottom6.png', 'bottom7.png', 'bottom8.png', 'bottom9.png', 'bottom10.png', 'bottom11.png', 'bottom12.png', 'bottom13.png', 'bottom14.png', 'bottom15.png', 'bottom16.png', 'bottom17.png', 'bottom18.png', 'bottom19.png', 'bottom20.png', 'bottom21.png', 'bottom22.png'], useColor: false }, // 22개
-    { name: 'SHOES', assets: ['shoes1.png', 'shoes2.png', 'shoes3.png', 'shoes4.png', 'shoes5.png', 'shoes6.png', 'shoes7.png', 'shoes8.png'], useColor: false }, // 8개
-    { name: 'ACCESSORY', assets: ['accessory1.png', 'accessory2.png', 'accessory3.png', 'accessory4.png', 'accessory5.png', 'accessory6.png', 'accessory7.png', 'accessory8.png', 'accessory9.png', 'accessory10.png', 'accessory11.png', 'accessory12.png', 'accessory13.png', 'accessory14.png', 'accessory15.png', 'accessory16.png', 'accessory17.png', 'accessory18.png'], useColor: false }, // 18개
+    { name: 'HEAD', assets: ['head1.png', 'head2.png', 'head3.png'], useColor: true }, // 3개
+    { name: 'TOP', assets: ['top1.png', 'top2.png', 'top3.png'], useColor: false }, // 3개
+    { name: 'BOTTOM', assets: ['bottom1.png', 'bottom2.png', 'bottom3.png'], useColor: false }, // 3개
+    { name: 'SHOES', assets: ['shoes1.png', 'shoes2.png', 'shoes3.png', 'shoes4.png', 'shoes4.png', 'shoes6.png', 'shoes7.png', 'shoes8.png', 'shoes9.png', ], useColor: false }, // 3개
+    { name: 'ACCESSORY', assets: ['accessory1.png', 'accessory2.png', 'accessory3.png'], useColor: false }, // 3개
     { name: 'EXPRESSION', assets: [], useColor: false },
   ];
-  
 
   const COLORS = [
-    { name: 'Red', value: '#F5A0A0' },
-    { name: 'Orange', value: '#E1E17B' },
-    { name: 'Yellow', value: '#CCA9FA' },
-    { name: 'Green', value: '#8FDCDC' },
-    { name: 'Blue', value: '#83C0AA' },
-    { name: 'Indigo', value: '#9C746C' },
-    { name: 'Violet', value: '#7A6565' },
-    { name: 'Black', value: '#000000' },
+    { name: 'Red', bigCircle: '#F5A0A0', smallCircle: '#FF0000' },
+    { name: 'Orange', bigCircle: '#E1E17B', smallCircle: '#FFA500' },
+    { name: 'Yellow', bigCircle: '#CCA9FA', smallCircle: '#FFFF00' },
+    { name: 'Green', bigCircle: '#8FDCDC', smallCircle: '#008000' },
+    { name: 'Blue', bigCircle: '#83C0AA', smallCircle: '#0000FF' },
+    { name: 'Indigo', bigCircle: '#9C746C', smallCircle: '#4B0082' },
+    { name: 'Violet', bigCircle: '#7A6565', smallCircle: '#EE82EE' },
+    { name: 'Black', bigCircle: '#000000', smallCircle: '#FFFFFF' },
   ];
 
   const [selectedHeadIndex, setSelectedHeadIndex] = useState(1); // 선택된 얼굴 색 인덱스 상태 추가
@@ -107,8 +114,15 @@ const CreateCharacter = () => {
   const [initialCameraPosition, setInitialCameraPosition] = useState(null);
 
   //표정 그리기 관련
-  const GRAYSCALE_COLORS = ['#F5F1F1', '#F7EFDA', '#F7E2CD', '#B18A82', '#8B7A7A', '#FFBEBE'];
-
+  const GRAYSCALE_COLORS = [
+    { color: '#F5F1F1', bigColor: '#F5F1F1', smallColor: '#FFFFF' },
+    { color: '#F7EFDA', bigColor: '#FF0000', smallColor: '#0000FF' },
+    { color: '#F7E2CD', bigColor: '#F7E2CD', smallColor: '#E2CDB8' },
+    { color: '#B18A82', bigColor: '#B18A82', smallColor: '#9C756D' },
+    { color: '#8B7A7A', bigColor: '#8B7A7A', smallColor: '#766565' },
+    { color: '#FFBEBE', bigColor: '#FFBEBE', smallColor: '#EAA9A9' }
+  ];
+  
   const [expressionDrawingColor, setExpressionDrawingColor] = useState('#FFFFFF'); // 초기 색상: 검은색
   const [expressionIsErasing, setExpressionIsErasing] = useState(false); // 지우개 여부
   const expressionCanvasRef = useRef(null); // 표정을 그리는 캔버스  
@@ -164,10 +178,10 @@ const CreateCharacter = () => {
         sceneRef.current.add(model);
 
               // 모델 내 구성 요소 콘솔에 출력
-      console.log('Model components:');
-      model.traverse((child) => {
-        console.log(child);  // 각 구성 요소 출력
-      });
+      // console.log('Model components:');
+      // model.traverse((child) => {
+      //   console.log(child);  // 각 구성 요소 출력
+      // });
 
         const mixer = new THREE.AnimationMixer(model);
         let action = null;
@@ -236,9 +250,9 @@ const CreateCharacter = () => {
         preserveDrawingBuffer: true 
       });
 
-      rendererRef.outputColorSpace = THREE.SRGBColorSpace;
-      rendererRef.gammaFactor = 2.2;
-      rendererRef.gammaOutput = true;
+      rendererRef.currentoutputColorSpace = THREE.SRGBColorSpace;
+      // rendererRef.gammaFactor = 2.2;
+      // rendererRef.gammaOutput = true;
 
       rendererRef.current.setSize(400, 400);
       rendererRef.current.setClearColor(0x000000, 0);
@@ -414,23 +428,23 @@ const CreateCharacter = () => {
     }, 100);
   };
   
-  
   const startRecordingForBackground = async (backgroundImageSrc, { x, y, width, height }) => {
-    console.log('Starting recording for background:', backgroundImageSrc); // 추가된 로그
-
+    console.log('Starting recording for background:', backgroundImageSrc);
+  
     const canvas = document.createElement('canvas');
     canvas.width = 393;
     canvas.height = 491;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
   
-    const duration = 5; // 5초 동안 녹화
-    const fps = 60; // 프레임 속도는 60fps로 설정
-    const totalFrames = duration * fps;
+    const duration = 18.75; // 18.75초 동안 녹화
+    const fps = 24; // 프레임 속도는 24fps로 설정
+    const totalFrames = Math.round(duration * fps); // 총 프레임 수 계산
+    const frameInterval = 1000 / fps; // 프레임 간 간격 (밀리초)
     let frameCount = 0;
   
     const backgroundImage = new Image();
     backgroundImage.src = backgroundImageSrc;
-
+  
     backgroundImage.onload = () => {
       console.log(`Background image ${backgroundImageSrc} loaded successfully`);
     };
@@ -454,8 +468,8 @@ const CreateCharacter = () => {
       canvas.width,
       canvas.height
     );
-
-      // 녹화 형식을 동적으로 결정 (MP4 또는 WebM)
+  
+    // 녹화 형식을 동적으로 결정 (MP4 또는 WebM)
     let mimeType = '';
     if (MediaRecorder.isTypeSupported('video/webm')) {
       mimeType = 'video/webm';
@@ -466,7 +480,7 @@ const CreateCharacter = () => {
       return;
     }
   
-    // MP4 녹화 시작
+    // 녹화 시작
     const stream = canvas.captureStream(fps);
     const mediaRecorder = new MediaRecorder(stream, { mimeType });
   
@@ -484,14 +498,12 @@ const CreateCharacter = () => {
         // 파일 확장자 결정
         let fileExtension = mimeType.includes('mp4') ? 'mp4' : 'webm';
         const fileName = `animation_recording_${Date.now()}.${fileExtension}`;
-        resolve(blob); // Blob을 반환하는 대신 resolve로 반환
+        resolve(blob);
       };
   
-      mediaRecorder.start(); // MP4 녹화 시작
+      mediaRecorder.start();
   
-      setTimeout(() => {
-        mediaRecorder.stop(); // 15초 후 녹화 중지
-      }, duration * 1000);
+      const startTime = Date.now();
   
       // 캡처 및 애니메이션 처리
       const captureFrame = () => {
@@ -510,7 +522,7 @@ const CreateCharacter = () => {
             offsetY,
             targetWidth,
             targetHeight
-          ); // 비율에 맞춰 배경 이미지 그리기
+          );
   
           // 모델 렌더링
           hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
@@ -522,9 +534,16 @@ const CreateCharacter = () => {
             console.error('hiddenCanvasRef.current is not defined or not a valid canvas element.');
           }
           
-  
           frameCount++;
-          requestAnimationFrame(captureFrame);
+  
+          // 다음 프레임을 위한 시간 계산
+          const nextFrameTime = startTime + frameCount * frameInterval;
+          const now = Date.now();
+          const timeUntilNextFrame = Math.max(0, nextFrameTime - now);
+  
+          setTimeout(captureFrame, timeUntilNextFrame);
+        } else {
+          mediaRecorder.stop();
         }
       };
   
@@ -572,9 +591,8 @@ const CreateCharacter = () => {
       transparent: 'rgba(0,0,0,0)',
     });
 
-    const duration = 5; // 녹화 시간
-    const fps = 30; // 초당 프레임
-    const totalFrames = duration * fps;
+    const fps = 24; // 초당 프레임
+    const totalFrames = 450;
     let frameCount = 0;
 
     resetAndStartAnimation();
@@ -715,15 +733,20 @@ const uploadGif = async (gifBlob) => {
     const canvas = expressionCanvasRef.current;
     const rect = canvas.getBoundingClientRect();
   
+    // devicePixelRatio를 사용하여 좌표 보정
+    const scaleX = canvas.width / rect.width;    // 수평 스케일링 비율
+    const scaleY = canvas.height / rect.height;  // 수직 스케일링 비율
+  
     // 터치 이벤트일 경우 터치 위치에서 좌표를 얻음, 아니면 마우스 좌표
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
   
     return {
-      x: clientX - rect.left,
-      y: clientY - rect.top
+      x: (clientX - rect.left) * scaleX,  // 스케일링 비율 적용
+      y: (clientY - rect.top) * scaleY    // 스케일링 비율 적용
     };
   };
+  
 
   const startExpressionDrawing = (e) => {
     e.preventDefault(); // 기본 터치 동작 방지
@@ -752,17 +775,17 @@ const uploadGif = async (gifBlob) => {
   
     if (expressionIsErasing) {
       // 지우개 모드일 때는 선택된 색상으로 그리고 굵기는 20
-      ctx.lineWidth = 20;
+      ctx.lineWidth = 30;
       ctx.strokeStyle = expressionDrawingColor;
     } else {
       // 그레이스케일 색상이 4, 5, 6번째일 때는 검정색으로 그리고 굵기는 5
-      const grayscaleIndex = GRAYSCALE_COLORS.indexOf(expressionDrawingColor);
+      const grayscaleIndex = GRAYSCALE_COLORS.findIndex(colorObj => colorObj.color === expressionDrawingColor);
       if (grayscaleIndex >= 3 && grayscaleIndex <= 5) {
-        ctx.lineWidth = 5;
+        ctx.lineWidth = 10;
         ctx.strokeStyle = '#FFFFFF'; // 검정색으로 그리기
       } else {
         // 그 외의 경우 흰색으로 그리고 굵기는 5
-        ctx.lineWidth = 5;
+        ctx.lineWidth = 10;
         ctx.strokeStyle = '#000000'; // 흰색으로 그리기
       }
     }
@@ -827,52 +850,203 @@ const uploadGif = async (gifBlob) => {
   //   });
   // };
 
+  // const applyExpressionTextureToModel = () => {
+  //   const canvas = expressionCanvasRef.current;
+  //   // downloadExpressionAsPNG(canvas);
+  //   const texture = new THREE.CanvasTexture(canvas);
+  
+  //   // Y축을 반전시키기 위해 flipY를 false로 설정
+  //   texture.flipY = false;
+  //   texture.needsUpdate = true;
+  //   texture.minFilter = THREE.LinearFilter; // 텍스처 확대 시 선명하게 처리
+  //   texture.magFilter = THREE.NearestFilter; // 텍스처 확대 시 블러링을 방지
+  //   texture.format = THREE.RGBAFormat; // 알파 채널 사용 설정
+  //   texture.premultipliedAlpha = false; // 알파 값이 곱해진 프리멀티플라이드 알파 사용
+  //   texture.colorSpace = THREE.SRGBColorSpace; // 색 공간을 sRGB로 설정
+  //   texture.generateMipmaps = false; // Mipmap 사용을 비활성화하여 텍스처를 직접 사용
+
+  //   // 모델에 텍스처를 적용하는 로직
+  //   modelsRef.current.forEach(({ model }) => {
+  //     model.traverse((child) => {
+  //       if (child.name === 'head_1') {  // head_1에 텍스처 적용
+  //         const mesh = child;
+  //         if (mesh) {
+  //           const FACE_COLOR =  ['#FBFBFB', '#FBEE9D', '#E3B692', '#AF816C', '#78584A', '#FB9DA6'];
+
+  //           console.log('Material Info:', mesh.material);
+  //           const originalColor = new THREE.Color(FACE_COLOR[selectedHeadIndex]);
+  //           // originalColor.convertSRGBToLinear();  // 감마 보정
+  //           console.log('Original color:', originalColor, selectedHeadIndex);
+
+  //           // 새로운 머티리얼 생성 및 적용
+  //           mesh.material = new THREE.MeshStandardMaterial({
+  //             transparent: true,  // 투명도 활성화
+  //             color: originalColor,  // 원래 색상 유지
+  //             // opacity: 0.3  // 50% 반투명
+  //           });            
+
+
+  //         //   if (mesh.material) {
+  //         //     mesh.material.map = texture;
+  //         //     mesh.material.color.convertSRGBToLinear();
+  //         //     mesh.material.transparent = true;
+  //         //     mesh.material.blending = THREE.NormalBlending; // Use custom blending for more control
+  //         //     // mesh.material.blendSrc = THREE.SrcAlphaFactor; // Alpha blending source factor
+  //         //     // mesh.material.blendDst = THREE.OneMinusSrcAlphaFactor; // Alpha blending destination factor
+  //         //     // // mesh.material.blendEquation = THREE.AddEquation; // How the blending is calculated
+    
+  //         //     // Ensure that opacity and depth testing are correctly set
+  //         //     mesh.material.opacity = 1.0;
+  //         //     mesh.material.depthWrite = false; // Disable depth writing to avoid rendering issues
+  //         //     mesh.material.depthTest = true; // Ensure depth test remains enabled for proper layer rendering
+    
+  //         //     mesh.material.needsUpdate = true;
+  //         // } else {
+  //         //     mesh.material = new THREE.MeshStandardMaterial({
+  //         //       map: texture,
+  //         //       transparent: true,
+  //         //       blending: THREE.NormalBlending, // Custom blending ensures more vibrant colors
+  //         //       blendSrc: THREE.SrcAlphaFactor,
+  //         //       blendDst: THREE.OneMinusSrcAlphaFactor,
+  //         //       blendEquation: THREE.AddEquation,
+  //         //       opacity: 1.0,
+  //         //       depthWrite: false,
+  //         //       depthTest: true,
+  //         //       premultipliedAlpha: false, // Ensure non-premultiplied alpha blending
+  //         //     });
+  //         //   }
+  //         }
+  //       }
+  //     });
+  //   });
+  // };
+  
   const applyExpressionTextureToModel = () => {
     const canvas = expressionCanvasRef.current;
-    const texture = new THREE.CanvasTexture(canvas);
+    const context = canvas.getContext('2d');
   
-    // Y축을 반전시키기 위해 flipY를 false로 설정
-    texture.flipY = false;
-    texture.needsUpdate = true;
-    texture.format = THREE.RGBAFormat; // 알파 채널 사용 설정
-    texture.premultipliedAlpha = true; // 알파 값이 곱해진 프리멀티플라이드 알파 사용
-
-    // 모델에 텍스처를 적용하는 로직
+    // 캔버스에서 검정(#000000) 또는 흰색(#FFFFFF) 부분을 선택적으로 처리
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+  
+    // 특정 범위 안에 있는 색상을 투명하게 처리하는 범위 설정 (검정/흰색)
+    const threshold = 10; // 색상 판단 허용 오차
+  
+    // 펜 색상에 따른 로직 분기
+    const isLightBackground = selectedHeadIndex <= 2; // 밝은 배경(검정색 펜)
+    const isDarkBackground = selectedHeadIndex >= 3; // 어두운 배경(흰색 펜)
+  
+    // 발광 맵을 위한 데이터 생성 (emissiveMap을 적용하기 위해)
+    const emissiveImageData = context.createImageData(canvas.width, canvas.height);
+    const emissiveData = emissiveImageData.data;
+  
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+  
+      // 검정색에 가까운지 판단
+      const isAlmostBlack = (r < threshold && g < threshold && b < threshold);
+      // 흰색에 가까운지 판단
+      const isAlmostWhite = (r > 255 - threshold && g > 255 - threshold && b > 255 - threshold);
+  
+      // 밝은 배경일 때: 검정색(#000000)만 남기고 나머지는 배경색을 유지
+      if (isLightBackground) {
+        if (isAlmostBlack) {
+          // 검정색 선만 유지
+          data[i + 3] = 255; // 알파 채널을 불투명하게
+        } else {
+          // 나머지 배경은 원래의 알파 값(255)로 유지하여 배경색 보존
+          data[i + 3] = 255;
+        }
+        // 발광 맵에선 검정색이 발광하지 않으므로 발광 채널 0으로 설정
+        emissiveData[i + 3] = 0;
+      }
+  
+      // 어두운 배경일 때: 흰색(#FFFFFF)만 남기고 나머지는 배경색을 유지
+      if (isDarkBackground) {
+        if (isAlmostWhite) {
+          // 흰색 선만 유지
+          data[i + 3] = 255; // 알파 채널을 불투명하게
+  
+          // 흰색 선을 발광시키기 위해 emissiveMap에 흰색 부분을 추가
+          emissiveData[i] = 255; // R
+          emissiveData[i + 1] = 255; // G
+          emissiveData[i + 2] = 255; // B
+          emissiveData[i + 3] = 255; // 알파 채널 (불투명)
+        } else {
+          // 나머지 부분은 배경색만 유지
+          data[i + 3] = 255;
+  
+          // 발광하지 않도록 emissiveMap의 알파 채널을 0으로 설정
+          emissiveData[i + 3] = 0;
+        }
+      }
+    }
+  
+    context.putImageData(imageData, 0, 0);
+    const emissiveCanvas = document.createElement('canvas');
+    emissiveCanvas.width = canvas.width;
+    emissiveCanvas.height = canvas.height;
+    const emissiveContext = emissiveCanvas.getContext('2d');
+    emissiveContext.putImageData(emissiveImageData, 0, 0);
+  
+    // 캔버스를 텍스처로 변환
+    const texture = new THREE.CanvasTexture(canvas);
+    const emissiveMap = new THREE.CanvasTexture(emissiveCanvas); // 발광 맵으로 사용
+  
+    // 텍스처 설정
+    texture.flipY = false;  // Y축 반전 방지
+    texture.needsUpdate = true;  // 텍스처 갱신 필요
+    emissiveMap.flipY = false;  // Y축 반전 방지
+    emissiveMap.needsUpdate = true;  // 텍스처 갱신 필요
+    texture.minFilter = THREE.LinearFilter;  // 텍스처 확대 시 선명하게 처리
+    texture.magFilter = THREE.NearestFilter;  // 텍스처 확대 시 블러링 방지
+    emissiveMap.minFilter = THREE.LinearFilter;  // 텍스처 확대 시 선명하게 처리
+    emissiveMap.magFilter = THREE.NearestFilter;  // 텍스처 확대 시 블러링 방지
+    texture.format = THREE.RGBAFormat;  // 알파 채널 사용
+    texture.premultipliedAlpha = false;  // 프리멀티플라이드 알파 비활성화
+    texture.colorSpace = THREE.SRGBColorSpace;  // 색 공간을 sRGB로 설정
+    texture.generateMipmaps = false;  // Mipmap 비활성화
+    emissiveMap.generateMipmaps = false;  // Mipmap 비활성화
+  
+    // 모델에 텍스처 적용하는 로직
     modelsRef.current.forEach(({ model }) => {
       model.traverse((child) => {
         if (child.name === 'head_1') {  // head_1에 텍스처 적용
           const mesh = child;
           if (mesh) {
-            // 기존 텍스처에 새 텍스처를 덮지 않고 병합하여 투명 부분만 추가
-            if (mesh.material) {
-              mesh.material.map = texture;
-              mesh.material.transparent = true;  // 투명도 처리
-              mesh.material.blending = THREE.NormalBlending;  // 알파 블렌딩 활성화
-              mesh.material.opacity = 1.0;  // 완전한 불투명도
-              mesh.material.alphaTest = 0.1;    // 알파값 임계치
-              mesh.material.depthWrite = false;  // 깊이 쓰기를 비활성화
-              mesh.material.depthTest = true;    // 깊이 테스트 활성화
-              mesh.material.needsUpdate = true;
-              mesh.renderOrder = 1; // 렌더링 순서 설정 (순서를 높임)
-          } else {
-              mesh.material = new THREE.MeshBasicMaterial({
-                map: texture,
-                transparent: true,
-                blending: THREE.NormalBlending, // 알파 블렌딩을 사용
-                opacity: 1.0, // 불투명도 설정
-                alphaTest: 0.1, // 알파값 임계치 설정
-                depthWrite: false, // 깊이 쓰기 비활성화
-                depthTest: true,   // 깊이 테스트 활성화
-                premultipliedAlpha: true, // 알파값 곱하기
-              });
-            }
+            const FACE_COLOR = ['#FBFBFB', '#FBEE9D', '#E3B692', '#AF816C', '#78584A', '#FB9DA6'];
+  
+            // 원래 컬러 적용
+            const originalColor = new THREE.Color(FACE_COLOR[selectedHeadIndex]);
+            // 밝기를 균일하게 조정하는 방식
+            originalColor.addScalar(0.2);  // 모든 RGB 채널에 0.2씩 더해 색을 밝게 만듦
+
+            // 새로운 머티리얼 생성 및 적용
+            mesh.material = new THREE.MeshStandardMaterial({
+              // transparent: true,
+              color: originalColor,  // 얼굴 전체를 originalColor로 채움
+              map: texture,  // 텍스처를 적용 (투명한 부분을 제외하고 덧씌움)
+              emissiveMap: emissiveMap,  // 발광 맵 적용 (흰색 부분만 발광)
+              emissive: new THREE.Color(0xFFFFFF),  // 발광 색상
+              emissiveIntensity: 1.0,  // 발광 강도
+              opacity: 1.0,  // 불투명하게 설정
+              depthWrite: false,  // 깊이 쓰기 비활성화
+              depthTest: true,  // 깊이 테스트 활성화
+            });
+  
+            mesh.material.needsUpdate = true;
           }
         }
       });
     });
   };
   
-
+  
+  
+  
+  
 useEffect(() => {
   const canvas = expressionCanvasRef.current;
 
@@ -982,6 +1156,7 @@ const handleHeadSelection = (index) => {
     <div id="container" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 58px)', overflowX: 'hidden' }}>
       <canvas
         ref={canvasRef}
+        
         style={{
           width: '100vw',
           height: '70vh',
@@ -1017,16 +1192,26 @@ const handleHeadSelection = (index) => {
       {selectedCategory === 'EXPRESSION' ? (
         <>
       {/* 버튼과 캔버스를 가로로 배치하는 컨테이너 */}
-      <div style={{ position:'sticky', display: 'flex', flexDirection:'row', justifyContent: 'space-around', alignItems: 'center', zIndex: '999999'}}>
-
-      {/* 색상 선택 버튼 */}
-      <div className="expression-color-selection" style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '10px', width:'75%' }}>
-        {GRAYSCALE_COLORS.map((color, index) => (
+      <div id="expressionTools" style={{ 
+        position:'sticky', 
+        display: 'flex', 
+        flexDirection:'row', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        zIndex: '999999'}}>
+        {/* 색상 선택 버튼 */}
+        <div className="expression-color-selection" style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          marginBottom: '10px', 
+          width: '75%',
+        }}>
+        {GRAYSCALE_COLORS.map((colorObj, index) => (
           <button
             key={index}
             onClick={() => {
-              setExpressionDrawingColor(color);
-              clearCanvasWithColor(color);
+              setExpressionDrawingColor(colorObj.color);
+              clearCanvasWithColor(colorObj.color);
               handleHeadSelection(index);
             }}
             className="color-button"
@@ -1037,74 +1222,83 @@ const handleHeadSelection = (index) => {
               alignItems: 'center',
               border: 'none',
               background: 'none',
-              padding: '0', // 버튼 내 기본 패딩 제거
-              width: '40px', // 버튼의 크기를 원의 크기에 맞춤
-              height: '40px',
-              borderRadius: '50%', // 버튼 자체를 원형으로 만듦
-              boxSizing: 'border-box', // 패딩과 크기 계산을 일관되게 처리
+              padding: '0',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              boxSizing: 'border-box',
             }}
           >
             <div
               className="big-circle"
               style={{
-                backgroundColor: color,
+                backgroundColor: colorObj.bigColor,
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
               }}
             >
-              <div
+            <div
                 className="small-circle"
                 style={{
-                  backgroundColor: color
+                  backgroundColor: colorObj.smallColor,
+                  width: '60%',
+                  height: '60%',
+                  borderRadius: '50%',
                 }}
               />
             </div>
-          </button>
+        </button> 
         ))}
       </div>
 
-      {/* 연필/지우개 토글 버튼 */}
+        {/* 연필/지우개 토글 버튼 */}
 
-      <div className="expression-tool-selection" style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '10px' }}>
-      <button
-        onClick={() => setExpressionIsErasing(!expressionIsErasing)}
-        style={{
-          width: '32px',           // 너비 32px
-          height: '32px',          // 높이 32px
-          borderRadius: '50%',     // 둥근 원 모양
-          backgroundColor: '#000', // 배경색 검정
-          backgroundImage: `url(${expressionIsErasing ? 'static/stockimages/eraser.png' : 'static/stockimages/pencil.png'})`, // 조건에 따라 배경 이미지 변경
-          backgroundPosition: 'center',
-          backgroundSize: '70%',
-          backgroundRepeat: 'no-repeat',
-          boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', // 그림자 효과
-          border: 'none',         // 테두리 없음
-          cursor: 'pointer',      // 마우스 커서 변경
-        }}
-      />
-    </div>
+        <div className="expression-tool-selection" style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          marginBottom: '10px' }}>
+        <button
+          onClick={() => setExpressionIsErasing(!expressionIsErasing)}
+          style={{
+            width: '32px',           // 너비 32px
+            height: '32px',          // 높이 32px
+            borderRadius: '50%',     // 둥근 원 모양
+            backgroundColor: '#000', // 배경색 검정
+            backgroundImage: `url(${expressionIsErasing ? 'static/stockimages/eraser.png' : 'static/stockimages/pencil.png'})`, // 조건에 따라 배경 이미지 변경
+            backgroundPosition: 'center',
+            backgroundSize: '70%',
+            backgroundRepeat: 'no-repeat',
+            boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', // 그림자 효과
+            border: 'none',         // 테두리 없음
+            cursor: 'pointer',      // 마우스 커서 변경
+          }}
+        />
+      </div>
 
 
-    {/* 적용 버튼 */}
-    <div className="apply-button" style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-      <button
-        onClick={applyExpressionTextureToModel}
-        style={{
-          width: '32px',           // 너비 32px
-          height: '32px',          // 높이 32px
-          borderRadius: '50%',     // 둥근 원 모양
-          backgroundColor: '#000', // 배경색 검정
-          backgroundImage: 'url(static/stockimages/apply.png)', // apply.png 이미지 사용
-          backgroundPosition: 'center',
-          backgroundSize: '70%',   // 이미지 크기를 50%로 설정
-          backgroundRepeat: 'no-repeat',
-          boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', // 그림자 효과
-          border: 'none',         // 테두리 없음
-          cursor: 'pointer',      // 마우스 커서 변경
-        }}
-      />
-    </div>
+      {/* 적용 버튼 */}
+      <div className="apply-button" style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+        <button
+          onClick={applyExpressionTextureToModel}
+          style={{
+            width: '32px',           // 너비 32px
+            height: '32px',          // 높이 32px
+            borderRadius: '50%',     // 둥근 원 모양
+            backgroundColor: '#000', // 배경색 검정
+            backgroundImage: 'url(static/stockimages/apply.png)', // apply.png 이미지 사용
+            backgroundPosition: 'center',
+            backgroundSize: '70%',   // 이미지 크기를 50%로 설정
+            backgroundRepeat: 'no-repeat',
+            boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', // 그림자 효과
+            border: 'none',         // 테두리 없음
+            cursor: 'pointer',      // 마우스 커서 변경
+          }}
+        />
+      </div>
 
       </div>
 
@@ -1134,12 +1328,14 @@ const handleHeadSelection = (index) => {
         {/* 표정 그리기용 캔버스 */}
         <canvas
           ref={expressionCanvasRef}
+          width={400}  // 실제 캔버스의 해상도를 높임
+          height={400} // 실제 캔버스의 해상도를 높임
           style={{
             position: 'absolute',
             top: 0,
             left: 0,
-            width: '100%',
-            height: '100%',
+            width: 'calc(100vw - 30px)',  // 너비를 원하는 크기로 설정
+          height: '190px',  // 고정된 높이
             background: 'transparent', // 배경을 투명하게 설정
             zIndex: 2,  // 캔버스가 이미지 위에 렌더링되도록 설정
             display: 'block',
@@ -1169,7 +1365,8 @@ const handleHeadSelection = (index) => {
           maxWidth: '100%',
           maxHeight: '100%',
           borderRadius: '18px',
-          border: clickedIndex === index ? '1px solid salmon' : 'none', // 클릭된 항목에 경계선 추가
+          border: clickedIndex === index ? '3px solid #E9A7A7' : 'none', // 클릭된 항목에 경계선 추가
+          backgroundColor: clickedIndex === index ? '#FF0000' : 'transparent', // 클릭된 항목에 경계선 추가
         }}
         onClick={() => {
           setClickedIndex(index); // 클릭한 인덱스를 상태에 저장
@@ -1182,16 +1379,17 @@ const handleHeadSelection = (index) => {
         }}
       >
         <img
-          src={`https://placehold.co/200x200?text=${
+          src={`/static/assetImages/${
             activeCategory.useColor
               ? `${activeCategory.name.toLowerCase()}_${index + 1}_${selectedColors[activeCategory.name]?.name || 'Black'}`
               : `${activeCategory.name.toLowerCase()}_${index + 1}`
-          }`}
+          }.png`}
           alt={`Asset ${index}`}
           style={{
-            maxWidth: '100%',
-            maxHeight: '100%',
+            width:'100%',
+            height:'100%',
             borderRadius: '18px',
+            boxSizing: 'content-box',
           }}
         />
       </div>
@@ -1205,15 +1403,14 @@ const handleHeadSelection = (index) => {
         <div className="color-selection">
           {COLORS.map((color, index) => (
             <button
-              key={color.value}
+              key={color.name}
               onClick={() => {
-                selectColor(activeCategory.name, color.value);
-                // console.log(color.value);
+                selectColor(activeCategory.name, color.bigCircle, color.smallCircle);
               }}
               className="color-button"
             >
-              <div className="big-circle" style={{ backgroundColor: color.value }} />
-              <div className="small-circle" style={{ backgroundColor: color.value }} />
+              <div className="big-circle" style={{ backgroundColor: color.bigCircle }} />
+              <div className="small-circle" style={{ backgroundColor: color.smallCircle }} />
             </button>
           ))}
         </div>
