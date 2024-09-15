@@ -76,13 +76,14 @@ const PlaceSelection = () => {
 
     const scrollToBottom = () => {
         containerRef.current.scrollTo({ top: containerRef.current.scrollHeight, behavior: 'smooth' });
-        setIsScrolledToBottom(true); // 스크롤 후 상태 변경
-    };
-
-    const scrollToTop = () => {
+        setIsScrolledToBottom(true);
+      };
+      
+      const scrollToTop = () => {
         containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-        setIsScrolledToBottom(false); // 다시 스크롤을 위로 올리면 상태를 초기화
-    };
+        setIsScrolledToBottom(false);
+      };
+      
 
     const handleSelectPlace = () => {
         console.log('Selected background:', currentIndex+1);
@@ -100,7 +101,6 @@ const PlaceSelection = () => {
             height: '100vh',
             justifyContent: 'space-between',
             overflow: 'hidden',
-            overFlowX: 'hidden',
         }}>
 
             <div style={{
@@ -244,12 +244,14 @@ const PlaceSelection = () => {
                     {/* 작품설명 */}
                     <div id='workdetails' style={{
                         overFlowX: 'hidden',
+                        width: '90%', /* 부모 요소의 너비를 모두 차지 */
+                        margin:'0 auto'/* 수평 가운데 정렬 */
                     }}>
                         <h2 id='worktitle'>{descriptions[currentIndex].title}</h2>
                         <p id='workdate'>{descriptions[currentIndex].date}</p>
                         <p id='workdescription' style={{
-                            height:'110px',
-                            overflowY: 'auto',
+                            minheight:'110px',
+                            width: '100%',
                         }}>{descriptions[currentIndex].text}</p>
                     </div>
 
@@ -261,7 +263,7 @@ const PlaceSelection = () => {
                         width:'100%',
                         textAlign: 'right', // 텍스트를 오른쪽 정렬
                         zIndex: 10, // 다른 요소 위에 표시하도록 z-index 설정
-                        marginRight: '10px',
+                        margin: '10px',
                         
                     }}>
                         * 해당 배경은 김화순 작가의 작품을 오마주하여 제작하였습니다.
@@ -302,20 +304,26 @@ const PlaceSelection = () => {
                 marginBottom: '22px',
                 paddingBottom: '58px'
                 }} />
+
+            <div style={{
+                height: '10vh',
+                maxHeight: '80px',
+            }}>
+            </div>
         </div>
 
         </div>
         <div style ={{
-                    position: 'fixed',
+                    position: 'sticky',
                     bottom:'0',
                     left: '0',
                     borderTop: '1px solid #E6E1DC',
-                    width: '100vw',
+                    width: '100%',
                     height: '10vh',
+                    maxHeight: '80px',
                     display: 'flex',
                     justifyContent: 'center',
                     backgroundColor: '#F8F6F1',
-                    overFlowX: 'hidden',
                 }}>
 
                 <button id="scrolldownbutton"
