@@ -29,6 +29,15 @@ const PostcardView = () => {
     return { width, height };
   };
 
+  const [showImage, setShowImage] = useState(false);
+
+  // Define handleMenuClick function
+
+  // Function to close the image popup
+  const handleCloseImage = () => {
+    setShowImage(false);
+  };
+
   useEffect(() => {
     const fetchPostcard = async () => {
       try {
@@ -237,6 +246,9 @@ const PostcardView = () => {
     // Combine video stream and audio stream
     const combinedStream = new MediaStream([...canvasStream.getTracks(), ...destination.stream.getTracks()]);
   
+    if (!MediaRecorder.isTypeSupported('video/mp4')) {
+      alert('현재 브라우저에서는 곧바로 공유가 불가능합니다. 다운로드 후 수동으로 공유해 주세요. 버튼을 누르시면 필요한 해시태그는 다운로드와 함께 동시에 복사됩니다.');
+    }
     // Use RecordRTC to record the combined stream
     const recorder = new RecordRTC(combinedStream, {
       type: 'video',
@@ -280,7 +292,17 @@ const PostcardView = () => {
     }
   };
 
-  const downloadVideo = () => {
+  const downloadVideo = async () => {
+    if (navigator.clipboard) {
+      // 클립보드에 "hello world!" 복사
+      try {
+        await navigator.clipboard.writeText('hello world!');
+        console.log('Text copied to clipboard');
+      } catch (error) {
+        console.error('Failed to copy text:', error);
+      }
+    }
+
     if (blobUrl) {
       const a = document.createElement('a');
       a.style.display = 'none';
@@ -325,32 +347,80 @@ const PostcardView = () => {
     }
   };
   const navigate = useNavigate();
-  const handleMenuClick = useCallback(() => {
-    console.log('Navigating to Home');
-    navigate('/Home', { replace: true });
-  }, [navigate]);
+  const handleMenuClick = () => {
+    setShowImage(true);
+  }
 
   return (
 
     
 <div style={{
-  // position: 'relative', // 상위 컨테이너를 상대적으로 설정하여 하위 요소 배치
-  backgroundImage: `url('/static/stockimages/background_paper.png')`,
+backgroundImage: `url('/static/stockimages/background_paper.png')`,
+width: '100vw',
+height: '100vh',
+zIndex: '900', 
 }}>
   <audio ref={audioRef} src="/static/test.mp3" loop></audio>
-  <div style={{
+  <header style={{ 
+    display: 'flex', 
+    justifyContent: 'space-between', // 아이콘은 양쪽 끝으로, 텍스트는 가운데로
+    alignItems: 'center',            // Vertically center all elements
+    width: '100%', 
+    backgroundColor: 'transparent',
     height: '58px',
     backgroundColor: '#F8F6F1',
     position: 'fixed',
     top: '0',
     zIndex: '1000', 
   }}>
-    <Header 
-      title={postcard?.name ? `'${postcard.name}'의 춤사위` : '춤사위'}
-      onMenuClick={handleMenuClick}
-      style={{ }}
+    {/* Left Home Icon */}
+    <div onClick={() => window.location.href = '/home'} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', paddingLeft: '20px' }}>
+      <img src="/static/icons/home.png" alt="home" style={{ width: '24px', height: '24px' }} />
+    </div>
+
+    {/* Center Text */}
+    <div style={{ textAlign: 'center', fontSize: '20px', color: '#412823', lineHeight: '1', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+        {postcard?.name ? `'${postcard.name}'의 춤사위` : '춤사위'}
+    </div>
+
+    {/* Right Menu Icon */}
+    <div onClick={handleMenuClick} style={{ cursor: 'pointer', display:'flex', justifyContent:'center', alignItems:'center', paddingRight: '20px' }}>
+      <img src="/static/icons/hamburger.png" alt="menu" id="menu-button" />
+    </div>
+</header>
+
+
+{showImage && (
+  <div 
+    style={{
+      position: 'absolute', 
+      top: 0, 
+      left: 0, 
+      width: '100vw', 
+      height: '100vh', 
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center',
+      zIndex: '1200',
+      opacity: showImage ? 1 : 0,           // 투명도를 상태에 따라 변경
+      transition: 'opacity 0.5s ease-in-out', // 트랜지션 추가
+    }}
+    onClick={handleCloseImage}
+  >
+    <img 
+      src="/static/stockimages/inviflat.png" 
+      alt="invitation" 
+      style={{ 
+        maxWidth: '90%', 
+        maxHeight: '90%', 
+        zIndex: '999999',
+        opacity: showImage ? 1 : 0,          // 이미지의 투명도도 동일하게 설정
+        transition: 'opacity 0.5s ease-in-out', // 트랜지션 추가
+      }} 
     />
   </div>
+)}
 
 
   <canvas
@@ -365,19 +435,16 @@ const PostcardView = () => {
       transform: 'translateY(-5%)',
     }}
   />
-
-
   {/* Promotion Image */}
   <img 
     src="/static/stockimages/promotion.png" 
     alt="Promotion"
     style={{
       position: 'fixed',
-      right: '20px',
-      bottom: 'calc(25vw * (16 / 9) - 100px)',
-    
-      width: '70vw',
-      height: 'auto',
+      right: '5vw',
+      bottom: '60px',
+      width: 'auto',
+      height: '3.5vh',
       zIndex: '1100',
     }} 
   />
@@ -388,7 +455,12 @@ const PostcardView = () => {
     height: '60px',
     display: 'flex', 
     justifyContent: 'space-around',
+    alignItems: 'center',
+    backgroundColor: '#F8F6F1',
+    borderTop: '1px solid #E6E1DC',
+    zIndex: '1100',
     }}>
+    
     <button className="upbutton" onClick={downloadVideo} disabled={!blobUrl}>
       {isRecording ? '공유 영상 준비 중...' : 'Download Video'}
     </button>

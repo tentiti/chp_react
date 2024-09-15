@@ -101,7 +101,7 @@ const handleAssetSelection = (category, index) => {
     { name: 'Black', bigCircle: '#554343', smallCircle: '#694F4F' },
   ];
 
-  const [selectedHeadIndex, setSelectedHeadIndex] = useState(1); // 선택된 얼굴 색 인덱스 상태 추가
+  const [selectedHeadIndex, setSelectedHeadIndex] = useState(0); // 선택된 얼굴 색 인덱스 상태 추가
 
   const selectCategory = useCallback((category) => {
     setActiveCategory(category);
@@ -1123,7 +1123,11 @@ const handleHeadSelection = (index) => {
   
 
   return (
-    <div>
+    <div style={{
+      backgroundImage: `url('/static/stockimages/background_paper.png')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    }}>
     <div style={{ overflow: 'auto' }} id="whatareYou?">
       {overlayVisible && (
         <div id="overlay" className="overlay">
@@ -1161,21 +1165,25 @@ const handleHeadSelection = (index) => {
 
 
        {/* 녹화 중일 때 보여줄 "녹화중입니다" 이미지 */}
-       {isRecording && (
+      {isRecording && (
         <div id="splash-screen" className="splash-screen">
-        <img src="/static/stockimages/making.png" alt="Splash" style={{ position: 'Fixed', width: '100vw', height: '100vh', objectFit: 'cover', zIndex: '999999999' }} />
+        <img src="/static/stockimages/making.png" alt="Splash" style={{ position: 'Fixed', width: '100vw', height: '100vh', objectFit: 'cover', top: '0', zIndex: '999999999' }} />
         <img src="/static/stockimages/loading-circle.gif" alt="Splash" style={{ width: '80px', position: 'Fixed', left:'calc(50vw - 36px)', top:'55vh',zIndex: '999999999' }} />
-      </div>
-        )}
+        </div>
+      )}
 
-    <div id="container" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 58px)', overflowX: 'hidden' }}>
+    <div id="container" style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      height: 'calc(100vh - 58px)', 
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      overflowX: 'hidden' }}>
       <canvas
         ref={canvasRef}
-        
         style={{
           width: '100vw',
-          height: '70vh',
-          backgroundImage: 'url("/static/stockimages/paper.png")'
+          height: '40vh',
         }}
       />
       <canvas ref={hiddenCanvasRef} style={{ display: 'none' }} />

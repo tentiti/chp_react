@@ -23,7 +23,6 @@ const PostcardShareView = () => {
   const { id } = useParams();
   const [postcard, setPostcard] = useState(null);
   const [gifKey, setGifKey] = useState(0); // Add state for gif reload
-  const videoContainerRef = useRef(null);
   const audioRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -85,92 +84,89 @@ const PostcardShareView = () => {
 
   return (
     <div style={{
+      position: 'absolute',
+      top: '0',
+      left: '0',
+      backgroundImage: `url('/static/stockimages/background_paper.png')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      width: '100vw',
+      height: '100vh',
+      overflow: 'hidden',
+
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'flex-start',
-      left: '0',
     }}>
       <div style={{
         height:'58px',
         position: 'fixed',
         top: '0',
         width: '100vw',
+        zIndex: '1000',
       }}>
-      <Header title={`'${postcard.name}'의 춤사위`} needthird={false} />
+        <Header title={`'${postcard.name}'의 춤사위`} needthird={false} />
       </div>
-      <img 
-        src="/static/stockimages/sharebackground.png" 
-        alt="Postcard Background" 
-        style={{
-          position: 'fixed',
-          top: '58px',
-          width:'100vw',
-          height:'auto',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          zIndex: '-1',
-        }}
-      />
 
       <div id="createdImages" style={{
         position: 'fixed',
-        top: '58px',
-        width: '100vw',
-        height: 'calc(100% - 58px)',
+        top: '-45px',
+        width: '370px',
+        height: '680px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        backgroundImage: '/static/stockimages/sharebackground.png',
+        zIndex: '900',
       }}>
+        <img 
+          src={`/static/stockimages/postcardfinal_${postcard.number}.png`}
+          alt="Postcard Background" 
+          style={{
+            position: 'absolute',
+            top: '58px',
+            width:'auto',
+            height:'100%',
+            zIndex: '800',
+          }}
+        />
 
-        <div style={{
-          marginTop: '100px',
-          zIndex: '1',
-        }}>
-          <div
-            ref={videoContainerRef}
+        //움짤
+        {postcard.gif_name && (
+          <img
+            key={gifKey} // Ensure the GIF is reloaded by changing the key
+            src={`/api/uploads/${postcard.gif_name}`}
+            alt="GIF"
             style={{
-              width: '300px',
-              height: '380px',
-              margin: '0 auto',
-              backgroundImage: `url(${backgrounds[postcard.number]})`,
-              backgroundSize: 'cover',
-              position: 'relative',
+              position: 'absolute',
+
+              zIndex: '900',
+              top: `calc(${modelPositions[postcard.number].y}px * 0.8)`,
+              left: `calc(${modelPositions[postcard.number].x}px * 0.8)`,
+              width: `calc(${modelPositions[postcard.number].width}px * 0.8)`,
+              height: `calc(${modelPositions[postcard.number].width}px * 0.8)`,
             }}
-          >
-            {postcard.gif_name && (
-              <img
-                key={gifKey} // Ensure the GIF is reloaded by changing the key
-                src={`/api/uploads/${postcard.gif_name}`}
-                alt="GIF"
-                style={{
-                  position: 'absolute',
-                  top: `calc(${modelPositions[postcard.number].y}px * 0.8)`,
-                  left: `calc(${modelPositions[postcard.number].x}px * 0.8)`,
-                  width: `calc(${modelPositions[postcard.number].width}px * 0.8)`,
-                  height: `calc(${modelPositions[postcard.number].width}px * 0.8)`,
-                }}
-              />
-            )}
-          </div>
-        </div>
+          />
+        )}
+
+        //한마디
       
         <div
           style={{
-            marginTop: '-6px',
-            width: '80vw',
+            position: 'absolute',
+            top: '83.5%',
+            zIndex: '900',
+            width: '85%',
             color: '#412823',
-            fontSize: '16px',
+            fontSize: '12px',
             textAlign: 'center',
-            lineHeight: '1.6',
+            lineHeight: '2',
             fontFamily: 'Cafe24Simplehae, sans-serif',
             wordWrap: 'break-word',
             overflowWrap: 'break-word',
             whiteSpace: 'normal',
             overflow: 'hidden',
-            minHeight:'53px',
           }}
         >
           {postcard.comment}
@@ -178,6 +174,12 @@ const PostcardShareView = () => {
 
         <div
           style={{
+            position: 'absolute',
+            top: '91%',
+            zIndex: '900',
+            width: '20%',
+            color: '#412823',
+            zIndex: '900',
             marginTop: '5px',
             width: '80vw',
             color: '#412823',
@@ -194,9 +196,12 @@ const PostcardShareView = () => {
 
         <div
           style={{
-            marginTop: '15px',
-            width: 'calc(100vw - 250px)',
+            position: 'absolute',
+            top: '90%',
+            zIndex: '900',
+            width: '20%',
             color: '#412823',
+
             fontSize: '8px',
             fontFamily: 'pretandard, sans-serif',
             position: 'relative',
@@ -216,7 +221,7 @@ const PostcardShareView = () => {
         </footer>
       </div>
 
-      <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}></canvas>
+      <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', display: 'none' }}></canvas>
 
       {/* Add a button to start audio playback and restart the GIF */}
       <button 

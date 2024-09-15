@@ -185,10 +185,10 @@ const PostcardCreation = () => {
         }
         .background-container {
           position: absolute;
-          top: 33.5%;
+          top: 30.5%;
           left: 52%;
           width: 42%;
-          height: 31.5%;
+          height: 32%;
         }
         .background-image {
           width: 100%;
