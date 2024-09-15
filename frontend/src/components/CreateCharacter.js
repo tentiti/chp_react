@@ -1124,11 +1124,14 @@ const handleHeadSelection = (index) => {
 
   return (
     <div style={{
+      
+    }}>
+    <div style={{ 
+      overflow: 'auto',
       backgroundImage: `url('/static/stockimages/background_paper.png')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
-    }}>
-    <div style={{ overflow: 'auto' }} id="whatareYou?">
+       }} id="whatareYou?">
       {overlayVisible && (
         <div id="overlay" className="overlay">
           <div className="overlay-content">
@@ -1149,8 +1152,8 @@ const handleHeadSelection = (index) => {
             position: 'absolute', 
             top: 0, 
             left: 0, 
-            width: '100vw', 
-            height: '100vh', 
+            width: '100%', 
+            height: '100%', 
             backgroundColor: 'rgba(0, 0, 0, 0.8)',
             display: 'flex', 
             justifyContent: 'center', 
@@ -1167,7 +1170,7 @@ const handleHeadSelection = (index) => {
        {/* 녹화 중일 때 보여줄 "녹화중입니다" 이미지 */}
       {isRecording && (
         <div id="splash-screen" className="splash-screen">
-        <img src="/static/stockimages/making.png" alt="Splash" style={{ position: 'Fixed', width: '100vw', height: '100vh', objectFit: 'cover', top: '0', zIndex: '999999999' }} />
+        <img src="/static/stockimages/making.png" alt="Splash" style={{ position: 'Fixed', width: '100%', height: '100%', objectFit: 'cover', top: '0', zIndex: '999999999' }} />
         <img src="/static/stockimages/loading-circle.gif" alt="Splash" style={{ width: '80px', position: 'Fixed', left:'calc(50vw - 36px)', top:'55vh',zIndex: '999999999' }} />
         </div>
       )}
@@ -1175,7 +1178,7 @@ const handleHeadSelection = (index) => {
     <div id="container" style={{ 
       display: 'flex', 
       flexDirection: 'column', 
-      height: 'calc(100vh - 58px)', 
+      height: 'calc(100% - 58px)', 
       alignItems: 'center',
       justifyContent: 'flex-start',
       overflowX: 'hidden' }}>
@@ -1225,7 +1228,7 @@ const handleHeadSelection = (index) => {
         <div id="expressionTools" style={{ 
           position:'sticky', 
 
-          width: '100vw',
+          width: '100%',
           height:'60px',
 
           display: 'flex', 
@@ -1353,7 +1356,7 @@ const handleHeadSelection = (index) => {
       <div
         style={{
           position: 'relative',
-          width: '100vw',  // 너비를 원하는 크기로 설정
+          width: '100%',  // 너비를 원하는 크기로 설정
           height: '280px',  // 고정된 높이
           overflow: 'hidden',  // 초과된 부분을 숨기기
         }}

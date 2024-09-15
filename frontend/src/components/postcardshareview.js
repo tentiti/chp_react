@@ -23,8 +23,31 @@ const PostcardShareView = () => {
   const { id } = useParams();
   const [postcard, setPostcard] = useState(null);
   const [gifKey, setGifKey] = useState(0); // Add state for gif reload
+  const [isFixedSize, setIsFixedSize] = useState(false); // 화면 고정 여부 상태
   const audioRef = useRef(null);
   const canvasRef = useRef(null);
+
+  // 화면 크기 설정
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      // 화면이 390 * 840보다 크면 고정 크기로 설정
+      if (width > 390 && height > 780) {
+        setIsFixedSize(true);
+      } else {
+        setIsFixedSize(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // 초기 실행
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchPostcard = async () => {
@@ -90,24 +113,48 @@ const PostcardShareView = () => {
       backgroundImage: `url('/static/stockimages/background_paper.png')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
-      width: '100vw',
-      height: '100vh',
-      overflow: 'hidden',
+      width: isFixedSize ? '390px' : '100vw', // 고정 크기 또는 가로 100%
+      height: isFixedSize ? '780px' : '100vh', // 고정 크기 또는 세로 100%
 
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'flex-start',
+      overflow: 'hidden',
     }}>
-      <div style={{
-        height:'58px',
-        position: 'fixed',
-        top: '0',
-        width: '100vw',
-        zIndex: '1000',
-      }}>
-        <Header title={`'${postcard.name}'의 춤사위`} needthird={false} />
+      <div
+        style={{
+          height: '58px', // Keep the height fixed
+          position: 'fixed',
+          top: '0',
+          width: isFixedSize ? '390px' : '100vw', // Adjust width based on screen size
+          zIndex: '1000',
+          left: '50%', // Centering
+          transform: isFixedSize ? 'translateX(-50%)' : 'none', // Center for fixed width
+          overflow: 'hidden', // Prevent content overflow
+          padding: '0', // Ensure no padding inflates the size
+          margin: '0', // Ensure no margins affect size
+          boxSizing: 'border-box', // Ensure padding and borders are included in the size calculation
+      }}
+      >
+        <Header
+          title={`'${postcard.name}'의 춤사위`}
+          needthird={false}
+          style={{
+            width: '100%',
+            height: '100%', // Ensure the header fits within its container
+            display: 'flex',
+            alignItems: 'center', // Vertically center content
+            justifyContent: 'center', // Horizontally center content
+            fontSize: isFixedSize ? '16px' : '2vw', // Adjust font size for larger screens
+            padding: '0', // Ensure no extra padding inside the header
+            margin: '0', // Remove margins if any
+            overflow: 'hidden', // Ensure no overflow
+          }}
+        />
       </div>
+
+
 
       <div id="createdImages" style={{
         position: 'fixed',
@@ -119,6 +166,7 @@ const PostcardShareView = () => {
         alignItems: 'center',
         justifyContent: 'flex-start',
         zIndex: '900',
+        overflow: 'hidden',
       }}>
         <img 
           src={`/static/stockimages/postcardfinal_${postcard.number}.png`}
@@ -129,6 +177,7 @@ const PostcardShareView = () => {
             width:'auto',
             height:'100%',
             zIndex: '800',
+            overflow: 'hidden',
           }}
         />
 
@@ -140,6 +189,7 @@ const PostcardShareView = () => {
             alt="GIF"
             style={{
               position: 'absolute',
+              overflow: 'hidden',
 
               zIndex: '900',
               top: `calc(${modelPositions[postcard.number].y}px * 0.8)`,
@@ -181,7 +231,7 @@ const PostcardShareView = () => {
             color: '#412823',
             zIndex: '900',
             marginTop: '5px',
-            width: '80vw',
+            width: '320px',
             color: '#412823',
             fontSize: '8px',
             textAlign: 'center',
@@ -207,6 +257,7 @@ const PostcardShareView = () => {
             position: 'relative',
             left: '105px',
             textAlign: 'center',
+            overflow: 'hidden',
           }}
         >
           {postcard.name}
@@ -228,14 +279,15 @@ const PostcardShareView = () => {
         onClick={handlePlayAudioAndRestartGIF} 
         style={{
           position: 'relative',
-          zIndex: '2',
+          zIndex: '200000',
           marginTop: '20px',
           padding: '10px 20px',
           backgroundColor: '#412823',
           color: '#fff',
           border: 'none',
           borderRadius: '5px',
-          cursor: 'pointer'
+          cursor: 'pointer',
+          overflow: 'hidden',
         }}
       >
         Play Audio & Restart GIF

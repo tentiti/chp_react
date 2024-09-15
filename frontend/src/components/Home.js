@@ -9,6 +9,27 @@ function Home() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [fade, setFade] = useState(true);
   const [isInvitationVisible, setIsInvitationVisible] = useState(false); // Invitation 슬라이드 애니메이션 제어 상태
+  const [marginTop, setMarginTop] = useState(0);
+
+  useEffect(() => {
+    const updateMargin = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      // 화면의 height 절반에 58을 더한 값으로 margin-top 설정
+      if (width > 390 && height > 844) {
+        setMarginTop(height / 4 - 78); // height의 절반 + 58
+      } else {
+        setMarginTop(10); // 그 외의 경우 기본값 설정
+      }
+    };
+
+    window.addEventListener('resize', updateMargin);
+    updateMargin(); // 초기 실행
+
+    return () => window.removeEventListener('resize', updateMargin);
+  }, []);
+
 
   const bannerImages = [
     '/static/stockimages/mainbanner1.png',
@@ -194,24 +215,28 @@ function Home() {
     <div className="App">
     {/* Home의 헤더: Invitation이 활성화되면 숨겨짐 */} 
       {!isInvitationVisible && (
-        <div id="headerLoader" style={{ backgroundColor: isInvitationVisible ? 'transparent' : '#f8f6f1' }}>
-        <header style={{ backgroundColor: 'transparent' }}>
-          <div className="titleArea" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', width: '100%', backgroundColor: 'transparent' }}>
+        <div id="headerLoader" style={{ backgroundColor: isInvitationVisible ? 'transparent' : '#f8f6f1', left: '50%', transform: 'translateX(-50%)', width: '390px' }}>
+        <header style={{ backgroundColor: 'transparent', width: '390px' }}>
+          <div className="titleArea" style={{ width: '100%' }}>
             <div style={{ fontFamily: 'ClimateCrisisKR-1979', flexGrow: 0, textAlign: 'left' }}>
               <span style={{ fontWeight: 200, fontSize: '15px', color: '#412823', lineHeight: '0.9', display: 'block' }}>이제</span>
               <span style={{ fontWeight: 400, fontSize: '24px', color: '#412823', lineHeight: '0.9', display: 'block' }}>댄스타임</span>
             </div>
-
-            <div onClick={handleMenuClick} style={{ marginLeft: 'auto', cursor: 'pointer', display:'flex', justifyContent:'center', alignContent:"center"}}>
+      
+            <div onClick={handleMenuClick} style={{ 
+              cursor: 'pointer', 
+              display:'flex', 
+              justifyContent:'center', 
+              alignItems:"center",
+              marginLeft: 'auto'
+            }}>
               <img src="/static/icons/hamburger.png" alt="menu" id="menu-button" />
             </div>
           </div>
         </header>
-
-
-
-      <div className="floating"></div>  
-        </div>
+        <div className="floating"></div> 
+      </div>
+      
         
         
       )}
@@ -219,7 +244,7 @@ function Home() {
 
       <div className="container" id="content" ref={containerRef}>
         <div id="ajax-content">
-          <div className="mainImage">
+          <div className="mainImage" style={{ marginTop: `${marginTop}px`}}>
             <img 
               id="mainBanner" 
               src={bannerImages[currentImageIndex]} 

@@ -29,7 +29,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  overflow-y: hidden;
+  overflow-y: auto;
 }
 
 .container {
@@ -52,10 +52,19 @@ body {
   background-color: #f8f6f1;
   position: fixed;
   top: 0;
-  left: 0;
-  width: 100%;
+  left: 50%;
+  transform: translateX(-50%); /* 가운데로 이동 */
+  width: 390px !important;
   height: 58px;
   z-index: 10005;
+}
+
+header {
+  width: 390px; /* 부모 요소에 명시적으로 390px 설정 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
 }
 
 .titleArea {
@@ -65,6 +74,9 @@ body {
   padding: 0 15px;
   width: 100%;
   z-index: 1005;
+  background: transparent;
+  background-color: transparent;
+  /* background-color: red !important; */
 }
 
 .mainImage {
@@ -194,6 +206,7 @@ a:focus {
   left: 0;
   width: 100%;
   height: 100%;
+  z-index: 2000;
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center center;
@@ -211,8 +224,8 @@ a:focus {
   line-height: 1.5;
   text-align: center;
   padding: 20px;
-  z-index: 2;
-  margin-top: 60px;
+  z-index: 2000;
+  margin-top: 100px;
 }
 
 #letsmakedance {
@@ -269,13 +282,4 @@ a:focus {
 
 .invitation-content.slide-in {
   transform: translateX(0);
-}
-
-header {
-  border: none !important;
-}
-
-.titleArea {
-  background: transparent !important;
-  background-color: transparent !important;
 }

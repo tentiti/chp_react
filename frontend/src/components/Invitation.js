@@ -3,6 +3,7 @@ import './Invitation.css';
 
 function Invitation({ onBack }) {
   const [isSlideIn, setIsSlideIn] = useState(false);
+  
 
   useEffect(() => {
     setTimeout(() => setIsSlideIn(true), 50);
@@ -48,7 +49,6 @@ function Invitation({ onBack }) {
           top: '14.91%',
           bottom: '64.08%',
           width:'47.33%',
-          // background: 'rgba(0, 0, 0, 0.23)',
           filter: 'blur(5px)',
           zIndex: 1
         }}

@@ -70,3 +70,18 @@ body {
   align-items: center;
   transition: transform 0.3s ease; /* 스케일링 애니메이션 */
 }
+
+.fixed-size-container {
+  width: 390px; /* Fixed width */
+  height: 780px; /* Fixed height */
+  background-color: #f8f6f1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  overflow: auto;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Centering the container */
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* Optional shadow */
+}

@@ -3,7 +3,7 @@ import React from 'react';
 
 const Header = ({ title, needthird = true, onMenuClick }) => {
   return (
-    <header>
+    <header style={{ width: '100%', boxSizing: 'border-box', background:'transparent'}}>
       <div className="titleArea">
         <div>
           <img
