@@ -31,6 +31,30 @@ body {
   overflow-x: hidden;
 }
 
+#root {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.app-container {
+  width: 390px;
+  height: 844px;
+  overflow: hidden;
+  position: relative;
+  background-color: #edece7;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 390px), (max-height: 844px) {
+  .app-container {
+    width: 100%;
+    height: 100vh;
+  }
+}
+
 .overlay {
   position: fixed;
   top: 0;
