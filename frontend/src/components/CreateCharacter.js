@@ -1131,6 +1131,8 @@ const handleHeadSelection = (index) => {
       backgroundImage: `url('/static/stockimages/background_paper.png')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
+      height: '100%',
+      minHeight: '780px'
        }} id="whatareYou?">
       {overlayVisible && (
         <div id="overlay" className="overlay">
@@ -1171,27 +1173,38 @@ const handleHeadSelection = (index) => {
       {isRecording && (
         <div id="splash-screen" className="splash-screen">
         <img src="/static/stockimages/making.png" alt="Splash" style={{ position: 'Fixed', width: '100%', height: '100%', objectFit: 'cover', top: '0', zIndex: '999999999' }} />
-        <img src="/static/stockimages/loading-circle.gif" alt="Splash" style={{ width: '80px', position: 'Fixed', left:'calc(50vw - 36px)', top:'55vh',zIndex: '999999999' }} />
+        <img src="/static/stockimages/loading-circle.gif" alt="Splash" style={{ width: '80px', position: 'Fixed', left:'calc(50% - 42px)', top:'55%',zIndex: '999999999' }} />
         </div>
       )}
 
     <div id="container" style={{ 
+      position:'relative',
+      top:'58px',
       display: 'flex', 
       flexDirection: 'column', 
-      height: 'calc(100% - 58px)', 
+      height: '100%', 
       alignItems: 'center',
-      justifyContent: 'flex-start',
-      overflowX: 'hidden' }}>
+      justifyContent: 'start',
+      overflow: 'hidden' 
+      }}>
+      
       <canvas
         ref={canvasRef}
         style={{
-          width: '100vw',
-          height: '40vh',
+          height: '40%',
+          minHeight:'100px',
+          flexGrow: 1,
         }}
       />
       <canvas ref={hiddenCanvasRef} style={{ display: 'none' }} />
 
-      <div className="controls" style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column-reverse' }}>
+      <div className="controls" style={{ 
+        height:'100%',
+        marginTop: '0', 
+        display: 'flex', 
+        flexDirection: 'column-reverse',
+        backgroundColor: 'transparent'
+         }}>
       
       <div id="botbottoms" style={{ display: 'flex', flexDirection: 'Column' }}>
       
@@ -1234,7 +1247,7 @@ const handleHeadSelection = (index) => {
           display: 'flex', 
           flexDirection:'row', 
           justifyContent: 'space-between', 
-          alignItems: 'center', 
+          alignItems: 'stretch', 
           paddingTop: '5px',
           paddingLeft:'10px',
           MarginTop:'20px',

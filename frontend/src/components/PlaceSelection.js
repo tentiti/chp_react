@@ -59,33 +59,18 @@ const PlaceSelection = () => {
     
 
     const handleScroll = () => {
-        if (containerRef.current) {
-            const scrollTop = containerRef.current.scrollTop;
-            const maxScrollTop = containerRef.current.scrollHeight - containerRef.current.clientHeight;
-            console.log('Scroll top:', scrollTop);
-            // If the user scrolled more than 10px, update state
-            if (scrollTop > 10) {
-                setIsScrolledToBottom(false); // Scroll is not at the bottom
-            }
-    
-            // If the user scrolled to within 10px of the bottom, mark as scrolled to bottom
-            if (scrollTop >= 10) {
-                setIsScrolledToBottom(true); // Scroll is at the bottom
-            }
+        setScrollTop(window.scrollY);
+        if (window.scrollY === 0) {
+            setFadeIn(true);
+        } else {
+            setFadeIn(false);
         }
     };
 
     useEffect(() => {
-        const container = containerRef.current;
-        
-        if (container) {
-            container.addEventListener('scroll', handleScroll);
-        }
-    
+        window.addEventListener('scroll', handleScroll);
         return () => {
-            if (container) {
-                container.removeEventListener('scroll', handleScroll);
-            }
+            window.removeEventListener('scroll', handleScroll);
         };
     }, []);
 
@@ -154,7 +139,7 @@ const PlaceSelection = () => {
 
 
                     <div id='images' style={{
-                        height:'40vh',
+                        height:'375px',
                         position:'relative',
                         overFlowX: 'hidden',
                     }}>
@@ -163,8 +148,8 @@ const PlaceSelection = () => {
                             alt="Background"
                             style={{ 
                                 margin:'10px',
-                                width:'auto',
-                                height:'100%',
+                                width:'300px',
+                                height:'375px',
                                 objectFit: 'cover' }}
                         />
 
@@ -195,7 +180,6 @@ const PlaceSelection = () => {
                                 }} 
                             />
                         )}
-                        
                     </div>
                     
 

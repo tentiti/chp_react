@@ -20,7 +20,7 @@ function App() {
       const height = window.innerHeight;
 
       // 화면 크기가 390x844보다 클 때만 크기를 고정
-      if (width > 390 && height > 844) {
+      if (width > 390 && height > 1024) {
         setIsFixedSize(true);
       } else {
         setIsFixedSize(false);
