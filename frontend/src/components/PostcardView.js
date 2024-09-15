@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -28,20 +28,15 @@ const PostcardView = () => {
     const height = (width / 9) * 16; // 16:9 aspect ratio
   
     if (width > 390 && window.innerHeight >= 1024) {
-      // console.log('Tablet or desktop detected');
       const a = 390;
       const b = 693;
       return { width: a, height: b }; // Use valid keys 'width' and 'height'
     } 
     return { width, height };
   };
-  
 
   const [showImage, setShowImage] = useState(false);
 
-  // Define handleMenuClick function
-
-  // Function to close the image popup
   const handleCloseImage = () => {
     setShowImage(false);
   };
@@ -89,110 +84,91 @@ const PostcardView = () => {
       const bgGeometry = new THREE.PlaneGeometry(width, height);
       const bgMaterial = new THREE.MeshBasicMaterial({ map: bgTexture });
       const bgMesh = new THREE.Mesh(bgGeometry, bgMaterial);
+
+      // Scale down the background mesh
+      // bgMesh.scale.set(0.8, 0.8, 1); // Adjust these values as needed
       sceneRef.current.add(bgMesh);
 
-      if (videoFiles[postcard.number - 1]) {  // postcard.number-1 번째 영상
-        const videoUrl = URL.createObjectURL(videoFiles[postcard.number - 1]); // Blob -> URL 변환
-        const video = document.createElement('video'); // 비디오 엘리먼트 생성
+      if (videoFiles[postcard.number - 1]) {
+        const videoUrl = URL.createObjectURL(videoFiles[postcard.number - 1]);
+        const video = document.createElement('video');
         video.src = videoUrl;
         video.crossOrigin = 'anonymous';
-        video.loop = true; // 비디오 루프 설정
-        video.muted = true; // 비디오 음소거 (자동 재생 가능)
-        video.playsInline = true; // 모바일에서 inline 재생 허용 (필수)
-        video.autoplay = true;  // autoplay 설정, 텍스처로 사용 시 필요
-        video.playbackRate = 0.5;  // Slow down playback to half speed
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.autoplay = true;
+        video.playbackRate = 0.5;
 
-        // 비디오 엘리먼트를 DOM에 추가하지 않음
         video.addEventListener('canplay', () => {
           videoTextureRef.current = new THREE.VideoTexture(video);
           videoTextureRef.current.colorSpace = THREE.SRGBColorSpace;
           videoTextureRef.current.minFilter = THREE.LinearFilter;
           videoTextureRef.current.magFilter = THREE.LinearFilter;
           videoTextureRef.current.format = THREE.RGBAFormat;
-      
+
           const videoAspectRatio = video.videoWidth / video.videoHeight;
-          const canvasWidth = window.innerWidth;
-          const videoWidth = canvasWidth * 0.8;
+          const videoWidth = width * 0.8; // Scale down video width
           const videoHeight = videoWidth / videoAspectRatio;
-      
+
           const videoGeometry = new THREE.PlaneGeometry(videoWidth, videoHeight);
           const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTextureRef.current });
           const videoMesh = new THREE.Mesh(videoGeometry, videoMaterial);
-      
+
           videoMesh.position.set(0, 20, 0.1);
+
+          // Scale down the video mesh
+          // videoMesh.scale.set(0.8, 0.8, 1); // Adjust these values as needed
           sceneRef.current.add(videoMesh);
-          
-          // 비디오를 Three.js 텍스처로 사용하려면 재생 필요
+
           video.play();
           setIsVideoReady(true);
         });
       }
-      
-      
-      // Text
+
       const addText = (text, x, y, size = 50) => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-      
-        // Further increase canvas size for higher resolution
+
         canvas.width = 2048;
         canvas.height = 2048;
-      
-        // Increase font size significantly
-        const fontSize = size * 3; // Doubled from previous version
+        const fontSize = size * 3;
         ctx.font = `bold ${fontSize}px Cafe24Simplehae, sans-serif`;
         ctx.fillStyle = 'rgba(65, 40, 35, 1)';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-      
-        // Enhance text shadow for better visibility
-        // ctx.shadowColor = 'rgba(255, 255, 255, 0.7)';
-        // ctx.shadowBlur = 6;
-        // ctx.shadowOffsetX = 3;
-        // ctx.shadowOffsetY = 3;
-      
-        // Anti-aliasing
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-      
-        const maxLineLength = 38; // 정확하게 40글자로 자름
+
+        const maxLineLength = 38;
         const lines = [];
-        let currentLine = '';
-        
         for (let i = 0; i < text.length; i += maxLineLength) {
-          const line = text.slice(i, i + maxLineLength);
-          lines.push(line);
+          lines.push(text.slice(i, i + maxLineLength));
         }
-        
-        const lineHeight = fontSize * 2.8; // 줄 간격
+
+        const lineHeight = fontSize * 2.8;
         lines.forEach((line, index) => {
           ctx.fillText(line, canvas.width / 2, (canvas.height / 2) + (index - lines.length / 2) * lineHeight);
         });
-        
-      
-        // Adjust positioning to account for larger text
+
         const xPos = (x / 393) * width;
-        const yPos = (y / 700) * height * 1.2; // Moved text slightly down
-      
+        const yPos = (y / 700) * height * 1.2;
+
         const texture = new THREE.CanvasTexture(canvas);
         texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
         texture.format = THREE.RGBAFormat;
-      
+
         const aspectRatio = canvas.width / canvas.height;
-        const geometry = new THREE.PlaneGeometry(600 * aspectRatio, 600); // Increased size
+        const geometry = new THREE.PlaneGeometry(600 * aspectRatio, 600);
         const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
         const mesh = new THREE.Mesh(geometry, material);
-      
+
         mesh.position.set(xPos, yPos, 0.2);
         sceneRef.current.add(mesh);
       };
-    
-    
-      // 예시 텍스트 추가 (크기와 좌표 수정)
-      addText(`${postcard.comment}`,  0, -178, 12); // 크기를 키운 텍스트
-      addText(postcard.timestamp,  0, -206, 8);   // 타임스탬프도 크기 키움
-      addText(`${postcard.name}`, 108, -233, 12); // 이름 텍스트도 크기 증가
+
+      addText(`${postcard.comment}`, 0, -178, 12);
+      addText(postcard.timestamp, 0, -206, 8);
+      addText(`${postcard.name}`, 108, -233, 12);
     };
 
     initThreeJS();
@@ -200,7 +176,7 @@ const PostcardView = () => {
     const animate = () => {
       requestAnimationFrame(animate);
       if (videoTextureRef.current) {
-        videoTextureRef.current.needsUpdate = true;  // Ensure the video texture updates
+        videoTextureRef.current.needsUpdate = true;
       }
 
       rendererRef.current.render(sceneRef.current, cameraRef.current);
@@ -209,75 +185,59 @@ const PostcardView = () => {
 
     window.addEventListener('resize', () => {
       const { width, height } = updateCanvasSize();
-      
+
       cameraRef.current.left = width / -2;
       cameraRef.current.right = width / 2;
       cameraRef.current.top = height / 2;
       cameraRef.current.bottom = height / -2;
       cameraRef.current.updateProjectionMatrix();
-      
-      rendererRef.current.setSize(width, height);  // 실제 크기를 더 크게 설정
-      canvasRef.current.style.width = `${width}px`;  // CSS에서 크기를 원래대로 유지
+
+      rendererRef.current.setSize(width, height);
+      canvasRef.current.style.width = `${width}px`;
       canvasRef.current.style.height = `${height}px`;
-
     });
-
-
   }, [postcard, videoFiles]);
 
-    // 새로운 useEffect 추가: isVideoReady 상태 변경 감지 및 녹화 시작
+
   useEffect(() => {
     if (isVideoReady) {
-      // alert('녹화를 시작합니다. 10초 후 자동으로 녹화가 중지됩니다.');
-      // 비디오가 준비되면 0.5초 후 녹화 시작
       setTimeout(() => startRecording(), 500);
     }
   }, [isVideoReady]);
 
   const startRecording = () => {
-    const canvasStream = canvasRef.current.captureStream(30);
-    
-    // Check if the audio context is already created
-    // const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const audioContext = new (window.AudioContext)();
+    if (!audioRef.current) {
+      console.error('Audio element is not initialized');
+      return;
+    }
 
-    // Create audio source only if it hasn't been created yet
+    const canvasStream = canvasRef.current.captureStream(30);
+    const audioContext = new (window.AudioContext)();
     const audioSource = audioContext.createMediaElementSource(audioRef.current);
     const destination = audioContext.createMediaStreamDestination();
-    
-    // Connect audio source to destination
+
     audioSource.connect(destination);
-    
-    // Connect the audio context to the destination (speakers)
-    audioSource.connect(audioContext.destination); // Output to speakers
-    
-    // Combine video stream and audio stream
+    audioSource.connect(audioContext.destination);
+
     const combinedStream = new MediaStream([...canvasStream.getTracks(), ...destination.stream.getTracks()]);
-  
-    if (!MediaRecorder.isTypeSupported('video/mp4')) {
-      alert('현재 브라우저에서는 곧바로 공유가 불가능합니다. 다운로드 후 수동으로 공유해 주세요. 버튼을 누르시면 필요한 해시태그는 다운로드와 함께 동시에 복사됩니다.');
-    }
-    // Use RecordRTC to record the combined stream
+
     const recorder = new RecordRTC(combinedStream, {
       type: 'video',
       mimeType: 'video/mp4',
       bitsPerSecond: 8000000,
     });
-  
+
     recorder.startRecording();
     if (audioRef.current) {
-      audioRef.current.play().catch(err => {
-        console.error("Audio playback failed:", err);
+      audioRef.current.play().catch((err) => {
+        console.error('Audio playback failed:', err);
       });
-    } else {
-      console.error("Audio element is not initialized");
     }
-    recorderRef.current = recorder;
-  
-    // Stop recording after 10 seconds
-    setTimeout(() => stopRecording(), 18750);
-};
 
+    recorderRef.current = recorder;
+
+    setTimeout(() => stopRecording(), 18750);
+  };
 
   const stopRecording = () => {
     if (recorderRef.current) {
@@ -285,24 +245,19 @@ const PostcardView = () => {
         const blob = recorderRef.current.getBlob();
         const url = URL.createObjectURL(blob);
         setBlobUrl(url);
-        setRecordedBlob(blob); // Store the actual blob
-        setIsRecording(false); // 녹화 완료
+        setRecordedBlob(blob);
+        setIsRecording(false);
 
-        // 오디오 재생 중지
         if (audioRef.current) {
           audioRef.current.pause();
           audioRef.current.currentTime = 0;
         }
-
       });
-    } else {
-      console.error("Recorder is not initialized");
     }
   };
 
   const downloadVideo = async () => {
     if (navigator.clipboard) {
-      // 클립보드에 "hello world!" 복사
       try {
         await navigator.clipboard.writeText('hello world!');
         console.log('Text copied to clipboard');
@@ -318,13 +273,11 @@ const PostcardView = () => {
       a.download = `${postcard?.name}의 춤사위.mp4`;
       document.body.appendChild(a);
       a.click();
-
     }
   };
 
   const shareVideo = async () => {
     if (navigator.clipboard) {
-      // 클립보드에 "hello world!" 복사
       try {
         await navigator.clipboard.writeText('hello world!');
         console.log('Text copied to clipboard');
@@ -354,134 +307,140 @@ const PostcardView = () => {
       console.warn('Sharing not supported or no video recorded');
     }
   };
+
   const navigate = useNavigate();
   const handleMenuClick = () => {
     setShowImage(true);
-  }
+  };
 
   return (
+    <div style={{ backgroundImage: `url('/static/stockimages/background_paper.png')`, width: '100%', height: '100%', zIndex: '900' }}>
+      <audio ref={audioRef} src="/static/test.mp3" loop></audio>
+      <header
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between', // 아이콘은 양쪽 끝으로, 텍스트는 가운데로
+          alignItems: 'center', // Vertically center all elements
+          width: '100%',
+          backgroundColor: 'transparent',
+          height: '58px',
+          backgroundColor: '#F8F6F1',
+          position: 'fixed',
+          top: '0',
+          zIndex: '1000',
+        }}
+      >
+        {/* Left Home Icon */}
+        <div onClick={() => navigate('/home')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', paddingLeft: '20px' }}>
+          <img src="/static/icons/home.png" alt="home" style={{ width: '24px', height: '24px' }} />
+        </div>
 
-    
-<div style={{
-backgroundImage: `url('/static/stockimages/background_paper.png')`,
-width: '100%',
-height: '100%',
-zIndex: '900', 
-}}>
-  <audio ref={audioRef} src="/static/test.mp3" loop></audio>
-  <header style={{ 
-    display: 'flex', 
-    justifyContent: 'space-between', // 아이콘은 양쪽 끝으로, 텍스트는 가운데로
-    alignItems: 'center',            // Vertically center all elements
-    width: '100%', 
-    backgroundColor: 'transparent',
-    height: '58px',
-    backgroundColor: '#F8F6F1',
-    position: 'fixed',
-    top: '0',
-    zIndex: '1000', 
-  }}>
-    {/* Left Home Icon */}
-    <div onClick={() => window.location.href = '/home'} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', paddingLeft: '20px' }}>
-      <img src="/static/icons/home.png" alt="home" style={{ width: '24px', height: '24px' }} />
+        {/* Center Text */}
+        <div
+          style={{
+            textAlign: 'center',
+            fontSize: '20px',
+            color: '#412823',
+            lineHeight: '1',
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)',
+          }}
+        >
+          {postcard?.name ? `'${postcard.name}'의 춤사위` : '춤사위'}
+        </div>
+
+        {/* Right Menu Icon */}
+        <div onClick={handleMenuClick} style={{ cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', paddingRight: '20px' }}>
+          <img src="/static/icons/hamburger.png" alt="menu" id="menu-button" />
+        </div>
+      </header>
+
+      {showImage && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: '1200',
+            opacity: showImage ? 1 : 0, // 투명도를 상태에 따라 변경
+            transition: 'opacity 0.5s ease-in-out', // 트랜지션 추가
+          }}
+          onClick={handleCloseImage}
+        >
+          <img
+            src="/static/stockimages/inviflat.png"
+            alt="invitation"
+            style={{
+              maxWidth: '90%',
+              maxHeight: '90%',
+              zIndex: '999999',
+              opacity: showImage ? 1 : 0, // 이미지의 투명도도 동일하게 설정
+              transition: 'opacity 0.5s ease-in-out', // 트랜지션 추가
+            }}
+          />
+        </div>
+      )}
+
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: 'relative', // 상대적 위치로 설정하여 헤더 아래에 표시
+          top:'58px',
+          left: '0',
+          width: '70%',
+          height: 'calc(70vw * (16 / 9))',
+          overflow: 'hidden',
+          zIndex: '900', // 헤더보다 아래에 표시되도록 설정
+          transform: 'translateY(-5%)',
+        }}
+      />
+      {/* Promotion Image */}
+      <img
+        src="/static/stockimages/promotion.png"
+        alt="Promotion"
+        style={{
+          position: 'fixed',
+          right: '5%',
+          bottom: '58px',
+          width: 'auto',
+          height: '3.5%',
+          zIndex: '1100',
+        }}
+      />
+      <div
+        id="upbuttons"
+        style={{
+          position: 'fixed',
+          bottom: '0',
+          width: '100%',
+          height: '60px',
+          display: 'flex',
+          justifyContent: 'space-around',
+          alignItems: 'center',
+          backgroundColor: '#F8F6F1',
+          borderTop: '1px solid #E6E1DC',
+          zIndex: '1100',
+          gap: '20px',
+          padding: '0 10px',
+          overflow: 'hidden',
+          boxSizing: 'border-box',
+        }}
+      >
+        <button className="upbutton" onClick={downloadVideo} disabled={!blobUrl}>
+          {isRecording ? '공유 영상 준비 중...' : 'Download Video'}
+        </button>
+        <button className="upbutton" onClick={shareVideo} disabled={!blobUrl}>
+          {isRecording ? '공유 영상 준비 중...' : 'Share Video'}
+        </button>
+      </div>
     </div>
-
-    {/* Center Text */}
-    <div style={{ textAlign: 'center', fontSize: '20px', color: '#412823', lineHeight: '1', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
-        {postcard?.name ? `'${postcard.name}'의 춤사위` : '춤사위'}
-    </div>
-
-    {/* Right Menu Icon */}
-    <div onClick={handleMenuClick} style={{ cursor: 'pointer', display:'flex', justifyContent:'center', alignItems:'center', paddingRight: '20px' }}>
-      <img src="/static/icons/hamburger.png" alt="menu" id="menu-button" />
-    </div>
-</header>
-
-
-{showImage && (
-  <div 
-    style={{
-      position: 'absolute', 
-      top: 0, 
-      left: 0, 
-      width: '100%', 
-      height: '100%', 
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center',
-      zIndex: '1200',
-      opacity: showImage ? 1 : 0,           // 투명도를 상태에 따라 변경
-      transition: 'opacity 0.5s ease-in-out', // 트랜지션 추가
-    }}
-    onClick={handleCloseImage}
-  >
-    <img 
-      src="/static/stockimages/inviflat.png" 
-      alt="invitation" 
-      style={{ 
-        maxWidth: '90%', 
-        maxHeight: '90%', 
-        zIndex: '999999',
-        opacity: showImage ? 1 : 0,          // 이미지의 투명도도 동일하게 설정
-        transition: 'opacity 0.5s ease-in-out', // 트랜지션 추가
-      }} 
-    />
-  </div>
-)}
-
-
-  <canvas
-    ref={canvasRef}
-    style={{
-      position: 'relative', // 상대적 위치로 설정하여 헤더 아래에 표시
-      left: '0',
-      width: '70%',
-      height: 'calc(70vw * (16 / 9))',
-      overflow: 'hidden',
-      zIndex: '900',        // 헤더보다 아래에 표시되도록 설정
-      transform: 'translateY(-5%)',
-    }}
-  />
-  {/* Promotion Image */}
-  <img 
-    src="/static/stockimages/promotion.png" 
-    alt="Promotion"
-    style={{
-      position: 'fixed',
-      right: '5%',
-      bottom: '58px',
-      width: 'auto',
-      height: '3.5%',
-      zIndex: '1100',
-    }} 
-  />
-  <div id="upbuttons" style={{ 
-    position: 'fixed',
-    bottom: '0',
-    width: '100%',
-    height: '60px',
-    display: 'flex', 
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    backgroundColor: '#F8F6F1',
-    borderTop: '1px solid #E6E1DC',
-    zIndex: '1100',
-    gap: '20px',
-    padding: '0 10px',
-    overflow: 'hidden',
-    boxSizing: 'border-box',
-    }}>
-    
-    <button className="upbutton" onClick={downloadVideo} disabled={!blobUrl}>
-      {isRecording ? '공유 영상 준비 중...' : 'Download Video'}
-    </button>
-    <button className="upbutton" onClick={shareVideo} disabled={!blobUrl}>
-      {isRecording ? '공유 영상 준비 중...' : 'Share Video'}
-    </button>
-  </div>
-</div>
-
   );
 };
 
