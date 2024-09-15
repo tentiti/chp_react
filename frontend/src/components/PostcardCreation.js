@@ -56,7 +56,9 @@ const PostcardCreation = () => {
   const currentModelPosition = modelPositions[selectedBackground - 1];
 
   return (
-    <div className="postcard-page">
+    <div className="postcard-page" style={{
+      overflow: 'hidden',
+    }}>
       <div style={{
           fontFamily: 'Pretendard, sans-serif',
         }}>

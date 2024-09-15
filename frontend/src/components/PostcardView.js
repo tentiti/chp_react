@@ -26,8 +26,16 @@ const PostcardView = () => {
   const updateCanvasSize = () => {
     const width = window.innerWidth; // 100vw
     const height = (width / 9) * 16; // 16:9 aspect ratio
+  
+    if (width > 390 && window.innerHeight >= 1024) {
+      // console.log('Tablet or desktop detected');
+      const a = 390;
+      const b = 693;
+      return { width: a, height: b }; // Use valid keys 'width' and 'height'
+    } 
     return { width, height };
   };
+  
 
   const [showImage, setShowImage] = useState(false);
 
@@ -356,8 +364,8 @@ const PostcardView = () => {
     
 <div style={{
 backgroundImage: `url('/static/stockimages/background_paper.png')`,
-width: '100vw',
-height: '100vh',
+width: '100%',
+height: '100%',
 zIndex: '900', 
 }}>
   <audio ref={audioRef} src="/static/test.mp3" loop></audio>
@@ -396,8 +404,8 @@ zIndex: '900',
       position: 'absolute', 
       top: 0, 
       left: 0, 
-      width: '100vw', 
-      height: '100vh', 
+      width: '100%', 
+      height: '100%', 
       backgroundColor: 'rgba(0, 0, 0, 0.8)',
       display: 'flex', 
       justifyContent: 'center', 
@@ -428,7 +436,7 @@ zIndex: '900',
     style={{
       position: 'relative', // 상대적 위치로 설정하여 헤더 아래에 표시
       left: '0',
-      width: '70vw',
+      width: '70%',
       height: 'calc(70vw * (16 / 9))',
       overflow: 'hidden',
       zIndex: '900',        // 헤더보다 아래에 표시되도록 설정
@@ -441,10 +449,10 @@ zIndex: '900',
     alt="Promotion"
     style={{
       position: 'fixed',
-      right: '5vw',
-      bottom: '60px',
+      right: '5%',
+      bottom: '58px',
       width: 'auto',
-      height: '3.5vh',
+      height: '3.5%',
       zIndex: '1100',
     }} 
   />
@@ -459,6 +467,10 @@ zIndex: '900',
     backgroundColor: '#F8F6F1',
     borderTop: '1px solid #E6E1DC',
     zIndex: '1100',
+    gap: '20px',
+    padding: '0 10px',
+    overflow: 'hidden',
+    boxSizing: 'border-box',
     }}>
     
     <button className="upbutton" onClick={downloadVideo} disabled={!blobUrl}>
