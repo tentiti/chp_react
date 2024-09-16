@@ -10,31 +10,29 @@ import PostcardShareView from './components/PostcardShareView';
 import { VideoProvider } from './components/VideoContext'; // Context Provider import
 import './App.css';
 
-
 function App() {
   const [isFixedSize, setIsFixedSize] = useState(false);
 
+  const getDeviceType = () => {
+    const userAgent = navigator.userAgent.toLowerCase();
+
+    if (/mobile/i.test(userAgent)) {
+      return 'mobile';
+    }
+    if (/tablet|ipad|playbook|silk/i.test(userAgent)) {
+      return 'tablet';
+    }
+    return 'desktop';
+  };
+
   useEffect(() => {
-    const resizeWindow = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
+    const deviceType = getDeviceType();
 
-      // 화면 크기가 390x844보다 클 때만 크기를 고정
-      if (width > 390 && height > 1024) {
-        setIsFixedSize(true);
-      } else {
-        setIsFixedSize(false);
-      }
-    };
-
-    // 페이지가 로드될 때와 창 크기가 변경될 때 호출
-    window.addEventListener('resize', resizeWindow);
-    resizeWindow(); // 초기 실행
-
-    // 컴포넌트 언마운트 시 이벤트 리스너 제거
-    return () => {
-      window.removeEventListener('resize', resizeWindow);
-    };
+    if (deviceType === 'tablet' || deviceType === 'desktop') {
+      setIsFixedSize(true);
+    } else {
+      setIsFixedSize(false);
+    }
   }, []);
 
   return (

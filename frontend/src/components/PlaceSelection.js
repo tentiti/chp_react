@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Header from './Header';
 import './CreateCharacter.css';
 import './placeselection.css';
+import { isTablet, isDesktop } from 'react-device-detect'; // 추가
+
 
 const backgrounds = [
     "/static/stockimages/trans_bg1.png",
@@ -20,7 +22,7 @@ const descriptions = [
     {
         title: "달밤",
         date: "2020.08.",
-        text: "작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것...",
+        text: "작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것... 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것.. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것.. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것..",
         image: "static/stockimages/work1.jpg",
     },
     {
@@ -57,7 +59,7 @@ const PlaceSelection = () => {
     }, []);
 
     // 높이 제한 계산
-    const shouldLimitHeight = (windowSize.width > 390 && windowSize.height > 1024) ;
+    const shouldLimitHeight = (isTablet || isDesktop); // tablet 또는 desktop이면 제한 적용
 
 
     const location = useLocation();
@@ -116,8 +118,8 @@ const PlaceSelection = () => {
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100%', maxWidth: '414px', margin: '0 auto' }}>
-            <Header title="장소 정하기" needthird={false} />
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', maxWidth: '414px', margin: '0 auto', }}>
+            <Header title="장소 정하기" needthird={false} style={{position:'fixed'}} />
             
             <div ref={containerRef} style={{ 
                 flex: 1, 
@@ -127,19 +129,26 @@ const PlaceSelection = () => {
                 maxHeight: '100vh',  // 최대 높이를 화면에 맞추고
                 boxSizing: 'border-box', // 패딩이 스크롤 계산에 포함되도록 설정
              }}>
-                <div style={{}}>
-                    <div style={{ height: '40vh', position: 'relative', width: '100%', marginTop: '70px', display:'flex', alignContent:'center', justifyContent:"center" }}>
+                <div style={{display:'flex', flexDirection:'column', overflowY:'auto', justifyContent:'center'}}>
+                    <div id="picturecontainer" style={{ 
+                        position: 'relative', 
+                        width: 'auto', 
+                        height: '36%',
+                        boxSizing: 'border-box',
+                        display:'flex',
+                        justifyContent:'center',
+                        alignItems:'center',
+                        }}>
                         <img 
                             src={backgrounds[currentIndex]}
                             alt="Background"
                             style={{ 
-                                marginTop: shouldLimitHeight ? '240px' : '0', 
-                                position: 'relative',
-                                width: 'auto', 
-                                height: shouldLimitHeight ? '50%' : '100%', 
-                                objectFit: 'contain',
-                                maxHeight: '100%',     // Constrain the height
-                                maxWidth: '100%',      // Constrain the width
+                                marginTop: '58px', 
+                                width: '80%', 
+                                height: 'auto', 
+                                objectFit: 'cover', 
+                                maxWidth: '100%',
+                                maxHeight: '100%',
                              }}
                         />
                         {gifUrl && (
@@ -157,7 +166,45 @@ const PlaceSelection = () => {
                                     maxWidth: '100%',      // Constrain the gif width
                                 }}
                             />
+
+                            
                         )}
+
+                    <div id="dirctions" style={{
+                        position: 'absolute',
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        top: '50%',
+                        left: '0',
+                        width: '100%',
+                        padding: '0 5px',
+                        boxSizing: 'border-box',
+                    }}>
+                    <div 
+                        style={{ 
+                            cursor: 'pointer',
+                            fontSize: '22px',
+                            color: 'rgba(65,30,45,0.3)',
+                            zIndex: 1000,
+                        }}
+                        onClick={handlePrevious}
+                    >
+                        &#9664;
+                    </div>
+                    <div 
+                        style={{ 
+                            right: '30px', 
+                            cursor: 'pointer',
+                            fontSize: '22px',
+                            color: 'rgba(65,30,45,0.3)',
+                            zIndex: 1000,
+                        }}
+                        onClick={handleNext}
+                    >
+                        &#9654;
+                    </div>
+                    </div>
                     </div>
 
                     {/* Dot Indicators */}
@@ -177,43 +224,18 @@ const PlaceSelection = () => {
                     </div>
 
                     <hr style={{ width: '100%', margin: '10px 0', border: '0.5px solid #E6E1DC' }} />
-
+                    
+                    
                     {/* Left and Right Arrows */}
-                    <div 
-                        style={{ 
-                            position: 'absolute', 
-                            top: '25vh', 
-                            left: '30px', 
-                            cursor: 'pointer',
-                            fontSize: '22px',
-                            color: 'rgba(65,30,45,0.3)',
-                            zIndex: 1000,
-                        }}
-                        onClick={handlePrevious}
-                    >
-                        &#9664;
-                    </div>
-                    <div 
-                        style={{ 
-                            position: 'absolute', 
-                            top: '25vh', 
-                            right: '30px', 
-                            cursor: 'pointer',
-                            fontSize: '22px',
-                            color: 'rgba(65,30,45,0.3)',
-                            zIndex: 1000,
-                        }}
-                        onClick={handleNext}
-                    >
-                        &#9654;
-                    </div>
+
 
                     {/* Work details */}
-                    <div style={{ width: '100%', margin: '0 auto' }}>
-                        <h2 id='worktitle'>{currentDescription.title}</h2>
+                    <div id="workdetails" style={{ width: '100%', maxWidth:'390px', margin: '0 auto', textAlign: 'center' }}>
+                        <p id='worktitle'>{currentDescription.title}</p>
                         <p id="workdate">{currentDescription.date}</p>
-                        <p id="workdetails" >{currentDescription.text}</p>
+                        <p id="workexplanation" >{currentDescription.text}</p>
                     </div>
+
 
                     {/* Copyright text */}
                     <span style={{ 

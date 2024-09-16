@@ -118,11 +118,19 @@ const handleAssetSelection = (category, index) => {
   }, []);
 
   const selectColor = (categoryName, color) => {
-    const selectedColor = COLORS.find((c) => c.value === color); // 선택된 색상 정보 가져오기
+    // 선택된 카테고리와 색상 정보를 콘솔에 출력 (디버깅용)
+    console.log('Selected category:', categoryName);
+    console.log('Selected color:', color);
+  
+    // alert로 정보 표시 (필요한 경우)
+    // alert(`Category: ${categoryName}, Color: ${color}`);
+  
     setSelectedColors((prevColors) => ({
       ...prevColors,
-      [categoryName]: selectedColor, // name과 value 모두 저장
+      [categoryName]: color, // color 객체 전체를 저장
     }));
+
+    // alert(JSON.stringify(selectedColors));
   };
   
   
@@ -1172,7 +1180,7 @@ const handleHeadSelection = (index) => {
        {/* 녹화 중일 때 보여줄 "녹화중입니다" 이미지 */}
       {isRecording && (
         <div id="splash-screen" className="splash-screen">
-        <img src="/static/stockimages/making.png" alt="Splash" style={{ position: 'Fixed', width: '100%', height: '100%', objectFit: 'cover', top: '0', zIndex: '999999999' }} />
+        <img src="/static/stockimages/making.png" alt="Splash" style={{ position: 'Fixed', width: '100%', height: '100%', objectFit: 'cover', top: '0', left:'0', zIndex: '999999999' }} />
         <img src="/static/stockimages/loading-circle.gif" alt="Splash" style={{ width: '80px', position: 'Fixed', left:'calc(50% - 42px)', top:'55%',zIndex: '999999999' }} />
         </div>
       )}
@@ -1242,16 +1250,13 @@ const handleHeadSelection = (index) => {
           position:'sticky', 
 
           width: '100%',
-          height:'60px',
+          height:'58px',
 
           display: 'flex', 
           flexDirection:'row', 
           justifyContent: 'space-between', 
-          alignItems: 'stretch', 
-          paddingTop: '5px',
+          alignItems: 'center', 
           paddingLeft:'10px',
-          MarginTop:'20px',
-          MarginBottom:'20px',
           boxSizing: 'border-box',
           zIndex: '999999',
           borderTop: '1px solid #E6E1DC',
@@ -1263,65 +1268,71 @@ const handleHeadSelection = (index) => {
           <div className="expression-color-selection" style={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
-            marginBottom: '10px', 
+            alignItems: 'center', // 'alignItens'를 'alignItems'로 수정
             width: '75%',
+            height: '100%'
           }}>
-            
-          {GRAYSCALE_COLORS.map((colorObj, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                setExpressionDrawingColor(colorObj.color);
-                clearCanvasWithColor(colorObj.color);
-                handleHeadSelection(index);
-              }}
-              className="color-button"
-              style={{
-                display: 'flex',
-                pointerEvents: 'auto',
-                justifyContent: 'center',
-                alignItems: 'center',
-                border: 'none',
-                background: 'none',
-                padding: '0',
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                boxSizing: 'border-box',
-              }}
-            >
-              <div
-                className="big-circle"
-                style={{
-                  backgroundColor: colorObj.bigColor,
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                }}
-                >
-              <div
-                  className="small-circle"
-                  style={{
-                    backgroundColor: colorObj.smallColor,
-                    width: '70%',
-                    height: '70%',
-                    borderRadius: '50%',
-                  }}
-                >
-                </div>
-              </div>
-          </button> 
-          ))}
-        </div>
+        {GRAYSCALE_COLORS.map((colorObj, index) => (
+          <button
+          key={index}
+          onClick={() => {
+            setExpressionDrawingColor(colorObj.color);
+            clearCanvasWithColor(colorObj.color);
+            handleHeadSelection(index);
+          }}
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            border: 'none',
+            padding: '0',
+            width: '32px',
+            height: '32px',
+            position: 'relative',
+            boxSizing: 'border-box',
+            background: 'none',
+            filter: 'drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.5))',
+          }}
+        >
+          <svg width="32" height="32" viewBox="0 0 35 33" fill="none" xmlns="http://www.w3.org/2000/svg" style={{position: 'absolute', top: 0, left: 0}}>
+            <mask id={`mask-${index}`} maskUnits="userSpaceOnUse" x="0" y="0" width="35" height="33">
+              <path d="M31.732 24.906C31.3723 25.5071 29.9437 27.7978 27.161 29.7447C22.4124 33.067 17.3387 32.7323 15.527 32.6887C9.3294 32.5388 4.97102 28.6501 3.13725 25.9566C1.24676 23.18 -2.05667 18.3511 2.45184 9.31604C6.10884 1.98759 10.1052 1.45598 13.6287 0.508273C20.5745 -1.35954 28.416 1.9484 32.7435 9.97204C35.264 14.6458 34.2974 20.6183 31.732 24.9057V24.906Z" fill="white"/>
+            </mask>
+            <g mask={`url(#mask-${index})`}>
+              <rect width="35" height="33" fill={colorObj.bigColor} />
+            </g>
+          </svg>
+          <svg
+            width="23"
+            height="23"
+            viewBox="0 0 28 23"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-58%, -50%)',
+            }}
+          >
+            <mask id={`small-mask-${index}`} maskUnits="userSpaceOnUse" x="0" y="0" width="28" height="23">
+              <path d="M8.99724 2.29525C9.37989 2.01516 10.8738 0.96221 13.1275 0.476599C16.9729 -0.352017 20.0668 1.17971 21.1914 1.67968C25.0386 3.38958 26.7561 6.94617 27.2027 9.10064C27.663 11.3215 28.4736 15.1879 23.2868 19.6336C19.0796 23.2398 16.435 22.5281 13.978 22.1984C9.13463 21.5487 5.08135 17.4449 4.46305 11.3235C4.10306 7.75802 6.26882 4.29377 8.99724 2.29525Z" fill="white"/>
+            </mask>
+            <g mask={`url(#small-mask-${index})`}>
+              <rect width="28" height="23" fill={colorObj.smallColor} />
+            </g>
+          </svg>
+        </button>
+
+        ))}
+      </div>
 
         {/* 연필/지우개 토글 버튼 */}
 
         <div className="expression-tool-selection" style={{ 
           display: 'flex', 
-          justifyContent: 'space-evenly', 
+          justifyContent: 'space-around', 
+          alignItems: 'center',
           marginLeft: '10px',
           width: 'calc(25%)'}}
           >
@@ -1343,7 +1354,11 @@ const handleHeadSelection = (index) => {
           />
 
           {/* 적용 버튼 */}
-          <div className="apply-button" style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+          <div className="apply-button" style={{ 
+            display: 'flex', 
+            justifyContent: 'center',
+            alignItems:'center' 
+            }}>
             <button
               onClick={applyExpressionTextureToModel}
               style={{
@@ -1430,9 +1445,9 @@ const handleHeadSelection = (index) => {
         onClick={() => {
           handleAssetSelection(activeCategory.name, index); // 카테고리별 선택된 인덱스 업데이트
           const modelPath = activeCategory.useColor
-            ? `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}_${selectedColors[activeCategory.name]?.name || 'Black'}.glb`
-            : `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}.glb`;
-
+          ? `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}_${selectedColors[activeCategory.name] || 'Black'}.glb`
+          : `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}.glb`;
+        
           console.log(modelPath);
           loadModel(modelPath, activeCategory.name, activeCategory.useColor);
         }}
@@ -1461,16 +1476,54 @@ const handleHeadSelection = (index) => {
       {activeCategory && activeCategory.useColor && (
         <div className="color-selection">
           {COLORS.map((color, index) => (
-            <button
-              key={color.name}
-              onClick={() => {
-                selectColor(activeCategory.name, color.bigCircle, color.smallCircle);
-              }}
-              className="color-button"
-            >
-              <div className="big-circle" style={{ backgroundColor: color.bigCircle }} />
-              <div className="small-circle" style={{ backgroundColor: color.smallCircle }} />
-            </button>
+                <button
+                key={color.name}
+                onClick={() => selectColor(activeCategory.name, color.name)}
+                className="color-button"
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  border: 'none',
+                  padding: '0',
+                  width: '32px',
+                  height: '32px',
+                  position: 'relative',
+                  boxSizing: 'border-box',
+                  background: 'none',
+                  filter: 'drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25))',
+                }}
+              >
+                <svg width="32" height="32" viewBox="0 0 35 33" fill="none" xmlns="http://www.w3.org/2000/svg" style={{position: 'absolute', top: 0, left: 0}}>
+                  <mask id={`mask-${index}`} maskUnits="userSpaceOnUse" x="0" y="0" width="35" height="33">
+                    <path d="M31.732 24.906C31.3723 25.5071 29.9437 27.7978 27.161 29.7447C22.4124 33.067 17.3387 32.7323 15.527 32.6887C9.3294 32.5388 4.97102 28.6501 3.13725 25.9566C1.24676 23.18 -2.05667 18.3511 2.45184 9.31604C6.10884 1.98759 10.1052 1.45598 13.6287 0.508273C20.5745 -1.35954 28.416 1.9484 32.7435 9.97204C35.264 14.6458 34.2974 20.6183 31.732 24.9057V24.906Z" fill="white"/>
+                  </mask>
+                  <g mask={`url(#mask-${index})`}>
+                    <rect width="35" height="33" fill={color.bigCircle} />
+                  </g>
+                </svg>
+                <svg
+                  width="23"
+                  height="23"
+                  viewBox="0 0 28 23"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-58%, -50%)',
+                  }}
+                >
+                  <mask id={`small-mask-${index}`} maskUnits="userSpaceOnUse" x="0" y="0" width="28" height="23">
+                    <path d="M8.99724 2.29525C9.37989 2.01516 10.8738 0.96221 13.1275 0.476599C16.9729 -0.352017 20.0668 1.17971 21.1914 1.67968C25.0386 3.38958 26.7561 6.94617 27.2027 9.10064C27.663 11.3215 28.4736 15.1879 23.2868 19.6336C19.0796 23.2398 16.435 22.5281 13.978 22.1984C9.13463 21.5487 5.08135 17.4449 4.46305 11.3235C4.10306 7.75802 6.26882 4.29377 8.99724 2.29525Z" fill="white"/>
+                  </mask>
+                  <g mask={`url(#small-mask-${index})`}>
+                    <rect width="28" height="23" fill={color.smallCircle} />
+                  </g>
+                </svg>
+              </button>
+          
           ))}
         </div>
       )}

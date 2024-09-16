@@ -434,10 +434,10 @@ const PostcardView = () => {
         }}
       >
         <button className="upbutton" onClick={downloadVideo} disabled={!blobUrl}>
-          {isRecording ? '공유 영상 준비 중...' : 'Download Video'}
+          {isRecording ? '공유 영상 준비 중...' : '영상 저장하기 Video'}
         </button>
         <button className="upbutton" onClick={shareVideo} disabled={!blobUrl}>
-          {isRecording ? '공유 영상 준비 중...' : 'Share Video'}
+          {isRecording ? '공유 영상 준비 중...' : '영상 공유하기'}
         </button>
       </div>
     </div>

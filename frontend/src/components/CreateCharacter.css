@@ -29,6 +29,7 @@ body {
   flex-direction: column;
   position: relative;
   overflow-x: hidden;
+  background-image: '/static/stockimages/background_paper.png';
 }
 
 #root {
