@@ -6,8 +6,25 @@ import GIF from 'gif.js';
 import './CreateCharacter.css';
 import Header from './Header.js';
 import { UseVideo } from './VideoContext.js'; // Context에서 가져옴
+import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
 
 const CreateCharacter = () => {
+
+  const [isInvitationVisible, setIsInvitationVisible] = useState(false); // Invitation의 가시성을 관리하는 상태
+  const [isFloatingVisible, setIsFloatingVisible] = useState(true); // 플로팅 버튼 가시성 관리 상태
+
+  // Invitation을 보이게 하는 함수 (메뉴 클릭 시 호출됨)
+  const handleMenuClick = () => {
+    setIsInvitationVisible(true);
+    // setIsFloatingVisible(false); // Invitation을 보이면 플로팅 버튼을 숨김
+  };
+
+  // Invitation을 숨기고 원래 화면으로 돌아가는 함수 (뒤로가기 클릭 시 호출됨)
+  const handleBackClick = () => {
+    setIsInvitationVisible(false);
+    // setIsFloatingVisible(true); // Invitation을 숨기고 플로팅 버튼을 다시 보이게 함
+  };
+
   const [gifUrl, setGifUrl] = useState(null);
   const [videoFiles, setVideoFiles] = useState([]);
   const { addVideoFile } = UseVideo(); // UseVideo를 컴포넌트 내부에서 호출
@@ -16,9 +33,9 @@ const CreateCharacter = () => {
 
   //초대장 이미지 표시 관련
   const [showImage, setShowImage] = useState(false); // 이미지 표시 여부를 결정하는 상태
-  const handleMenuClick = () => {
-    setShowImage(true); // 메뉴 버튼 클릭 시 이미지 보이게 설정
-  };
+  // const handleMenuClick = () => {
+  //   setShowImage(true); // 메뉴 버튼 클릭 시 이미지 보이게 설정
+  // };
   const handleCloseImage = () => {
     setShowImage(false); // 화면을 클릭하면 이미지 사라지게 설정
   };
@@ -35,6 +52,11 @@ const CreateCharacter = () => {
   const clockRef = useRef(new THREE.Clock());
   const modelsRef = useRef([]);
   const controlsRef = useRef(null); // OrbitControls를 위한 Ref 추가
+
+  const [selectedColor, setSelectedColor] = useState('Black');
+  const [selectedFaceColor, setSelectedFaceColor] = useState('#F5F1F1');
+
+
   // const [clickedIndex, setClickedIndex] = useState(null); // 클릭된 이미지의 인덱스를 저장하는 상태
   const [selectedIndices, setSelectedIndices] = useState({
     HEAD: null,
@@ -199,12 +221,6 @@ const handleAssetSelection = (category, index) => {
       (gltf) => {
         const model = gltf.scene;
         sceneRef.current.add(model);
-
-              // 모델 내 구성 요소 콘솔에 출력
-      // console.log('Model components:');
-      // model.traverse((child) => {
-      //   console.log(child);  // 각 구성 요소 출력
-      // });
 
         const mixer = new THREE.AnimationMixer(model);
         let action = null;
@@ -461,7 +477,7 @@ const handleAssetSelection = (category, index) => {
   
     const duration = 18.75; // 18.75초 동안 녹화
     const fps = 24; // 프레임 속도는 24fps로 설정
-    const totalFrames = Math.round(duration * fps); // 총 프레임 수 계산
+    const totalFrames = 450; // 총 프레임 수 계산
     const frameInterval = 1000 / fps; // 프레임 간 간격 (밀리초)
     let frameCount = 0;
   
@@ -1033,6 +1049,15 @@ const clearExpressionCanvas = useCallback(() => {
     <div style={{
       
     }}>
+
+
+      {/* Invitation이 보일 때 */}
+      {isInvitationVisible && (
+        <div className={`invitation-container ${isInvitationVisible ? 'visible' : ''}`}>
+          <Invitation onBack={handleBackClick} /> {/* Invitation 컴포넌트 및 뒤로가기 핸들러 */}
+        </div>
+      )}
+
     <div style={{ 
       overflow: 'auto',
       backgroundImage: `url('/static/stockimages/background_paper.png')`,
@@ -1063,15 +1088,16 @@ const clearExpressionCanvas = useCallback(() => {
             left: 0, 
             width: '100%', 
             height: '100%', 
-            backgroundColor: 'gray',
             display: 'flex', 
             justifyContent: 'center', 
             alignItems: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 99999
             // backgroundImage: 'url("/static/stockimages/inviflat.png")',
           }}
           onClick={handleCloseImage} // 이미지를 클릭해도 사라지게 설정
         >
-          <img src="/static/stockimages/inviflat.png" alt="invitation" style={{ maxWidth: '90%', maxHeight: '90%', zIndex: '999999'}} />
+          <img src="/static/stockimages/inviflat.png" alt="invitation" style={{ maxWidth: '80%', maxHeight: '80%', zIndex: '999999'}} />
         </div>
       )}
 
@@ -1080,7 +1106,7 @@ const clearExpressionCanvas = useCallback(() => {
       {isRecording && (
         <div id="splash-screen" className="splash-screen">
         <img src="/static/stockimages/making.png" alt="Splash" style={{ position: 'Fixed', width: '100%', height: '100%', objectFit: 'cover', top: '0', left:'0', zIndex: '999999999' }} />
-        <img src="/static/stockimages/loading-circle.gif" alt="Splash" style={{ width: '60px', position: 'Fixed', left:'calc(50% - 32px)', top:'55%',zIndex: '999999999' }} />
+        <img src="/static/stockimages/loading-circle.gif" alt="Splash" style={{ width: '60px', position: 'Fixed', left:'calc(50% - 32px)', top:'50%',zIndex: '999999999' }} />
         </div>
       )}
 
@@ -1136,6 +1162,8 @@ const clearExpressionCanvas = useCallback(() => {
     boxSizing: 'border-box',
     border: 'none',  // Remove border from button
     outline: 'none',  // Removes pink outline on click
+    WebkitTapHighlightColor: 'transparent', /* 클릭 시 하이라이트 제거 */
+    userSelect: 'none',  // 텍스트 선택 방지
   }}
 >
   <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" overflow ='visible'>
@@ -1195,7 +1223,7 @@ const clearExpressionCanvas = useCallback(() => {
           position:'sticky', 
 
           width: '100%',
-          height:'58px',
+          height:'60px',
 
           display: 'flex', 
           flexDirection:'row', 
@@ -1224,6 +1252,7 @@ const clearExpressionCanvas = useCallback(() => {
             setExpressionDrawingColor(colorObj.color);
             clearCanvasWithColor(colorObj.color);
             handleHeadSelection(index);
+            setSelectedFaceColor(colorObj.color);
           }}
           style={{
             display: 'flex',
@@ -1267,6 +1296,21 @@ const clearExpressionCanvas = useCallback(() => {
               <rect width="28" height="23" fill={colorObj.smallColor} />
             </g>
           </svg>
+
+          {selectedFaceColor === colorObj.color && (
+            <img 
+              src="/static/stockimages/check.png" 
+              alt="check" 
+              style={{
+                position: 'absolute',
+                width: '45%',
+                height: '45%',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+              }} 
+            />
+          )}
         </button>
 
         ))}
@@ -1292,7 +1336,7 @@ const clearExpressionCanvas = useCallback(() => {
               backgroundPosition: 'center',
               backgroundSize: '70%',
               backgroundRepeat: 'no-repeat',
-              boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', // 그림자 효과
+              boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.45)', // 그림자 효과
               border: 'none',         // 테두리 없음
               cursor: 'pointer',      // 마우스 커서 변경
             }}
@@ -1315,7 +1359,7 @@ const clearExpressionCanvas = useCallback(() => {
                 backgroundPosition: 'center',
                 backgroundSize: '70%',   // 이미지 크기를 50%로 설정
                 backgroundRepeat: 'no-repeat',
-                boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', // 그림자 효과
+                boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.45)', // 그림자 효과
                 border: 'none',         // 테두리 없음
                 cursor: 'pointer',      // 마우스 커서 변경
               }}
@@ -1426,7 +1470,10 @@ const clearExpressionCanvas = useCallback(() => {
           {COLORS.map((color, index) => (
                 <button
                 key={color.name}
-                onClick={() => selectColor(activeCategory.name, color.name)}
+                onClick={() => {
+                  selectColor(activeCategory.name, color.name);
+                  setSelectedColor(color.name);
+                }}
                 className="color-button"
                 style={{
                   display: 'flex',
@@ -1470,6 +1517,22 @@ const clearExpressionCanvas = useCallback(() => {
                     <rect width="28" height="23" fill={color.smallCircle} />
                   </g>
                 </svg>
+
+                {selectedColor === color.name && (
+            <img 
+              src="/static/stockimages/check.png" 
+              alt="check" 
+              style={{
+                position: 'absolute',
+                width: '45%',
+                height: 'auto',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+              }} 
+            />
+          )}
+
               </button>
           
           ))}

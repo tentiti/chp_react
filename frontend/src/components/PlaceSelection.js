@@ -4,7 +4,7 @@ import Header from './Header';
 import './CreateCharacter.css';
 import './placeselection.css';
 import { isTablet, isDesktop } from 'react-device-detect'; // 추가
-
+import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
 
 const backgrounds = [
     "/static/stockimages/trans_bg1.png",
@@ -61,12 +61,24 @@ const PlaceSelection = () => {
     // 높이 제한 계산
     const shouldLimitHeight = (isTablet || isDesktop); // tablet 또는 desktop이면 제한 적용
 
-
+    const [isInvitationVisible, setIsInvitationVisible] = useState(false); // Invitation의 가시성을 관리하는 상태
+    const [isFloatingVisible, setIsFloatingVisible] = useState(true); // 플로팅 버튼 가시성 관리 상태
+  
+    // Invitation을 보이게 하는 함수 (메뉴 클릭 시 호출됨)
+    const handleMenuClick = () => {
+      setIsInvitationVisible(true);
+      // setIsFloatingVisible(false); // Invitation을 보이면 플로팅 버튼을 숨김
+    };
+  
+    // Invitation을 숨기고 원래 화면으로 돌아가는 함수 (뒤로가기 클릭 시 호출됨)
+    const handleBackClick = () => {
+      setIsInvitationVisible(false);
+      // setIsFloatingVisible(true); // Invitation을 숨기고 플로팅 버튼을 다시 보이게 함
+    };
+    
       //초대장 이미지 표시 관련
   const [showImage, setShowImage] = useState(false); // 이미지 표시 여부를 결정하는 상태
-  const handleMenuClick = () => {
-    setShowImage(true); // 메뉴 버튼 클릭 시 이미지 보이게 설정
-  };
+
   const handleCloseImage = () => {
     setShowImage(false); // 화면을 클릭하면 이미지 사라지게 설정
   };
@@ -128,38 +140,36 @@ const PlaceSelection = () => {
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', maxWidth: '414px', margin: '0 auto', left:'0'}}>
+        <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            height: '100%', 
+            width: '100%', 
+            margin: '0', 
+            left:'0', 
+            overflowY: 'hidden'
+        }}>
             <Header title="장소 정하기" needthird={true} onMenuClick={handleMenuClick} style={{position:'fixed'}} />
         
-      {showImage && (
-        <div 
-          style={{
-            position: 'absolute', 
-            top: 0, 
-            left: 0, 
-            width: '100%', 
-            height: '100%', 
-            backgroundColor: 'gray',
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center',
-            // backgroundImage: 'url("/static/stockimages/inviflat.png")',
-          }}
-          onClick={handleCloseImage} // 이미지를 클릭해도 사라지게 설정
-        >
-          <img src="/static/stockimages/inviflat.png" alt="invitation" style={{ maxWidth: '90%', maxHeight: '90%', zIndex: '999999'}} />
-        </div>
-      )}
+            {/* Invitation이 보일 때 */}
+            {isInvitationVisible && (
+                <div className={`invitation-container ${isInvitationVisible ? 'visible' : ''}`}>
+                <Invitation onBack={handleBackClick} /> {/* Invitation 컴포넌트 및 뒤로가기 핸들러 */}
+                </div>
+            )}
 
             <div ref={containerRef} style={{ 
                 flex: 1, 
+                top: '58px',
+                bottom:'80px',
+                height: 'calc(100% - 138px)',
                 overflowY: 'auto', 
                 backgroundColor: '#F8F6F1', 
                 padding: '0 20px',  // 패딩은 유지
-                maxHeight: '100vh',  // 최대 높이를 화면에 맞추고
+                maxHeight: '100%',  // 최대 높이를 화면에 맞추고
                 boxSizing: 'border-box', // 패딩이 스크롤 계산에 포함되도록 설정
              }}>
-                <div style={{display:'flex', flexDirection:'column', overflowY:'auto', justifyContent:'center'}}>
+                <div style={{display:'flex', flexDirection:'column', overflowY:'hidden', justifyContent:'center'}}>
                     <div id="picturecontainer" style={{ 
                         position: 'relative', 
                         width: 'auto', 
@@ -283,22 +293,41 @@ const PlaceSelection = () => {
                     <div 
                         onClick={isScrolledToBottom ? scrollToTop : scrollToBottom} 
                         style={{
-                            height: '65px',
+                            display:'flex',
+                            flexDirection: isScrolledToBottom? 'column' : 'column-reverse',
+                            justifyContent:'flex-start',
+                            alignItems:'center',
+                            position: 'fixed',
+                            textAlign:'center',
+
+                            left:0,
+                            top: isScrolledToBottom ? '58px' : 'auto',  // bottom 값
+                            bottom: isScrolledToBottom ? 'auto' : '80px',      // top 값
+                            
                             width: '100%',
-                            borderTop: '1px solid #E6E1DC',
-                            paddingTop: '10px',
+                            height: '65px',
+
+                            border: '1px solid #E6E1DC',
+                            backgroundColor: '#F8F6F1',
+
+                            // paddingTop: '10px',
                             cursor: 'pointer',
                             textAlign: 'center',
+                            padding: '7px',
+                            boxSizing: 'border-box',
                         }}
                     >
-                        {isScrolledToBottom ? '장소 고르러 돌아가기' : '원본 작품 보러가기'}<br/>
+                        <span style ={{
+                            // padding: '3px'
+                        }}>{isScrolledToBottom ? '장소 고르러 돌아가기' : '원본 작품 보러가기'}</span>
+                        <br/>
                         <img 
                             src="/static/icons/down.png" 
                             alt="Arrow" 
                             style={{
+                                margin: '-5px',
                                 width: 'auto', 
                                 height: '13px', 
-                                marginTop: '10px', 
                                 transform: isScrolledToBottom ? 'rotate(180deg)' : 'none',
                             }} 
                         />

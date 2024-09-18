@@ -30,6 +30,23 @@ body {
   position: relative;
   overflow-x: hidden;
   background-image: "/static/stockimages/background_paper.png";
+  background-size: cover;
+
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 #root {
@@ -119,7 +136,7 @@ header {
   position: fixed;
   width: 100%;
   height: 100%;
-  background-color: #edece7;
+  background-color: transparent;
 }
 
 canvas {
@@ -186,6 +203,13 @@ canvas {
   overflow-y: auto;
   border: 1px solid #e6e1dc;
   background-color: #f8f6f1;
+
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.asset-grid::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .asset-grid.expanded {
@@ -211,17 +235,9 @@ canvas {
   background-color: #f8f6f1;
 }
 
-.category-selection button {
-
-}
-
-.category-selection button.selected {
-  background-color: #e9a7a7;
-}
-
 .create-character-container {
   position: relative;
-  height: 80px;
+  height: 60px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -250,4 +266,8 @@ canvas {
   background: #e9a7a7;
   color: #e6e1dc;
   border-color: #e6e1dc;
+}
+
+button {
+  -webkit-tap-highlight-color: #f8f6f1 !important; /* 모바일 터치 하이라이트 제거 */
 }

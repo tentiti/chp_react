@@ -7,6 +7,7 @@ import PlaceSelection from './components/PlaceSelection';
 import PostcardCreation from './components/PostcardCreation';
 import PostcardView from './components/PostcardView';
 import PostcardShareView from './components/PostcardShareView';
+import ImageComponent from './components/ImageComponent.js';
 import { VideoProvider } from './components/VideoContext'; // Context Provider import
 import './App.css';
 

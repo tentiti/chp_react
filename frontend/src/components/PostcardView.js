@@ -6,8 +6,24 @@ import RecordRTC from 'recordrtc';
 import { UseVideo } from './VideoContext';
 import { isTablet, isDesktop } from 'react-device-detect';
 import Header from './Header';
+import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
 
 const PostcardView = () => {
+  //초대
+  const [isInvitationVisible, setIsInvitationVisible] = useState(false); // Invitation의 가시성을 관리하는 상태
+  const [isFloatingVisible, setIsFloatingVisible] = useState(true); // 플로팅 버튼 가시성 관리 상태
+
+  // Invitation을 보이게 하는 함수 (메뉴 클릭 시 호출됨)
+  const handleMenuClick = () => {
+    setIsInvitationVisible(true);
+    // setIsFloatingVisible(false); // Invitation을 보이면 플로팅 버튼을 숨김
+  };
+
+  // Invitation을 숨기고 원래 화면으로 돌아가는 함수 (뒤로가기 클릭 시 호출됨)
+  const handleBackClick = () => {
+    setIsInvitationVisible(false);
+    // setIsFloatingVisible(true); // Invitation을 숨기고 플로팅 버튼을 다시 보이게 함
+  };
   const { videoFiles } = UseVideo(); // Blob URL 가져오기 (배열로 여러 개의 비디오 파일)
   const { id } = useParams();
   const [postcard, setPostcard] = useState(null);
@@ -99,7 +115,18 @@ const PostcardView = () => {
         video.muted = true;
         video.playsInline = true;
         video.autoplay = true;
-        video.playbackRate = 0.5;
+        const speed = 0.32;
+        video.playbackRate = speed;
+
+        // 비디오가 반복될 때마다 playbackRate를 다시 설정
+        video.addEventListener('ended', () => {
+          video.playbackRate = speed;
+        });
+
+        // 비디오를 재생할 때도 playbackRate를 유지
+        video.addEventListener('play', () => {
+          video.playbackRate = speed;
+        });
 
         video.addEventListener('canplay', () => {
           videoTextureRef.current = new THREE.VideoTexture(video);
@@ -130,46 +157,53 @@ const PostcardView = () => {
       const addText = (text, x, y, size = 50) => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-
+      
         canvas.width = 2048;
         canvas.height = 2048;
         const fontSize = size * 3;
         ctx.font = `bold ${fontSize}px Cafe24Simplehae, sans-serif`;
         ctx.fillStyle = 'rgba(65, 40, 35, 1)';
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-
-        const maxLineLength = 38;
+        ctx.textBaseline = 'top';
+      
+        const maxLineLength = 35;
         const lines = [];
         for (let i = 0; i < text.length; i += maxLineLength) {
           lines.push(text.slice(i, i + maxLineLength));
         }
-
+      
         const lineHeight = fontSize * 2.8;
+        
+        // 전체 텍스트의 높이를 계산
+        const totalTextHeight = lines.length * lineHeight;
+      
+        // 텍스트 시작점을 조정하여 첫 줄이 고정된 Y 위치에 오도록 함
         lines.forEach((line, index) => {
-          ctx.fillText(line, canvas.width / 2, (canvas.height / 2) + (index - lines.length / 2) * lineHeight);
+          const adjustedYPos = canvas.height / 2 - totalTextHeight / 2 + index * lineHeight;
+          ctx.fillText(line, canvas.width / 2, adjustedYPos);
         });
-
+      
         const xPos = (x / 393) * width;
         const yPos = (y / 700) * height * 1.2;
-
+      
         const texture = new THREE.CanvasTexture(canvas);
         texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
         texture.format = THREE.RGBAFormat;
-
+      
         const aspectRatio = canvas.width / canvas.height;
         const geometry = new THREE.PlaneGeometry(600 * aspectRatio, 600);
         const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
         const mesh = new THREE.Mesh(geometry, material);
-
+      
         mesh.position.set(xPos, yPos, 0.2);
         sceneRef.current.add(mesh);
       };
+      
 
-      addText(`${postcard.comment}`, 0, -178, 12);
-      addText(postcard.timestamp, 0, -206, 8);
-      addText(`${postcard.name}`, 108, -233, 12);
+      addText(`${postcard.comment}`, 0, -174.5, 12);
+      addText(postcard.timestamp, 0, -204, 8);
+      addText(`${postcard.name}`, 106, -229, 12);
     };
 
     initThreeJS();
@@ -207,12 +241,12 @@ const PostcardView = () => {
   }, [isVideoReady]);
 
   const startRecording = () => {
-    if (!audioRef.current) {
-      console.error('Audio element is not initialized');
+    if (!audioRef.current || !audioRef.current.readyState) {
+      console.error('Audio element is not initialized or not ready');
       return;
     }
 
-    const canvasStream = canvasRef.current.captureStream(30);
+    const canvasStream = canvasRef.current.captureStream(24);
     const audioContext = new (window.AudioContext)();
     const audioSource = audioContext.createMediaElementSource(audioRef.current);
     const destination = audioContext.createMediaStreamDestination();
@@ -229,11 +263,42 @@ const PostcardView = () => {
     });
 
     recorder.startRecording();
-    if (audioRef.current) {
-      audioRef.current.play().catch((err) => {
-        console.error('Audio playback failed:', err);
-      });
-    }
+
+    // 비디오 설정
+  const video = document.querySelector('video'); // 비디오 엘리먼트 참조
+  if (video) {
+    const playbackSpeed = 0.4; // 재생 속도 설정 (0.5배속)
+    
+    // 비디오 설정: 처음부터, 반복, 재생 속도 설정
+    video.currentTime = 0; // 비디오를 처음부터 재생
+    video.loop = true;     // 반복 재생
+    video.playbackRate = playbackSpeed; // 재생 속도 설정
+
+    // 재생 시 재생 속도를 유지하기 위한 이벤트 리스너 추가
+    video.addEventListener('play', () => {
+      video.playbackRate = playbackSpeed;
+    });
+
+    // 비디오 반복 시에도 재생 속도를 유지하기 위한 이벤트 리스너 추가
+    video.addEventListener('ended', () => {
+      video.playbackRate = playbackSpeed;
+      video.currentTime = 0; // 반복 시 처음부터 재생
+      video.play(); // 재생 시작
+    });
+
+    // 비디오 재생 시작
+    video.play().catch((err) => {
+      console.error('Video playback failed:', err);
+    });
+  }
+
+  if (audioRef.current) {
+    // 오디오 재생
+    audioRef.current.play().catch((err) => {
+      console.error('Audio playback failed:', err);
+    });
+  }
+
 
     recorderRef.current = recorder;
 
@@ -310,12 +375,18 @@ const PostcardView = () => {
   };
 
   const navigate = useNavigate();
-  const handleMenuClick = () => {
-    setShowImage(true);
-  };
+  // const handleMenuClick = () => {
+  //   setShowImage(true);
+  // };
 
   return (
     <div style={{ backgroundImage: `url('/static/stockimages/background_paper.png')`, width: '100%', height: '100%', zIndex: '900' }}>
+      {isInvitationVisible && (
+        <div className={`invitation-container ${isInvitationVisible ? 'visible' : ''}`}>
+          <Invitation onBack={handleBackClick} /> {/* Invitation 컴포넌트 및 뒤로가기 핸들러 */}
+        </div>
+      )}
+     
       <audio ref={audioRef} src="/static/test.mp3" loop></audio>
       <header
         style={{
@@ -435,7 +506,7 @@ const PostcardView = () => {
         }}
       >
         <button className="upbutton" onClick={downloadVideo} disabled={!blobUrl}>
-          {isRecording ? '공유 영상 준비 중...' : '영상 저장하기 Video'}
+          {isRecording ? '공유 영상 준비 중...' : '영상 저장하기'}
         </button>
         <button className="upbutton" onClick={shareVideo} disabled={!blobUrl}>
           {isRecording ? '공유 영상 준비 중...' : '영상 공유하기'}
