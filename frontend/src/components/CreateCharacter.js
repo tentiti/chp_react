@@ -649,6 +649,12 @@ const handleAssetSelection = (category, index) => {
 };
 
 const startRecording = async (setVideoFile) => {
+
+  cameraRef.current.position.set(0, 1, 50);  // 기본 카메라 위치로 되돌리기
+  cameraRef.current.lookAt(new THREE.Vector3(0, 3.2, 0));
+  cameraRef.current.updateProjectionMatrix();
+
+  
   console.log("Start recording initiated");
   setIsRecording(true); // 녹화 시작
 
@@ -819,131 +825,6 @@ const uploadGif = async (gifBlob) => {
     ctx.moveTo(x, y);
   };
   
-
-  // const applyExpressionTextureToModel = () => {
-  //   const canvas = expressionCanvasRef.current;
-  //   const texture = new THREE.CanvasTexture(canvas);
-  
-  //   // Y축을 반전시키기 위해 flipY를 false로 설정
-  //   texture.flipY = false;
-  //   texture.needsUpdate = true;
-
-  //   // 텍스처의 색상 공간을 sRGB로 설정
-  //   rendererRef.outputColorSpace = THREE.SRGBColorSpace;
-  //   texture.format = THREE.RGBAFormat;
-    
-  //   // 모델에 텍스처를 적용하는 로직
-  //   modelsRef.current.forEach(({ model }) => {
-  //     model.traverse((child) => {
-  //       if (child.name === 'head_1') {
-  //         const head = child;
-  //         if (head) {
-  //           const mesh3 = head;
-  //           if (mesh3) {
-  //             // UV 좌표가 없을 경우 기본 UV 좌표 생성
-  //             if (mesh3.geometry && mesh3.geometry.attributes) {
-  //               if (!mesh3.geometry.attributes.uv) {
-  //                 const geometry = mesh3.geometry;
-  //                 const uv = new Float32Array(geometry.attributes.position.count * 2);
-  
-  //                 // UV 좌표 생성 로직 (y축 반전 적용)
-  //                 for (let i = 0; i < uv.length; i += 2) {
-  //                   uv[i] = (i / 2) % 2;
-  //                   uv[i + 1] = Math.floor((i / 2) / 2); // 반전된 y좌표
-  //                 }
-  
-  //                 geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
-  //                 geometry.attributes.uv.needsUpdate = true;
-  //               }
-  
-  //               // 텍스처 적용
-  //               if (!mesh3.material) {
-  //                 mesh3.material = new THREE.MeshBasicMaterial();
-  //               }
-  
-  //               mesh3.material.map = texture;
-  //               mesh3.material.needsUpdate = true;
-  //             } else {
-  //               console.warn("Geometry or geometry attributes are undefined for mesh3.");
-  //             }
-  //           }
-  //         }
-  //       }
-  //     });
-  //   });
-  // };
-
-  // const applyExpressionTextureToModel = () => {
-  //   const canvas = expressionCanvasRef.current;
-  //   // downloadExpressionAsPNG(canvas);
-  //   const texture = new THREE.CanvasTexture(canvas);
-  
-  //   // Y축을 반전시키기 위해 flipY를 false로 설정
-  //   texture.flipY = false;
-  //   texture.needsUpdate = true;
-  //   texture.minFilter = THREE.LinearFilter; // 텍스처 확대 시 선명하게 처리
-  //   texture.magFilter = THREE.NearestFilter; // 텍스처 확대 시 블러링을 방지
-  //   texture.format = THREE.RGBAFormat; // 알파 채널 사용 설정
-  //   texture.premultipliedAlpha = false; // 알파 값이 곱해진 프리멀티플라이드 알파 사용
-  //   texture.colorSpace = THREE.SRGBColorSpace; // 색 공간을 sRGB로 설정
-  //   texture.generateMipmaps = false; // Mipmap 사용을 비활성화하여 텍스처를 직접 사용
-
-  //   // 모델에 텍스처를 적용하는 로직
-  //   modelsRef.current.forEach(({ model }) => {
-  //     model.traverse((child) => {
-  //       if (child.name === 'head_1') {  // head_1에 텍스처 적용
-  //         const mesh = child;
-  //         if (mesh) {
-  //           const FACE_COLOR =  ['#FBFBFB', '#FBEE9D', '#E3B692', '#AF816C', '#78584A', '#FB9DA6'];
-
-  //           console.log('Material Info:', mesh.material);
-  //           const originalColor = new THREE.Color(FACE_COLOR[selectedHeadIndex]);
-  //           // originalColor.convertSRGBToLinear();  // 감마 보정
-  //           console.log('Original color:', originalColor, selectedHeadIndex);
-
-  //           // 새로운 머티리얼 생성 및 적용
-  //           mesh.material = new THREE.MeshStandardMaterial({
-  //             transparent: true,  // 투명도 활성화
-  //             color: originalColor,  // 원래 색상 유지
-  //             // opacity: 0.3  // 50% 반투명
-  //           });            
-
-
-  //         //   if (mesh.material) {
-  //         //     mesh.material.map = texture;
-  //         //     mesh.material.color.convertSRGBToLinear();
-  //         //     mesh.material.transparent = true;
-  //         //     mesh.material.blending = THREE.NormalBlending; // Use custom blending for more control
-  //         //     // mesh.material.blendSrc = THREE.SrcAlphaFactor; // Alpha blending source factor
-  //         //     // mesh.material.blendDst = THREE.OneMinusSrcAlphaFactor; // Alpha blending destination factor
-  //         //     // // mesh.material.blendEquation = THREE.AddEquation; // How the blending is calculated
-    
-  //         //     // Ensure that opacity and depth testing are correctly set
-  //         //     mesh.material.opacity = 1.0;
-  //         //     mesh.material.depthWrite = false; // Disable depth writing to avoid rendering issues
-  //         //     mesh.material.depthTest = true; // Ensure depth test remains enabled for proper layer rendering
-    
-  //         //     mesh.material.needsUpdate = true;
-  //         // } else {
-  //         //     mesh.material = new THREE.MeshStandardMaterial({
-  //         //       map: texture,
-  //         //       transparent: true,
-  //         //       blending: THREE.NormalBlending, // Custom blending ensures more vibrant colors
-  //         //       blendSrc: THREE.SrcAlphaFactor,
-  //         //       blendDst: THREE.OneMinusSrcAlphaFactor,
-  //         //       blendEquation: THREE.AddEquation,
-  //         //       opacity: 1.0,
-  //         //       depthWrite: false,
-  //         //       depthTest: true,
-  //         //       premultipliedAlpha: false, // Ensure non-premultiplied alpha blending
-  //         //     });
-  //         //   }
-  //         }
-  //       }
-  //     });
-  //   });
-  // };
-  
   const applyExpressionTextureToModel = () => {
     const canvas = expressionCanvasRef.current;
     const context = canvas.getContext('2d');
@@ -1099,36 +980,54 @@ const clearExpressionCanvas = useCallback(() => {
   }
 }, []);
 
-useEffect(() => {
-  if (selectedCategory === 'EXPRESSION') {
-    clearExpressionCanvas();
-  }
-}, [selectedCategory, clearExpressionCanvas]);
+  useEffect(() => {
+    if (selectedCategory === 'EXPRESSION') {
+      clearExpressionCanvas();
+    }
+  }, [selectedCategory, clearExpressionCanvas]);
 
-const handleCategorySelection = useCallback((category) => {
-  setSelectedCategory(category.name);
-  selectCategory(category);
-}, [selectCategory]);
+  const handleCategorySelection = useCallback((category) => {
+    setSelectedCategory(category.name);
+    selectCategory(category);
+  }, [selectCategory]);
 
-const handleHeadSelection = (index) => {
-  setSelectedHeadIndex(index);  // 선택된 얼굴색 인덱스 상태 업데이트
+  const handleHeadSelection = (index) => {
+    setSelectedHeadIndex(index);  // 선택된 얼굴색 인덱스 상태 업데이트
 
-  // 1. 베이직 모델 교체
-  const modelPath = `/static/models/animation_${index + 1}.glb`;  // 해당 인덱스에 맞는 모델 로드
-  loadModel(modelPath, 'Base', false);  // 모델 로드
+    // 1. 베이직 모델 교체
+    const modelPath = `/static/models/animation_${index + 1}.glb`;  // 해당 인덱스에 맞는 모델 로드
+    loadModel(modelPath, 'Base', false);  // 모델 로드
 
-  // 2. 표정 캔버스 배경 이미지 교체
-  const faceBackground = `static/stockimages/facebackground_${index + 1}.png`;  // 해당 인덱스에 맞는 배경 이미지 선택
-  const faceBackgroundImage = document.querySelector("#face-background");  // 배경 이미지를 가리키는 요소 선택
-  if (faceBackgroundImage) {
-    faceBackgroundImage.src = faceBackground;  // 표정 캔버스 배경 이미지 변경
-  }
-};
+    // 2. 표정 캔버스 배경 이미지 교체
+    const faceBackground = `static/stockimages/facebackground_${index + 1}.png`;  // 해당 인덱스에 맞는 배경 이미지 선택
+    const faceBackgroundImage = document.querySelector("#face-background");  // 배경 이미지를 가리키는 요소 선택
+    if (faceBackgroundImage) {
+      faceBackgroundImage.src = faceBackground;  // 표정 캔버스 배경 이미지 변경
+    }
+  };
 
+  useEffect(() => {
+    if (selectedCategory === 'EXPRESSION') {
+      // alert('표정 모드!');
+      // 표정 그리기 모드일 때 카메라 위치를 조정
+      cameraRef.current.position.set(0, 12, 20);  // 예시: 카메라를 더 가까이 이동
+      cameraRef.current.lookAt(new THREE.Vector3(0, 5, 0));  // 원하는 좌표로 카메라가 바라보게 설정
+      cameraRef.current.updateProjectionMatrix();
+    } else if (selectedCategory === 'HEAD') {
 
-    
-    
+       // 머리 그리기 모드일 때 카메라 위치를 조정
+       cameraRef.current.position.set(0, 12, 30);  // 예시: 카메라를 더 가까이 이동
+       cameraRef.current.lookAt(new THREE.Vector3(0, 5, 0));  // 원하는 좌표로 카메라가 바라보게 설정
+       cameraRef.current.updateProjectionMatrix();
+    } else {
+      // 다른 카테고리로 돌아갈 때 카메라 위치를 원래대로 되돌림
+      cameraRef.current.position.set(0, 1, 50);  // 기본 카메라 위치로 되돌리기
+      cameraRef.current.lookAt(new THREE.Vector3(0, 3.2, 0));
+      cameraRef.current.updateProjectionMatrix();
+    }
+  }, [selectedCategory]);
   
+
 
   return (
     <div style={{
@@ -1181,7 +1080,7 @@ const handleHeadSelection = (index) => {
       {isRecording && (
         <div id="splash-screen" className="splash-screen">
         <img src="/static/stockimages/making.png" alt="Splash" style={{ position: 'Fixed', width: '100%', height: '100%', objectFit: 'cover', top: '0', left:'0', zIndex: '999999999' }} />
-        <img src="/static/stockimages/loading-circle.gif" alt="Splash" style={{ width: '80px', position: 'Fixed', left:'calc(50% - 42px)', top:'55%',zIndex: '999999999' }} />
+        <img src="/static/stockimages/loading-circle.gif" alt="Splash" style={{ width: '60px', position: 'Fixed', left:'calc(50% - 32px)', top:'55%',zIndex: '999999999' }} />
         </div>
       )}
 
@@ -1217,15 +1116,61 @@ const handleHeadSelection = (index) => {
       <div id="botbottoms" style={{ display: 'flex', flexDirection: 'Column' }}>
       
         <div className="category-selection">
-          {CATEGORIES.map((category) => (
-            <button
-              key={category.name}
-              onClick={() => handleCategorySelection(category)}
-              className={`color-button ${selectedCategory === category.name ? 'selected' : ''}`}
-              disabled={category.name === 'BOTTOM' && isDressSelected}
-            >
-              {CATEGORY_NAME_MAP[category.name]}
-            </button>
+          {CATEGORIES.map((category, index) => (
+
+<button
+  key={category.name}
+  onClick={() => handleCategorySelection(category)}  // Handles category selection on click
+  className={`color-button ${selectedCategory === category.name ? 'selected' : ''}`}
+  disabled={category.name === 'BOTTOM' && isDressSelected}  // Disable button based on conditions
+  style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '0',
+    width: '44px',
+    height: '44px',
+    backgroundColor: 'transparent',  // Ensure background is transparent
+    cursor: 'pointer',
+    position: 'relative',
+    boxSizing: 'border-box',
+    border: 'none',  // Remove border from button
+    outline: 'none',  // Removes pink outline on click
+  }}
+>
+  <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" overflow ='visible'>
+    <defs>
+      {/* Adjust drop shadow filter to prevent clipping */}
+      <filter id="drop-shadow-path-filter" x="-50%" y="-50%" width="200%" height="200%" filterUnits="userSpaceOnUse">
+        <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="rgba(0, 0, 0, 0.25)" />
+      </filter>
+    </defs>
+
+    {/* Apply shadow directly to the path and scale it to fit the 44x44 size */}
+    <path
+      d="M31.732 24.906C31.3723 25.5071 29.9437 27.7978 27.161 29.7447C22.4124 33.067 17.3387 32.7323 15.527 32.6887C9.3294 32.5388 4.97102 28.6501 3.13725 25.9566C1.24676 23.18 -2.05667 18.3511 2.45184 9.31604C6.10884 1.98759 10.1052 1.45598 13.6287 0.508273C20.5745 -1.35954 28.416 1.9484 32.7435 9.97204C35.264 14.6458 34.2974 20.6183 31.732 24.9057V24.906Z"
+      fill={selectedCategory === category.name ? '#e9a7a7' : '#bab9b3'}  // Fill color based on selection
+      filter="url(#drop-shadow-path-filter)"  // Apply shadow directly to the path
+      stroke="#E6E1DC"  // Border color following the path
+      strokeWidth="1"  // Border thickness
+      transform="scale(1.25 1.25)"  // Scale the path to fit within 44x44
+    />
+  </svg>
+
+  {/* Text label inside the button */}
+  <span style={{
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    color: '#f8f6f1',
+    fontSize: '12px',
+  }}>
+    {CATEGORY_NAME_MAP[category.name]}  {/* Display category name */}
+  </span>
+</button>
+
+
           ))}
         </div>
 
@@ -1382,50 +1327,53 @@ const handleHeadSelection = (index) => {
       </div>
 
       <div
-        style={{
-          position: 'relative',
-          width: '100%',  // 너비를 원하는 크기로 설정
-          height: '280px',  // 고정된 높이
-          overflow: 'hidden',  // 초과된 부분을 숨기기
-        }}
-      >
-        {/* 배경 이미지 */}
-        <img
-          src="static/stockimages/facebackground.png"
-          alt="Face Background"
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            pointerEvents: 'none', // 이미지에 클릭이 되지 않게 설정
-            zIndex: 1000,
-          }}
-        />
+  style={{
+    position: 'relative',
+    width: '400px',  // 너비를 고정된 크기로 설정
+    height: '400px',  // 고정된 높이
+    overflow: 'hidden',  // 초과된 부분을 숨기기
+  }}
+>
+  {/* 배경 이미지 */}
+  <img
+    src="static/stockimages/facebackground.png"
+    alt="Face Background"
+    style={{
+      position: 'absolute',
+      // top: '-250px',  // 캔버스의 250px 상단을 숨김
+      left: '0',
+      width: '400px',  // 고정된 900px 너비
+      height: '300px',  // 고정된 900px 높이
+      pointerEvents: 'none', // 이미지에 클릭이 되지 않게 설정
+      zIndex: 1000,
+    }}
+  />
 
-        {/* 표정 그리기용 캔버스 */}
-        <canvas
-          ref={expressionCanvasRef}
-          width={400}  // 실제 캔버스의 해상도를 높임
-          height={400} // 실제 캔버스의 해상도를 높임
-          style={{
-            width: '100vw',  // 너비를 원하는 크기로 설정
-            height: '400px',  // 고정된 높이
-            background: 'transparent', // 배경을 투명하게 설정
-            zIndex: 2,  // 캔버스가 이미지 위에 렌더링되도록 설정
-            display: 'block',
-          }}
-          // 마우스 이벤트
-          onMouseDown={startExpressionDrawing}
-          onMouseMove={drawExpression}
-          onMouseUp={finishExpressionDrawing}
-          // 터치 이벤트 
-          onTouchStart={startExpressionDrawing}
-          onTouchMove={drawExpression}
-          onTouchEnd={finishExpressionDrawing}
-        />
-      </div>
+  {/* 표정 그리기용 캔버스 */}
+  <canvas
+    ref={expressionCanvasRef}
+    width={900}  // 실제 캔버스의 고정된 해상도
+    height={900} // 실제 캔버스의 고정된 해상도
+    style={{
+      position: 'absolute',
+      top: '-250px',  // 250px 상단을 숨김
+      left: '0',
+      width: '900px',  // 고정된 너비
+      height: '900px', // 고정된 높이
+      background: 'transparent', // 배경을 투명하게 설정
+      zIndex: 2,  // 캔버스가 이미지 위에 렌더링되도록 설정
+    }}
+    // 마우스 이벤트
+    onMouseDown={startExpressionDrawing}
+    onMouseMove={drawExpression}
+    onMouseUp={finishExpressionDrawing}
+    // 터치 이벤트 
+    onTouchStart={startExpressionDrawing}
+    onTouchMove={drawExpression}
+    onTouchEnd={finishExpressionDrawing}
+  />
+</div>
+
 
     </>
 

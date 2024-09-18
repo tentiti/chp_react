@@ -12,6 +12,7 @@ import './App.css';
 
 function App() {
   const [isFixedSize, setIsFixedSize] = useState(false);
+  const [showSizeInfo, setShowSizeInfo] = useState(false);
 
   const getDeviceType = () => {
     const userAgent = navigator.userAgent.toLowerCase();
@@ -25,40 +26,66 @@ function App() {
     return 'desktop';
   };
 
-  useEffect(() => {
+  const checkWindowSize = () => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
     const deviceType = getDeviceType();
 
+    if ((deviceType === 'tablet' || deviceType === 'desktop') && (width < 390 || height < 780)) {
+      setShowSizeInfo(true);
+    } else {
+      setShowSizeInfo(false);
+    }
+  };
+
+  useEffect(() => {
+    // Initial device type check
+    const deviceType = getDeviceType();
     if (deviceType === 'tablet' || deviceType === 'desktop') {
       setIsFixedSize(true);
     } else {
       setIsFixedSize(false);
     }
+
+    // Initial window size check
+    checkWindowSize();
+
+    // Add resize event listener
+    window.addEventListener('resize', checkWindowSize);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener('resize', checkWindowSize);
+    };
   }, []);
 
   return (
     <div className={isFixedSize ? 'fixed-size-container' : ''}>
-      <VideoProvider>
-        <Router>
-          <Routes>
-            {/* Home 컴포넌트는 기본 경로로 설정 */}
-            <Route path="/" element={<Home />} />
-            <Route path="/Home" element={<Home />} />
-            <Route path="/undefined" element={<Home />} />
-            {/* Invitation 페이지 */}
-            <Route path="/invitation" element={<Invitation />} />
-            {/* CreateCharacter 페이지 */}
-            {/* <Route path="/createCharacter" element={<CreateCharacter />} /> */}
-            {/*GLBTest 페이지 */}
-            <Route path="/CreateCharacter" element={<CreateCharacter />} />
-            <Route path="/place-selection" element={<PlaceSelection />} />
-            <Route path="/postcardcreation" element={<PostcardCreation />} />
-            {/* PostcardView를 위한 라우트 설정 */}
-            <Route path="/postcardview/:id" element={<PostcardView />} />
-            <Route path="/postcardshareview/:id" element={<PostcardShareView />} />
-            {/* <Route path="/GlbViewer" element={<GlbViewer />} /> */}
-          </Routes>
-        </Router>
-      </VideoProvider>
+      {showSizeInfo ? (
+        <div className="size-info-container">
+          <img
+            src="/static/stockimages/sizeinfo.png"
+            alt="Size Information"
+            className="size-info-image"
+          />
+        </div>
+      ) : (
+        <VideoProvider>
+          <Router>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/Home" element={<Home />} />
+              <Route path="/undefined" element={<Home />} />
+              <Route path="/invitation" element={<Invitation />} />
+              <Route path="/CreateCharacter" element={<CreateCharacter />} />
+              <Route path="/place-selection" element={<PlaceSelection />} />
+              <Route path="/postcardcreation" element={<PostcardCreation />} />
+              <Route path="/postcardview/:id" element={<PostcardView />} />
+              <Route path="/postcardshareview/:id" element={<PostcardShareView />} />
+            </Routes>
+          </Router>
+        </VideoProvider>
+      )}
     </div>
   );
 }

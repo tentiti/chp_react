@@ -62,6 +62,16 @@ const PlaceSelection = () => {
     const shouldLimitHeight = (isTablet || isDesktop); // tablet 또는 desktop이면 제한 적용
 
 
+      //초대장 이미지 표시 관련
+  const [showImage, setShowImage] = useState(false); // 이미지 표시 여부를 결정하는 상태
+  const handleMenuClick = () => {
+    setShowImage(true); // 메뉴 버튼 클릭 시 이미지 보이게 설정
+  };
+  const handleCloseImage = () => {
+    setShowImage(false); // 화면을 클릭하면 이미지 사라지게 설정
+  };
+
+
     const location = useLocation();
     const navigate = useNavigate();
     const { gifUrl, realgifUrl, videoFiles } = location.state || {};
@@ -118,9 +128,29 @@ const PlaceSelection = () => {
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', maxWidth: '414px', margin: '0 auto', }}>
-            <Header title="장소 정하기" needthird={false} style={{position:'fixed'}} />
-            
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', maxWidth: '414px', margin: '0 auto', left:'0'}}>
+            <Header title="장소 정하기" needthird={true} onMenuClick={handleMenuClick} style={{position:'fixed'}} />
+        
+      {showImage && (
+        <div 
+          style={{
+            position: 'absolute', 
+            top: 0, 
+            left: 0, 
+            width: '100%', 
+            height: '100%', 
+            backgroundColor: 'gray',
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center',
+            // backgroundImage: 'url("/static/stockimages/inviflat.png")',
+          }}
+          onClick={handleCloseImage} // 이미지를 클릭해도 사라지게 설정
+        >
+          <img src="/static/stockimages/inviflat.png" alt="invitation" style={{ maxWidth: '90%', maxHeight: '90%', zIndex: '999999'}} />
+        </div>
+      )}
+
             <div ref={containerRef} style={{ 
                 flex: 1, 
                 overflowY: 'auto', 
@@ -286,7 +316,7 @@ const PlaceSelection = () => {
 
             {/* Bottom button */}
             <div style={{
-                position: 'sticky',
+                position: 'fixed',
                 bottom: '0',
                 left: '0',
                 borderTop: '1px solid #E6E1DC',

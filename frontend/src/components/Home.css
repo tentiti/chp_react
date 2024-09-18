@@ -28,24 +28,8 @@ body {
   padding: 0;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  overflow-y: auto;
-}
-
-.container {
-  padding-top: 85px;
-  padding-bottom: 70px;
-  position: relative;
-  opacity: 1;
-  transition: opacity 0.5s ease, transform 0.7s ease-out;
-  z-index: 1000;
-  height: calc(100vh - 128px);
-  overflow-y: auto;
-  background-color: #f8f6f1;
-}
-
-.container.slide-out {
-  transform: translateX(-100%);
+  min-height: 100%;
+  overflow-y: hidden;
 }
 
 #headerLoader {
@@ -54,13 +38,13 @@ body {
   top: 0;
   left: 50%;
   transform: translateX(-50%); /* 가운데로 이동 */
-  width: 390px !important;
+  width: 100%;
   height: 58px;
   z-index: 10005;
 }
 
 header {
-  width: 390px; /* 부모 요소에 명시적으로 390px 설정 */
+  width: 100%; /* 부모 요소에 명시적으로 390px 설정 */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -79,28 +63,60 @@ header {
   /* background-color: red !important; */
 }
 
+.container {
+  position: fixed;
+  top: 58px; /* 헤더의 높이 */
+  bottom: 50px; /* 푸터의 높이 */
+  left: 0;
+  width: 100%;
+  height: calc(100% - 108px); /* 전체 높이에서 헤더와 푸터의 높이를 뺌 */
+  overflow-y: auto;
+  background-color: #f8f6f1;
+  display: flex;
+  flex-direction: column;
+
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+#ajax-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* 컨텐츠를 위쪽으로 정렬 */
+
+  padding-bottom: 50px; /* 하단에 여백 추가 */
+}
+.container.slide-out {
+  transform: translateX(-100%);
+}
+
 .mainImage {
   background-color: #f8f6f1;
+  position: relative;
   margin: 0;
   padding: 0;
   z-index: 1000;
-}
-
-.mainImage img {
-  margin: 0;
-  padding: 0;
   width: 100%;
-  display: block;
+  height: auto;
 }
 
 .image-grid {
+  position: relative;
+  top: 0px;
   width: 100%;
   overflow: hidden;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   background-color: #f8f6f1;
   gap: 1px;
-  padding: 1px 0;
+
+  flex-grow: 1; /* 남은 공간을 채우도록 설정 */
+  padding-bottom: 70px; /* 하단에 여백 추가 */
 }
 
 .image-item {
@@ -147,12 +163,6 @@ footer * {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   cursor: pointer;
   z-index: 10000;
   background-size: cover;
@@ -162,6 +172,8 @@ footer * {
 }
 
 #mainBanner {
+  position: relative;
+  top: 0;
   width: 100%;
   height: auto;
   opacity: 1;

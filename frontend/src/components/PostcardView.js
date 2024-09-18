@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import RecordRTC from 'recordrtc';
 import { UseVideo } from './VideoContext';
+import { isTablet, isDesktop } from 'react-device-detect';
 import Header from './Header';
 
 const PostcardView = () => {
@@ -27,7 +28,7 @@ const PostcardView = () => {
     const width = window.innerWidth; // 100vw
     const height = (width / 9) * 16; // 16:9 aspect ratio
   
-    if (width > 390 && window.innerHeight >= 1024) {
+    if (isTablet || isDesktop) {
       const a = 390;
       const b = 693;
       return { width: a, height: b }; // Use valid keys 'width' and 'height'

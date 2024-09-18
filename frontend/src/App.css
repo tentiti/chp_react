@@ -57,6 +57,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden;
 }
 
 .scaled-container {
@@ -84,4 +85,18 @@ body {
   left: 50%;
   transform: translate(-50%, -50%); /* Centering the container */
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* Optional shadow */
+}
+
+.size-info-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #fff;
+}
+
+.size-info-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }

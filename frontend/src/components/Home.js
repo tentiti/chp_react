@@ -19,7 +19,7 @@ function Home() {
       const height = window.innerHeight;
 
       if (isTablet || isDesktop) {
-        setMarginTop(78);
+        setMarginTop(0);
       } else {
         setMarginTop(10);
       }
@@ -67,22 +67,38 @@ function Home() {
     setIsFloatingVisible(true);
   };
 
+  const floatingButtonRef = useRef(null);
+
   useEffect(() => {
-    const floatingButton = document.querySelector('.floating');
-    if (floatingButton && isFloatingVisible) {
+    
+    const floatingButton = floatingButtonRef.current;
+    const container = containerRef.current;
+    
+    if (floatingButton && container && isFloatingVisible) {
+      console.log("Floating button and container found, isFloatingVisible:", isFloatingVisible);
+  
       const buttonWidth = 70;
       const buttonHeight = 70;
       const collisionMargin = 5;
-      const collisionCooldown = 1000;
-
-      let posX = Math.random() * (window.innerWidth - buttonWidth);
-      let posY = Math.random() * (window.innerHeight - buttonHeight);
-      let speed = 2;
+      const collisionCooldown = 1000; // Reduced cooldown time
+  
+      const updateContainerDimensions = () => {
+        const containerRect = container.getBoundingClientRect();
+        const maxX = Math.min(containerRect.width - buttonWidth, 390 - buttonWidth);
+        const maxY = Math.min(containerRect.height - buttonHeight, 780 - buttonHeight);
+        console.log("Container dimensions:", { width: containerRect.width, height: containerRect.height, maxX, maxY });
+        return { maxX, maxY };
+      };
+  
+      let { maxX, maxY } = updateContainerDimensions();
+  
+      let posX = Math.random() * maxX;
+      let posY = Math.random() * maxY;
+      let speed = 1; // Reduced speed
       let angle = Math.random() * 2 * Math.PI;
-
-      const maxX = window.innerWidth - buttonWidth;
-      const maxY = window.innerHeight - buttonHeight - 30;
-
+  
+      console.log("Initial position:", { posX, posY });
+  
       const buttonImages = [
         '/static/images/buttonImages/button1.png',
         '/static/images/buttonImages/button2.png',
@@ -93,68 +109,66 @@ function Home() {
         '/static/images/buttonImages/button7.png',
         '/static/images/buttonImages/button8.png'
       ];
-
-      let lastXCollisionTime = 0;
-      let lastYCollisionTime = 0;
-
-      let hasXCollision = false;
-      let hasYCollision = false;
-
+  
+      let lastCollisionTime = 0;
+  
       function getRandomButtonImage() {
-        const randomIndex = Math.floor(Math.random() * buttonImages.length);
-        return buttonImages[randomIndex];
+        return buttonImages[Math.floor(Math.random() * buttonImages.length)];
       }
-
+  
       function moveFloatingButton() {
-        if (!isFloatingVisible) return;
-
+        if (!isFloatingVisible) {
+          console.log("Floating button is not visible, stopping animation");
+          return;
+        }
+  
         const now = Date.now();
-
+        ({ maxX, maxY } = updateContainerDimensions());
+  
         angle += (Math.random() - 0.5) * 0.1;
         posX += Math.cos(angle) * speed;
         posY += Math.sin(angle) * speed;
-
-        if (!hasXCollision && (posX <= collisionMargin || posX >= maxX - collisionMargin)) {
-          if (now - lastXCollisionTime > collisionCooldown) {
-            angle = Math.PI - angle;
+  
+        // Boundary handling
+        if (posX <= collisionMargin || posX >= maxX - collisionMargin ||
+            posY <= collisionMargin + 58 || posY >= maxY - collisionMargin) {
+          if (now - lastCollisionTime > collisionCooldown) {
+            angle = Math.random() * 2 * Math.PI; // New random angle on collision
             floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
-            lastXCollisionTime = now;
-            hasXCollision = true;
+            lastCollisionTime = now;
+            console.log("Collision detected, new angle:", angle);
           }
-        } else if (posX > collisionMargin && posX < maxX - collisionMargin) {
-          hasXCollision = false;
+          posX = Math.max(collisionMargin, Math.min(posX, maxX - collisionMargin));
+          posY = Math.max(collisionMargin, Math.min(posY, maxY - collisionMargin));
         }
-
-        posX = Math.max(0, Math.min(posX, maxX));
-
-        if (!hasYCollision && (posY <= collisionMargin || posY >= maxY - collisionMargin)) {
-          if (now - lastYCollisionTime > collisionCooldown) {
-            angle = -angle;
-            floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
-            lastYCollisionTime = now;
-            hasYCollision = true;
-          }
-        } else if (posY > collisionMargin && posY < maxY - collisionMargin) {
-          hasYCollision = false;
-        }
-
-        posY = Math.max(0, Math.min(posY, maxY));
-
-        floatingButton.style.left = `${posX}px`;
-        floatingButton.style.top = `${posY}px`;
-
+  
+        floatingButton.style.transform = `translate(${posX}px, ${posY}px)`;
+        console.log("Button position updated:", { posX, posY });
+  
         requestAnimationFrame(moveFloatingButton);
       }
-
-      floatingButton.style.backgroundSize = 'cover';
+  
+      floatingButton.style.position = 'absolute';
       floatingButton.style.width = `${buttonWidth}px`;
       floatingButton.style.height = `${buttonHeight}px`;
-
+      floatingButton.style.backgroundSize = 'cover';
+      floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
+      floatingButton.style.display = 'block';
+      console.log("Floating button styles set");
+  
       requestAnimationFrame(moveFloatingButton);
-
+  
       floatingButton.addEventListener('click', () => {
+        console.log("Floating button clicked");
         window.location.href = '/CreateCharacter';
       });
+  
+
+      window.addEventListener('resize', updateContainerDimensions);
+
+    } else {
+      console.log("Floating button or container not found, or isFloatingVisible is false:", 
+        { floatingButton: !!floatingButton, container: !!container, isFloatingVisible });
     }
 
     function initializeAjaxLinks() {
@@ -177,7 +191,6 @@ function Home() {
     function adjustContainerHeight() {
       const header = document.querySelector('header');
       const footer = document.querySelector('footer');
-      const container = containerRef.current;
 
       if (header && footer && container) {
         const windowHeight = window.innerHeight;
@@ -196,7 +209,7 @@ function Home() {
     adjustContainerHeight();
     window.addEventListener('resize', adjustContainerHeight);
 
-    const container = containerRef.current;
+    // const container = containerRef.current;
     container.addEventListener('scroll', handleScroll);
 
     return () => {
@@ -227,7 +240,7 @@ function Home() {
               </div>
             </div>
           </header>
-          {isFloatingVisible && <div className="floating"></div>}
+          {isFloatingVisible && <div ref={floatingButtonRef} className="floating"></div>}
         </div>
       )}
 

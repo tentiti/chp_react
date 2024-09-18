@@ -3,6 +3,7 @@ import axios from 'axios';
 import Header from './Header';
 import { useParams } from 'react-router-dom';
 import * as THREE from 'three'; // Importing Three.js
+import { isTablet, isDesktop } from 'react-device-detect';
 import './PostcardView.css';
 
 const backgrounds = [
@@ -34,7 +35,7 @@ const PostcardShareView = () => {
       const height = window.innerHeight;
 
       // 화면이 390 * 840보다 크면 고정 크기로 설정
-      if (width > 390 && height > 780) {
+      if (isTablet || isDesktop) {
         setIsFixedSize(true);
       } else {
         setIsFixedSize(false);
@@ -169,7 +170,7 @@ const PostcardShareView = () => {
         overflow: 'hidden',
       }}>
         <img 
-          src={`/static/stockimages/postcardfinal_${postcard.number}.png`}
+          src={`/static/stockimages/share_postcardfinal_${postcard.number}.png`}
           alt="Postcard Background" 
           style={{
             position: 'absolute',
@@ -278,9 +279,9 @@ const PostcardShareView = () => {
       <button 
         onClick={handlePlayAudioAndRestartGIF} 
         style={{
-          position: 'relative',
+          position: 'fixed',
           zIndex: '200000',
-          marginTop: '20px',
+          top: '60vh',
           padding: '10px 20px',
           backgroundColor: '#412823',
           color: '#fff',
