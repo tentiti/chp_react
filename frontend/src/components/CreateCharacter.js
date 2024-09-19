@@ -389,18 +389,33 @@ const handleAssetSelection = (category, index) => {
       if (hiddenRendererRef.current) {
         hiddenRendererRef.current.dispose();
       }
+      modelsRef.current.forEach(({ model }) => {
+        if (model) {
+          model.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              child.geometry.dispose();
+              if (child.material.isMaterial) {
+                child.material.dispose();
+              }
+            }
+          });
+        }
+      });
     };
+    
   }, [loadModel, updateCameraView]);
 
   const resetAndStartAnimation = () => {
     modelsRef.current.forEach(({ mixer, action }) => {
       if (mixer && action) {
-        mixer.stopAllAction();
-        action.reset();
-        action.play(); 
+        action.setLoop(THREE.LoopOnce);  // 애니메이션을 한 번만 재생
+        action.clampWhenFinished = true; // 애니메이션이 끝난 후 멈추도록 설정
+        action.reset();                  // 애니메이션을 처음부터 시작
+        action.play();                   // 애니메이션 실행
       }
     });
   };
+  
 
 
   const startRecordingWithBackgrounds = async () => {
@@ -462,7 +477,7 @@ const handleAssetSelection = (category, index) => {
     a.href = url;
     a.download = filename;  // 다운로드할 파일 이름 설정
     document.body.appendChild(a);
-    // a.click();
+    a.click();
   
     // 다운로드 후 URL 객체 해제
     setTimeout(() => {
@@ -479,22 +494,14 @@ const handleAssetSelection = (category, index) => {
     canvas.height = 491;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
   
-    const duration = 18.75; // 18.75초 동안 녹화
-    const fps = 24; // 프레임 속도는 24fps로 설정
-    const totalFrames = 450; // 총 프레임 수 계산
+    const duration = 18.75; // 녹화 시간 18.75초
+    const fps = 30; // 프레임 속도 30fps
+    const totalFrames = Math.round(fps * duration); // 총 프레임 수 계산
     const frameInterval = 1000 / fps; // 프레임 간 간격 (밀리초)
     let frameCount = 0;
   
     const backgroundImage = new Image();
     backgroundImage.src = backgroundImageSrc;
-  
-    backgroundImage.onload = () => {
-      console.log(`Background image ${backgroundImageSrc} loaded successfully`);
-    };
-    
-    backgroundImage.onerror = (error) => {
-      console.error(`Failed to load background image ${backgroundImageSrc}`, error);
-    };
   
     const loadImage = () => {
       return new Promise((resolve) => {
@@ -503,14 +510,6 @@ const handleAssetSelection = (category, index) => {
     };
   
     await loadImage(); // 배경 이미지가 로드될 때까지 대기
-  
-    // 배경 이미지 크기를 비율에 맞게 조정
-    const { targetWidth, targetHeight, offsetX, offsetY } = getImageFitDimensions(
-      backgroundImage.width,
-      backgroundImage.height,
-      canvas.width,
-      canvas.height
-    );
   
     // 녹화 형식을 동적으로 결정 (MP4 또는 WebM)
     let mimeType = '';
@@ -538,9 +537,6 @@ const handleAssetSelection = (category, index) => {
     return new Promise((resolve) => {
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunks, { type: mimeType });
-        // 파일 확장자 결정
-        let fileExtension = mimeType.includes('mp4') ? 'mp4' : 'webm';
-        const fileName = `animation_recording_${Date.now()}.${fileExtension}`;
         resolve(blob);
       };
   
@@ -548,51 +544,38 @@ const handleAssetSelection = (category, index) => {
   
       const startTime = Date.now();
   
-      // 캡처 및 애니메이션 처리
+      // 프레임 캡처 및 애니메이션 처리
       const captureFrame = () => {
         if (frameCount < totalFrames) {
-          const delta = 1 / fps;
+          const delta = 1 / fps; // 고정된 fps 기반으로 delta 값을 계산
           modelsRef.current.forEach(({ mixer }) => mixer.update(delta));
-  
+      
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(
-            backgroundImage,
-            0,
-            0,
-            backgroundImage.width,
-            backgroundImage.height,
-            offsetX,
-            offsetY,
-            targetWidth,
-            targetHeight
-          );
-  
-          // 모델 렌더링
+          ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+      
           hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
-  
-          // 캐릭터를 x, y 좌표에 렌더링
+      
           if (hiddenCanvasRef.current) {
-            ctx.drawImage(hiddenCanvasRef.current, x, y, width, width);
-          } else {
-            console.error('hiddenCanvasRef.current is not defined or not a valid canvas element.');
+            ctx.drawImage(hiddenCanvasRef.current, x, y, width, height);
           }
-          
+      
           frameCount++;
-  
+      
           // 다음 프레임을 위한 시간 계산
           const nextFrameTime = startTime + frameCount * frameInterval;
           const now = Date.now();
           const timeUntilNextFrame = Math.max(0, nextFrameTime - now);
-  
-          setTimeout(captureFrame, timeUntilNextFrame);
+      
+          setTimeout(captureFrame, timeUntilNextFrame);  // 정해진 fps로 프레임 간격 유지
         } else {
-          mediaRecorder.stop();
+          mediaRecorder.stop(); // 녹화 종료
         }
-      };
+      };      
   
-      captureFrame(); // 프레임 캡처 시작
+      captureFrame(); // 첫 프레임 캡처 시작
     });
   };
+  
   
   // 배경 이미지 크기 비율 맞추기 함수
   const getImageFitDimensions = (imgWidth, imgHeight, canvasWidth, canvasHeight) => {
@@ -618,57 +601,58 @@ const handleAssetSelection = (category, index) => {
     return { targetWidth, targetHeight, offsetX, offsetY };
   };
   
-  // GIF 생성 로직 (기존 코드 그대로 유지)
   const startGifRecording = () => {
-  return new Promise((resolve) => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 400;
-    canvas.height = 400;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-
-    const gif = new GIF({
-      workers: 2,
-      quality: 10,
-      width: 400,
-      height: 400,
-      transparent: 'rgba(0,0,0,0)',
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 400;
+      canvas.height = 400;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  
+      const gif = new GIF({
+        workers: 2,
+        quality: 10,
+        width: 400,
+        height: 400,
+        transparent: 'rgba(0,0,0,0)',
+      });
+  
+      const fps = 24;  // GIF를 24fps로 설정
+      const totalFrames = 450;
+      let frameCount = 0;
+  
+      resetAndStartAnimation();
+  
+      gif.on('finished', async (blob) => {
+        let gifUploadUrl = await uploadGif(blob);
+        resolve(gifUploadUrl);  // 업로드 후 URL 반환
+      });
+  
+      const captureFrame = () => {
+        if (frameCount < totalFrames) {
+          const delta = 1 / fps;  // 프레임 속도에 맞춰 delta 값 조정
+          modelsRef.current.forEach(({ mixer }) => mixer.update(delta));
+  
+          hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(hiddenCanvasRef.current, 0, 0);
+  
+          gif.addFrame(ctx, { copy: true, delay: 1000 / fps });
+          frameCount++;
+          requestAnimationFrame(captureFrame);
+        } else {
+          gif.render();
+        }
+      };
+  
+      captureFrame();
     });
-
-    const fps = 24; // 초당 프레임
-    const totalFrames = 450;
-    let frameCount = 0;
-
-    resetAndStartAnimation();
-
-    gif.on('finished', async (blob) => {
-      let gifUploadUrl = await uploadGif(blob); // GIF 업로드 처리
-      console.log('1 GIF Upload URL:', gifUploadUrl);
-      // gifUploadUrl = gifUploadUrl.stillfilename
-      resolve(gifUploadUrl);  // Resolve with the gifUploadUrl once the upload is complete
-    });
-
-    const captureFrame = () => {
-      if (frameCount < totalFrames) {
-        const delta = 1 / fps;
-        modelsRef.current.forEach(({ mixer }) => mixer.update(delta));
-
-        hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(hiddenCanvasRef.current, 0, 0);
-
-        gif.addFrame(ctx, { copy: true, delay: 1000 / fps });
-        frameCount++;
-        requestAnimationFrame(captureFrame);
-      } else {
-        gif.render();  // Trigger the 'finished' event when GIF is rendered
-      }
-    };
-
-    captureFrame(); // Start capturing GIF frames
-  });
-};
+  };
+  
 
 const startRecording = async (setVideoFile) => {
+   // 짧은 지연 후 녹화 시작
+   await new Promise((resolve) => setTimeout(resolve, 10));
+
 
   setIsRecording(true); // 녹화 시작
   

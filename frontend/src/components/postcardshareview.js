@@ -197,7 +197,7 @@ const PostcardShareView = () => {
         <div
           style={{
             position: 'absolute',
-            top: '73.5%',
+            top: '73.0%',
             zIndex: '900',
             width: '83%',
             color: '#412823',
@@ -255,24 +255,13 @@ const PostcardShareView = () => {
           {postcard.name}
         </div>
 
-        <footer>
-          <div>2024. 10. 12 - 10.29.</div>
-          <div className="footerBorder">|</div>
-          <a href="https://google.com">김화순 개인전</a>
-          <div className="footerBorder">|</div>
-          <a href="https://google.com">자하미술관</a>
-        </footer>
-      </div>
-
-      <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', display: 'none' }}></canvas>
-
-      {/* Add a button to start audio playback and restart the GIF */}
+              {/* Add a button to start audio playback and restart the GIF */}
       <button 
         onClick={handlePlayAudioAndRestartGIF} 
         style={{
-          position: 'fixed',
+          position: 'absolute',
           zIndex: '200000',
-          top: '75vh',
+          top: '95%',
           marginBottom: '60px',
           cursor: 'pointer',
           overflow: 'hidden',
@@ -290,9 +279,28 @@ const PostcardShareView = () => {
         음악과 함께 춤추기
       </button>
 
+
+      </div>
+
+      <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', display: 'none' }}></canvas>
+
+
+
+      <footer style={{
+          position: 'absolute',
+          width:'100%',
+          bottom: '0.1%',
+        }}>
+          <div>2024. 10. 12 - 10.29.</div>
+          <div className="footerBorder">|</div>
+          <a href="https://google.com">김화순 개인전</a>
+          <div className="footerBorder">|</div>
+          <a href="https://google.com">자하미술관</a>
+        </footer>
+
       {/* Add the audio element for test.mp3 */}
       <audio ref={audioRef} loop>
-        <source src="/static/audio.wav" type="audio/mpeg" />
+        <source src="/static/test.mp3" type="audio/wav" />
         Your browser does not support the audio element.
       </audio>
     </div>

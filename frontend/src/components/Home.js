@@ -41,7 +41,7 @@ function Home() {
     axios.get('/api/postcards')
       .then(response => setPostcards(response.data))
       .catch(error => console.error("There was an error fetching the postcards!", error));
-
+    // alert(postcards.data);
     const imageInterval = setInterval(() => {
       setFade(false);
       setTimeout(() => {
@@ -259,8 +259,8 @@ function Home() {
             {postcards.map((postcard) => (
               <div className="image-item" key={postcard.id}>
                 <img
-                  src={`/api/uploads/${postcard.png_name}?t=${new Date().getTime()}`} 
-                  // src={`/api/uploads/${postcard.png_name}`} 
+                  // src={`/api/uploads/${postcard.png_name}?t=${new Date().getTime()}`} 
+                  src={`/api/uploads/${postcard.png_name}`} 
                   alt={`grid ${postcard.id}`}
                   onError={(e) => handleImageError(e, postcard.id)} 
                   onClick={() => window.location.href = `/postcardshareview/${postcard.id}`} 

@@ -270,7 +270,7 @@ const PostcardView = () => {
     // 비디오 설정
   const video = document.querySelector('video'); // 비디오 엘리먼트 참조
   if (video) {
-    const playbackSpeed = 0.4; // 재생 속도 설정 (0.5배속)
+    const playbackSpeed = 0.32; // 재생 속도 설정 (0.5배속)
     
     // 비디오 설정: 처음부터, 반복, 재생 속도 설정
     video.currentTime = 0; // 비디오를 처음부터 재생
@@ -390,7 +390,7 @@ const PostcardView = () => {
         </div>
       )}
      
-      <audio ref={audioRef} src="/static/audio.wav" loop></audio>
+      <audio ref={audioRef} src="/static/test.mp3" loop></audio>
       <header
         style={{
           display: 'flex',
@@ -403,6 +403,7 @@ const PostcardView = () => {
           position: 'fixed',
           top: '0',
           zIndex: '1000',
+          left: '0',
         }}
       >
         {/* Left Home Icon */}
