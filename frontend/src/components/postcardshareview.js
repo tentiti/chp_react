@@ -292,7 +292,7 @@ const PostcardShareView = () => {
 
       {/* Add the audio element for test.mp3 */}
       <audio ref={audioRef} loop>
-        <source src="/static/test.mp3" type="audio/mpeg" />
+        <source src="/static/audio.wav" type="audio/mpeg" />
         Your browser does not support the audio element.
       </audio>
     </div>

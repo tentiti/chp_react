@@ -1384,8 +1384,8 @@ const clearExpressionCanvas = useCallback(() => {
   {/* 표정 그리기용 캔버스 */}
   <canvas
     ref={expressionCanvasRef}
-    width={600}  // 실제 캔버스의 고정된 해상도
-    height={600} // 실제 캔버스의 고정된 해상도
+    width={400}  // 실제 캔버스의 고정된 해상도
+    height={400} // 실제 캔버스의 고정된 해상도
     style={{
       position: 'absolute',
       top: '-250px',  // 250px 상단을 숨김

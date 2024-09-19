@@ -390,7 +390,7 @@ const PostcardView = () => {
         </div>
       )}
      
-      <audio ref={audioRef} src="/static/test.mp3" loop></audio>
+      <audio ref={audioRef} src="/static/audio.wav" loop></audio>
       <header
         style={{
           display: 'flex',

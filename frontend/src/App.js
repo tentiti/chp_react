@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from './components/Home';
 import Invitation from './components/Invitation';
@@ -22,7 +22,7 @@ function App() {
     return 'desktop';
   };
 
-  const checkWindowSize = () => {
+  const checkWindowSize = useCallback(() => {  // useCallback to memoize the function
     const width = window.innerWidth;
     const height = window.innerHeight;
     const deviceType = getDeviceType();
@@ -30,13 +30,13 @@ function App() {
     setIsFixedSize(deviceType === 'tablet' || deviceType === 'desktop');
     setShowSizeInfo((deviceType === 'tablet' || deviceType === 'desktop') && (width < 390 || height < 780));
     setIsSizeChecked(true);
-  };
+  }, []);  // No dependencies for now
 
   useEffect(() => {
     checkWindowSize();
     window.addEventListener('resize', checkWindowSize);
     return () => window.removeEventListener('resize', checkWindowSize);
-  }, []);
+  }, [checkWindowSize]);  // Dependency added
 
   if (!isSizeChecked) {
     return (

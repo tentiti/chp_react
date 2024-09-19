@@ -11,7 +11,7 @@ from flask_socketio import SocketIO, emit
 import os
 import uuid
 from datetime import datetime
-import cv2
+# import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageSequence
 import eventlet

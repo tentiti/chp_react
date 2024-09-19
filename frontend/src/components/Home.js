@@ -15,8 +15,7 @@ function Home() {
 
   useEffect(() => {
     const updateMargin = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
+
 
       if (isTablet || isDesktop) {
         setMarginTop(0);
@@ -36,6 +35,7 @@ function Home() {
     '/static/stockimages/mainbanner2.png',
     '/static/stockimages/mainbanner3.png'
   ];
+
 
   useEffect(() => {
     axios.get('/api/postcards')
@@ -75,7 +75,7 @@ function Home() {
     const container = containerRef.current;
     
     if (floatingButton && container && isFloatingVisible) {
-      console.log("Floating button and container found, isFloatingVisible:", isFloatingVisible);
+      // console.log("Floating button and container found, isFloatingVisible:", isFloatingVisible);
   
       const buttonWidth = 70;
       const buttonHeight = 70;
@@ -86,7 +86,7 @@ function Home() {
         const containerRect = container.getBoundingClientRect();
         const maxX = Math.min(containerRect.width - buttonWidth, 390 - buttonWidth);
         const maxY = Math.min(containerRect.height - buttonHeight, 780 - buttonHeight);
-        console.log("Container dimensions:", { width: containerRect.width, height: containerRect.height, maxX, maxY });
+        // console.log("Container dimensions:", { width: containerRect.width, height: containerRect.height, maxX, maxY });
         return { maxX, maxY };
       };
   
@@ -97,7 +97,7 @@ function Home() {
       let speed = 1; // Reduced speed
       let angle = Math.random() * 2 * Math.PI;
   
-      console.log("Initial position:", { posX, posY });
+      // console.log("Initial position:", { posX, posY });
   
       const buttonImages = [
         '/static/images/buttonImages/button1.png',
@@ -118,7 +118,7 @@ function Home() {
   
       function moveFloatingButton() {
         if (!isFloatingVisible) {
-          console.log("Floating button is not visible, stopping animation");
+          // console.log("Floating button is not visible, stopping animation");
           return;
         }
   
@@ -136,14 +136,14 @@ function Home() {
             angle = Math.random() * 2 * Math.PI; // New random angle on collision
             floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
             lastCollisionTime = now;
-            console.log("Collision detected, new angle:", angle);
+            // console.log("Collision detected, new angle:", angle);
           }
           posX = Math.max(collisionMargin, Math.min(posX, maxX - collisionMargin));
           posY = Math.max(collisionMargin, Math.min(posY, maxY - collisionMargin));
         }
   
         floatingButton.style.transform = `translate(${posX}px, ${posY}px)`;
-        console.log("Button position updated:", { posX, posY });
+        // console.log("Button position updated:", { posX, posY });
   
         requestAnimationFrame(moveFloatingButton);
       }
@@ -154,12 +154,12 @@ function Home() {
       floatingButton.style.backgroundSize = 'cover';
       floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
       floatingButton.style.display = 'block';
-      console.log("Floating button styles set");
+      // console.log("Floating button styles set");
   
       requestAnimationFrame(moveFloatingButton);
   
       floatingButton.addEventListener('click', () => {
-        console.log("Floating button clicked");
+        // console.log("Floating button clicked");
         window.location.href = '/CreateCharacter';
       });
   
