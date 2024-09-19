@@ -67,13 +67,15 @@ const PostcardCreation = () => {
         </div>
 
       <div className="postcard-container">
-        <div className="postcard-content">
+        <div className="postcard-content" style={{
+            fontWeight: 'bold',
+          }}>
           <img
             src="../static/stockimages/postcard.png"
             alt="Postcard Background"
             className="postcard-background"
           />
-          <div className="guide-text">
+          <div className="guide-text" >
             춤을 추실 준비가 되셨나요?<br />
             마지막으로 이름과 한마디를 적어주세요.
           </div>

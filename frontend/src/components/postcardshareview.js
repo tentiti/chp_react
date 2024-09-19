@@ -159,28 +159,22 @@ const PostcardShareView = () => {
 
       <div id="createdImages" style={{
         position: 'fixed',
-        top: '-45px',
-        width: '370px',
-        height: '680px',
+        top: '9px',
+        width: 'calc((100% - 108px)',
+        maxWidth: '390px',
+        height: 'calc(100% - 108px)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'flex-start',
         zIndex: '900',
         overflow: 'hidden',
+        backgroundImage: `url(/static/stockimages/share_postcardfinal_${postcard.number}.png)`,
+        backgroundSize: 'contain',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',  // 이미지가 가운데에 위치하게 설정
       }}>
-        <img 
-          src={`/static/stockimages/share_postcardfinal_${postcard.number}.png`}
-          alt="Postcard Background" 
-          style={{
-            position: 'absolute',
-            top: '58px',
-            width:'auto',
-            height:'100%',
-            zIndex: '800',
-            overflow: 'hidden',
-          }}
-        />
+
 
         //움짤
         {postcard.gif_name && (

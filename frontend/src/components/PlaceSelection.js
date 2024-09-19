@@ -13,28 +13,28 @@ const backgrounds = [
 ];
 
 const modelPositions = [
-    { x: 67, y: 150, width: 147, height: 190 },
-    { x: 168, y: 102, width: 147, height: 190 },
-    { x: 196, y: 65, width: 147, height: 190 },
+    { x: 67, y: 65, width: 220, height: 220 },
+    { x: 170, y: 50, width: 200, height: 220 },
+    { x: 220, y:70, width: 180, height: 220 },
 ];
 
 const descriptions = [
     {
-        title: "달밤",
-        date: "2020.08.",
-        text: "작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것... 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것.. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것.. 작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것..",
+        title: "만월",
+        date: "2019",
+        text: "그림의 꽉 찬 만월은 여성성의 세상이 때가 되었음을 상징합니다. 가부장적인 현장의 시작인 '집' 옥상 위에서 슬리퍼를 신은 여성이 깨춤(절로 흥이 나서 제멋대로 추는 막춤)을 춥니다. 각자의 일상에서 우리는 늘 불평등의 문제를 만납니다. 자, 이제 둥근달이 떴습니다. 모두가 어떤 억압도 없이 나다운 삶을 살 수 있도록 '나'만의 해방의 춤을 신나게 춥시다. 달빛이 닿아 반짝이는 이들의 아름다운 세상을 기대합니다.",
         image: "static/stockimages/work1.jpg",
     },
     {
-        title: "저녁 풍경",
-        date: "2021.06.",
-        text: "작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것...",
+        title: "뭇생명의 작은 날갯짓과 함께",
+        date: "2022",
+        text: "혐오의 시대, 폭력이 난무하는 시대에 우린 던져져 있습니다. 기후 위기로 산이 불타오르고, 인간은 여전히 전쟁 중이며, 매스컴은 소비와 탐욕을 부추깁니다. 그럼에도 순천만 갈대는 많은 생명들을 품은 채 밤새 춤을 추었고, 작은 풀벌레는 초록 잎 위에서 이슬 한 모금 들이켜고 한껏 노래를 부릅니다. 그 마음들이 모여 뜨거운 생명평화 나무가 솟아납니다. 뭇 생명들과 한데 살아갈 수 있는 세상을 향해 그들의 작은 날갯짓들과 함께 춤을 춥시다. 인권과 자연의 권리가 살아 숨 쉬는 평화로운 세상을 기대합니다.",
         image: "static/stockimages/work2.jpeg",
     },
     {
-        title: "아침의 시작",
-        date: "2022.01.",
-        text: "작품설명, 바꾸고자 하는 것, 아름다운 표현들 등등등 그렇다는 것...",
+        title: "기쁨의 정원",
+        date: "2024",
+        text: "작우리는 모두 연결된 존재입니다. 그림의 가운데에는 인드라망 무늬가 빛을 내고 있습니다. 이는 해, 달, 나무, 네 발 달린 동물, 사람, 새, 물고기가 이어져 서로 기대어 산다는 의미의 상징 무늬입니다. 버드나무는 팔을 크게 흔들어 마당을 일으키고, 북극곰과 노루, 고양이가 흥겹게 춤을 추고 있습니다. 아이와 상괭이는 블루스를 추고, 새도 신이나 날갯짓을 합니다. 우리도 함께 신나게 춤을 춥시다. 모두가 함께 살아가는 기쁨의 세상을 위해 빛을 내며 춤을 춥시다.",
         image: "static/stockimages/work3.jpeg",
     }
 ];
@@ -136,6 +136,7 @@ const PlaceSelection = () => {
     if (!currentDescription) {
         return <div>Loading...</div>;
     }
+    
 
     return (
         <div style={{ 
@@ -156,12 +157,15 @@ const PlaceSelection = () => {
             )}
 
             <div ref={containerRef} style={{ 
+                position: 'fixed',
                 flex: 1, 
                 top: '58px',
+                left:0,
                 bottom: '80px',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
+                width: '100%',
                 height: 'calc(100% - 138px)',
                 overflowY: 'auto',
                 backgroundColor: '#F8F6F1', 
@@ -172,6 +176,8 @@ const PlaceSelection = () => {
                 <div id="picturecontainer" style={{ 
                     position: 'relative',
                     flexGrow: 1, // Grow to take remaining space
+                    height: 'calc(100% - 300px)', // 200px for the work details
+                    width: 'calc(100% - 300px) * 5 / 4',
                     boxSizing: 'border-box',
                     display: 'flex',
                     justifyContent: 'center',
@@ -181,9 +187,8 @@ const PlaceSelection = () => {
                         src={backgrounds[currentIndex]}
                         alt="Background"
                         style={{ 
-                            marginTop: '58px', 
-                            width: '80%', 
-                            height: 'auto', 
+                            width: 'auto', 
+                            height: '100%', 
                             objectFit: 'cover', 
                             maxWidth: '100%',
                             maxHeight: '100%',
@@ -195,17 +200,15 @@ const PlaceSelection = () => {
                             alt="Generated GIF"
                             style={{
                                 position: 'absolute',
-                                top: `${currentModelPosition.y / 375 * 100}%`,
-                                left: `${currentModelPosition.x / 300 * 100}%`,
-                                width: `${currentModelPosition.width / 300 * 100}%`,
-                                height: `${currentModelPosition.height / 375 * 100}%`,
+                                top: `${currentModelPosition.y / 400 * 100}%`,
+                                left: `${currentModelPosition.x / 500 * 100}%`,
+                                width: `${currentModelPosition.width / 400 * 100}%`,
+                                height: `${currentModelPosition.width / 400 * 100}%`,
                                 objectFit: 'contain',
-                                maxHeight: '100%',
-                                maxWidth: '100%',
                             }}
                         />
                     )}
-                    <div id="dirctions" style={{
+                    <div id="directions" style={{
                         position: 'absolute',
                         display: 'flex',
                         flexDirection: 'row',
@@ -266,12 +269,12 @@ const PlaceSelection = () => {
                     maxWidth: '390px',
                     margin: '0 auto',
                     textAlign: 'center',
+                    Height: '30%',
                     minHeight: '200px', // Minimum height for this section
                 }}>
                     <p id='worktitle'>{currentDescription.title}</p>
                     <p id="workdate">{currentDescription.date}</p>
                     <p id="workexplanation">{currentDescription.text}</p>
-                </div>
 
                 {/* Copyright text */}
                 <span style={{ 
@@ -280,10 +283,13 @@ const PlaceSelection = () => {
                     display: 'block',
                     width: '100%',
                     textAlign: 'right',
-                    margin: '10px 0',
+                    margin: '5px 0',
                 }}>
                     * 해당 배경은 김화순 작가의 작품을 오마주하여 제작하였습니다.
                 </span>
+                </div>
+
+
 
                 {/* Scroll button */}
                 <div 
@@ -326,7 +332,7 @@ const PlaceSelection = () => {
                     width: '100%', 
                     height: 'auto',
                     marginTop: '20px',  
-                    marginBottom: '22px',
+                    marginBottom: '102px',
                 }} />
             </div>
 

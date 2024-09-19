@@ -259,15 +259,28 @@ function Home() {
             {postcards.map((postcard) => (
               <div className="image-item" key={postcard.id}>
                 <img
-                  // src={`/api/uploads/${postcard.png_name}?t=${new Date().getTime()}`} 
-                  src={`/api/uploads/${postcard.png_name}`} 
+                  src={`/api/uploads/${postcard.png_name}?t=${new Date().getTime()}`} 
+                  // src={`/api/uploads/${postcard.png_name}`} 
                   alt={`grid ${postcard.id}`}
                   onError={(e) => handleImageError(e, postcard.id)} 
                   onClick={() => window.location.href = `/postcardshareview/${postcard.id}`} 
                 />
               </div>
             ))}
+
+            
           </div>
+
+          <span style={{
+            fontFamily: 'pretendard',
+            fontSize: '9px',
+            textAlign: 'center',
+            color: '#412823',
+            marginTop: '20px',
+            marginBottom: '70px'
+
+          }}>이제 댄스타임 : 평화의 나무에 달빛이 닿은 날, 반짝이는 춤결<br />
+          기획 및 제작 | 유채영 김휴초</span>
         </div>
       </div>
 

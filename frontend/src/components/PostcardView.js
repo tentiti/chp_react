@@ -166,7 +166,7 @@ const PostcardView = () => {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
       
-        const maxLineLength = 35;
+        const maxLineLength = 38;
         const lines = [];
         for (let i = 0; i < text.length; i += maxLineLength) {
           lines.push(text.slice(i, i + maxLineLength));
@@ -179,12 +179,15 @@ const PostcardView = () => {
       
         // 텍스트 시작점을 조정하여 첫 줄이 고정된 Y 위치에 오도록 함
         lines.forEach((line, index) => {
-          const adjustedYPos = canvas.height / 2 - totalTextHeight / 2 + index * lineHeight;
+          const adjustedYPos = canvas.height / 2 - totalTextHeight / 2 + index * lineHeight - 30;
           ctx.fillText(line, canvas.width / 2, adjustedYPos);
         });
       
         const xPos = (x / 393) * width;
-        const yPos = (y / 700) * height * 1.2;
+        let yPos = (y / 700) * height * 1.2;
+        if (text.length > 38) {
+          yPos -= 19;
+        } 
       
         const texture = new THREE.CanvasTexture(canvas);
         texture.minFilter = THREE.LinearFilter;
@@ -201,9 +204,9 @@ const PostcardView = () => {
       };
       
 
-      addText(`${postcard.comment}`, 0, -174.5, 12);
-      addText(postcard.timestamp, 0, -204, 8);
-      addText(`${postcard.name}`, 106, -229, 12);
+      addText(`${postcard.comment}`, 0, -165, 12);
+      addText(postcard.timestamp, 0, -210, 8);
+      addText(`${postcard.name}`, 106, -236, 12);
     };
 
     initThreeJS();

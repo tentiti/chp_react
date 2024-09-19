@@ -7,6 +7,7 @@ import './CreateCharacter.css';
 import Header from './Header.js';
 import { UseVideo } from './VideoContext.js'; // Context에서 가져옴
 import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
+import { isTablet, isDesktop } from 'react-device-detect';
 
 const CreateCharacter = () => {
 
@@ -94,32 +95,32 @@ const handleAssetSelection = (category, index) => {
     EXPRESSION: '표정',
   };
 
-  // const CATEGORIES = [
-  //   { name: 'HEAD', assets: ['head1.png', 'head2.png', 'head3.png', 'head4.png', 'head5.png', 'head6.png', 'head7.png', 'head8.png', 'head9.png', 'head10.png', 'head11.png', 'head12.png'], useColor: true }, // 12개
-  //   { name: 'TOP', assets: ['top1.png', 'top2.png', 'top3.png', 'top4.png', 'top5.png', 'top6.png', 'top7.png', 'top8.png', 'top9.png', 'top10.png', 'top11.png', 'top12.png', 'top13.png', 'top14.png', 'top15.png', 'top16.png', 'top17.png', 'top18.png', 'top19.png', 'top20.png', 'top21.png', 'top22.png', 'top23.png', 'top24.png'], useColor: false }, // 24개
-  //   { name: 'BOTTOM', assets: ['bottom1.png', 'bottom2.png', 'bottom3.png', 'bottom4.png', 'bottom5.png', 'bottom6.png', 'bottom7.png', 'bottom8.png', 'bottom9.png', 'bottom10.png', 'bottom11.png', 'bottom12.png', 'bottom13.png', 'bottom14.png', 'bottom15.png', 'bottom16.png', 'bottom17.png', 'bottom18.png', 'bottom19.png', 'bottom20.png', 'bottom21.png', 'bottom22.png'], useColor: false }, // 22개
-  //   { name: 'SHOES', assets: ['shoes1.png', 'shoes2.png', 'shoes3.png', 'shoes4.png', 'shoes5.png', 'shoes6.png', 'shoes7.png', 'shoes8.png'], useColor: false }, // 8개
-  //   { name: 'ACCESSORY', assets: ['accessory1.png', 'accessory2.png', 'accessory3.png', 'accessory4.png', 'accessory5.png', 'accessory6.png', 'accessory7.png', 'accessory8.png', 'accessory9.png', 'accessory10.png', 'accessory11.png', 'accessory12.png', 'accessory13.png', 'accessory14.png', 'accessory15.png', 'accessory16.png', 'accessory17.png', 'accessory18.png'], useColor: false }, // 18개
-  //   { name: 'EXPRESSION', assets: [], useColor: false },
-  // ];
-  
   const CATEGORIES = [
-    { name: 'HEAD', assets: ['head1.png', 'head2.png', 'head3.png'], useColor: true }, // 3개
-    { name: 'TOP', assets: ['top1.png', 'top2.png', 'top3.png'], useColor: false }, // 3개
-    { name: 'BOTTOM', assets: ['bottom1.png', 'bottom2.png', 'bottom3.png'], useColor: false }, // 3개
-    { name: 'SHOES', assets: ['shoes1.png', 'shoes2.png', 'shoes3.png', 'shoes4.png', 'shoes4.png', 'shoes6.png', 'shoes7.png', 'shoes8.png', 'shoes9.png', ], useColor: false }, // 3개
-    { name: 'ACCESSORY', assets: ['accessory1.png', 'accessory2.png', 'accessory3.png'], useColor: false }, // 3개
+    { name: 'HEAD', assets: ['head1.png', 'head2.png', 'head3.png', 'head4.png', 'head5.png', 'head6.png', 'head7.png', 'head8.png', 'head9.png', 'head10.png', 'head11.png', 'head12.png'], useColor: true }, // 12개
+    { name: 'TOP', assets: ['top1.png', 'top2.png', 'top3.png', 'top4.png', 'top5.png', 'top6.png', 'top7.png', 'top8.png', 'top9.png', 'top10.png', 'top11.png', 'top12.png', 'top13.png', 'top14.png', 'top15.png', 'top16.png', 'top17.png', 'top18.png', 'top19.png', 'top20.png', 'top21.png', 'top22.png', 'top23.png', 'top24.png'], useColor: false }, // 24개
+    { name: 'BOTTOM', assets: ['bottom1.png', 'bottom2.png', 'bottom3.png', 'bottom4.png', 'bottom5.png', 'bottom6.png', 'bottom7.png', 'bottom8.png', 'bottom9.png', 'bottom10.png', 'bottom11.png', 'bottom12.png', 'bottom13.png', 'bottom14.png', 'bottom15.png', 'bottom16.png', 'bottom17.png', 'bottom18.png', 'bottom19.png', 'bottom20.png', 'bottom21.png', 'bottom22.png'], useColor: false }, // 22개
+    { name: 'SHOES', assets: ['shoes1.png', 'shoes2.png', 'shoes3.png', 'shoes4.png', 'shoes5.png', 'shoes6.png', 'shoes7.png', 'shoes8.png'], useColor: false }, // 8개
+    { name: 'ACCESSORY', assets: ['accessory1.png', 'accessory2.png', 'accessory3.png', 'accessory4.png', 'accessory5.png', 'accessory6.png', 'accessory7.png', 'accessory8.png', 'accessory9.png', 'accessory10.png', 'accessory11.png', 'accessory12.png', 'accessory13.png', 'accessory14.png', 'accessory15.png', 'accessory16.png', 'accessory17.png', 'accessory18.png'], useColor: false }, // 18개
     { name: 'EXPRESSION', assets: [], useColor: false },
   ];
+  
+  // const CATEGORIES = [
+  //   { name: 'HEAD', assets: ['head1.png', 'head2.png', 'head3.png'], useColor: true }, // 3개
+  //   { name: 'TOP', assets: ['top1.png', 'top2.png', 'top3.png'], useColor: false }, // 3개
+  //   { name: 'BOTTOM', assets: ['bottom1.png', 'bottom2.png', 'bottom3.png'], useColor: false }, // 3개
+  //   { name: 'SHOES', assets: ['shoes1.png', 'shoes2.png', 'shoes3.png', 'shoes4.png', 'shoes4.png', 'shoes6.png', 'shoes7.png', 'shoes8.png', 'shoes9.png', ], useColor: false }, // 3개
+  //   { name: 'ACCESSORY', assets: ['accessory1.png', 'accessory2.png', 'accessory3.png'], useColor: false }, // 3개
+  //   { name: 'EXPRESSION', assets: [], useColor: false },
+  // ];
 
   const COLORS = [
     { name: 'Red', bigCircle: '#E88181', smallCircle: '#F5A0A0' },
-    { name: 'Orange', bigCircle: '#D5CF78', smallCircle: '#E1E17B' },
-    { name: 'Yellow', bigCircle: '#B078F9', smallCircle: '#CCA9FA' },
-    { name: 'Green', bigCircle: '#F170BE', smallCircle: '#F8BAF1' },
+    { name: 'Yellow', bigCircle: '#D5CF78', smallCircle: '#E1E17B' },
+    { name: 'Purple', bigCircle: '#B078F9', smallCircle: '#CCA9FA' },
+    { name: 'Pink', bigCircle: '#F170BE', smallCircle: '#F8BAF1' },
     { name: 'Blue', bigCircle: '#66C7DD', smallCircle: '#A1EEFF' },
-    { name: 'Indigo', bigCircle: '#83C0AA', smallCircle: '#96ECA9' },
-    { name: 'Violet', bigCircle: '#9B7565', smallCircle: '#B18A82' },
+    { name: 'Green', bigCircle: '#83C0AA', smallCircle: '#96ECA9' },
+    { name: 'Brown', bigCircle: '#9B7565', smallCircle: '#B18A82' },
     { name: 'Black', bigCircle: '#554343', smallCircle: '#694F4F' },
   ];
 
@@ -160,12 +161,12 @@ const handleAssetSelection = (category, index) => {
 
   //표정 그리기 관련
   const GRAYSCALE_COLORS = [
-    { color: '#F5F1F1', bigColor: '#EFE8E8', smallColor: '#F8F6F1' },
-    { color: '#F7EFDA', bigColor: '#F6EABC', smallColor: '#FFF6D2' },
-    { color: '#F7E2CD', bigColor: '#FFD4B3', smallColor: '#FFE5D2' },
-    { color: '#B18A82', bigColor: '#CA9572', smallColor: '#DBA988' },
-    { color: '#8B7A7A', bigColor: '#A36D4C', smallColor: '#C68862' },
-    { color: '#FFBEBE', bigColor: '#6B4311', smallColor: '#925E1D' }
+    { color: '#FFF2F2', bigColor: '#EFE8E8', smallColor: '#F8F6F1' },
+    { color: '#EADABC', bigColor: '#F6EABC', smallColor: '#FFF6D2' },
+    { color: '#FFD4B3', bigColor: '#FFD4B3', smallColor: '#FFE5D2' },
+    { color: '#CA9572', bigColor: '#CA9572', smallColor: '#DBA988' },
+    { color: '#A36D4C', bigColor: '#A36D4C', smallColor: '#C68862' },
+    { color: '#6B4311', bigColor: '#6B4311', smallColor: '#925E1D' }
   ];
   
   const [expressionDrawingColor, setExpressionDrawingColor] = useState('#FFFFFF'); // 초기 색상: 검은색
@@ -233,7 +234,7 @@ const handleAssetSelection = (category, index) => {
         }
 
         modelsRef.current.push({ model, mixer, action, categoryName });
-        updateCameraView();
+        // updateCameraView();
 
         if (onLoad) onLoad();
         setLoadingStatus('Loaded Successfully');
@@ -666,13 +667,18 @@ const handleAssetSelection = (category, index) => {
 
 const startRecording = async (setVideoFile) => {
 
+  setIsRecording(true); // 녹화 시작
+  
+  // 100ms 지연을 위해 Promise와 setTimeout을 사용
+  await new Promise((resolve) => setTimeout(resolve, 10)); // 100ms 대기
+
   cameraRef.current.position.set(0, 1, 50);  // 기본 카메라 위치로 되돌리기
   cameraRef.current.lookAt(new THREE.Vector3(0, 3.2, 0));
   cameraRef.current.updateProjectionMatrix();
 
   
   console.log("Start recording initiated");
-  setIsRecording(true); // 녹화 시작
+  // setIsRecording(true); // 녹화 시작
 
   try {
     // Wait for both GIF and MP4 recordings to finish
@@ -752,7 +758,7 @@ const uploadGif = async (gifBlob) => {
     if (overlayVisible) {
       const timer = setTimeout(() => {
         closeOverlay();
-      }, 3000);
+      }, 30000);
 
       const handleClick = () => {
         closeOverlay();
@@ -1047,7 +1053,7 @@ const clearExpressionCanvas = useCallback(() => {
 
   return (
     <div style={{
-      
+        width: isDesktop || isTablet ? '390px' : '100%',
     }}>
 
 
@@ -1065,7 +1071,7 @@ const clearExpressionCanvas = useCallback(() => {
       backgroundPosition: 'center',
       height: '100%',
       minHeight: '780px'
-       }} id="whatareYou?">
+       }} id="whatareYou">
       {overlayVisible && (
         <div id="overlay" className="overlay">
           <div className="overlay-content">
@@ -1396,8 +1402,8 @@ const clearExpressionCanvas = useCallback(() => {
   {/* 표정 그리기용 캔버스 */}
   <canvas
     ref={expressionCanvasRef}
-    width={900}  // 실제 캔버스의 고정된 해상도
-    height={900} // 실제 캔버스의 고정된 해상도
+    width={600}  // 실제 캔버스의 고정된 해상도
+    height={600} // 실제 캔버스의 고정된 해상도
     style={{
       position: 'absolute',
       top: '-250px',  // 250px 상단을 숨김
@@ -1405,6 +1411,8 @@ const clearExpressionCanvas = useCallback(() => {
       width: '900px',  // 고정된 너비
       height: '900px', // 고정된 높이
       background: 'transparent', // 배경을 투명하게 설정
+      transform: 'translate(-30px, -20px)',  // X축으로 -500px 이동하여 오른쪽을 보이게 함
+      
       zIndex: 2,  // 캔버스가 이미지 위에 렌더링되도록 설정
     }}
     // 마우스 이벤트
@@ -1431,13 +1439,13 @@ const clearExpressionCanvas = useCallback(() => {
           maxWidth: '100%',
           maxHeight: '100%',
           borderRadius: '18px',
-          border: selectedIndices[activeCategory.name] === index ? '3px solid #E9A7A7' : 'none', // 선택된 항목에 경계선 추가
-          backgroundColor: selectedIndices[activeCategory.name] === index ? '#FF0000' : 'transparent', // 선택된 항목에 배경색 추가
+          // border: selectedIndices[activeCategory.name] === index ? '3px solid #E9A7A7' : 'none', // 선택된 항목에 경계선 추가
+          backgroundColor: selectedIndices[activeCategory.name] === index ? '#E9A7A7' : '#EDECE7', // 선택된 항목에 배경색 추가
         }}
         onClick={() => {
           handleAssetSelection(activeCategory.name, index); // 카테고리별 선택된 인덱스 업데이트
           const modelPath = activeCategory.useColor
-          ? `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}_${selectedColors[activeCategory.name] || 'Black'}.glb`
+          ? `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}_${selectedColor || 'Black'}.glb`
           : `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}.glb`;
         
           console.log(modelPath);
@@ -1447,8 +1455,8 @@ const clearExpressionCanvas = useCallback(() => {
         <img
           src={`/static/assetImages/${
             activeCategory.useColor
-              ? `${activeCategory.name.toLowerCase()}_${index + 1}_${selectedColors[activeCategory.name]?.name || 'Black'}`
-              : `${activeCategory.name.toLowerCase()}_${index + 1}`
+            ? `${activeCategory.name.toLowerCase()}_${index + 1}_${selectedColor}`
+            : `${activeCategory.name.toLowerCase()}_${index + 1}`
           }.png`}
           alt={`Asset ${index}`}
           style={{

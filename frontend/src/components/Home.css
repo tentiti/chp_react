@@ -70,7 +70,7 @@ header {
   left: 0;
   width: 100%;
   height: calc(100% - 108px); /* 전체 높이에서 헤더와 푸터의 높이를 뺌 */
-  overflow-y: auto;
+  overflow-y: scroll;
   background-color: #f8f6f1;
   display: flex;
   flex-direction: column;
@@ -84,12 +84,11 @@ header {
 }
 
 #ajax-content {
-  flex-grow: 1;
   display: flex;
   flex-direction: column;
   justify-content: flex-start; /* 컨텐츠를 위쪽으로 정렬 */
 
-  padding-bottom: 50px; /* 하단에 여백 추가 */
+  /* padding-bottom: 50px; 하단에 여백 추가 */
 }
 .container.slide-out {
   transform: translateX(-100%);
@@ -116,7 +115,7 @@ header {
   gap: 1px;
 
   flex-grow: 1; /* 남은 공간을 채우도록 설정 */
-  padding-bottom: 70px; /* 하단에 여백 추가 */
+  /* padding-bottom: 70px; 하단에 여백 추가 */
 }
 
 .image-item {

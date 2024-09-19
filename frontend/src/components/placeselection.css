@@ -23,10 +23,10 @@ body {
 
 #worktitle {
   font-family: "ClimateCrisisKR-1979";
-  font-size: 18pt;
+  font-size: 17pt;
   letter-spacing: -0.025em;
   line-height: 18pt;
-  margin-bottom: -8px;
+  margin-bottom: -5px;
 }
 
 #workdate {
@@ -39,10 +39,12 @@ body {
 }
 
 #workexplanation {
-  width: calc(100% - 40px);
+  width: calc(100% - 10px);
   font-family: "Pretendard", sans-serif;
   font-size: 12px;
   line-height: 1.25;
+  letter-spacing: -0.025em;
+  text-align: justify;
 }
 
 #scrolldownbutton {
