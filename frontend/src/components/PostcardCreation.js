@@ -61,6 +61,7 @@ const PostcardCreation = () => {
     }}>
       <div style={{
           fontFamily: 'Pretendard, sans-serif',
+          overflow: 'hidden',
         }}>
       <Header title="답신 보내기" 
         />

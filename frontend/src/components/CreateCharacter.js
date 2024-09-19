@@ -43,6 +43,9 @@ const CreateCharacter = () => {
 
   const [isSplashVisible, setIsSplashVisible] = useState(false);
   const [overlayVisible, setOverlayVisible] = useState(true);
+
+
+
   const [isDressSelected, setIsDressSelected] = useState(false); // 원피스가 선택되었는지 여부
   const canvasRef = useRef(null);
   const hiddenCanvasRef = useRef(null);
@@ -1086,27 +1089,6 @@ const clearExpressionCanvas = useCallback(() => {
 
       <Header title="춤 복장 선택하기" onMenuClick={handleMenuClick} />
 
-      {showImage && (
-        <div 
-          style={{
-            position: 'absolute', 
-            top: 0, 
-            left: 0, 
-            width: '100%', 
-            height: '100%', 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 99999
-            // backgroundImage: 'url("/static/stockimages/inviflat.png")',
-          }}
-          onClick={handleCloseImage} // 이미지를 클릭해도 사라지게 설정
-        >
-          <img src="/static/stockimages/inviflat.png" alt="invitation" style={{ maxWidth: '80%', maxHeight: '80%', zIndex: '999999'}} />
-        </div>
-      )}
-
 
        {/* 녹화 중일 때 보여줄 "녹화중입니다" 이미지 */}
       {isRecording && (
@@ -1363,7 +1345,7 @@ const clearExpressionCanvas = useCallback(() => {
                 backgroundColor: '#000', // 배경색 검정
                 backgroundImage: 'url(static/stockimages/apply.png)', // apply.png 이미지 사용
                 backgroundPosition: 'center',
-                backgroundSize: '70%',   // 이미지 크기를 50%로 설정
+                backgroundSize: '60%',   // 이미지 크기를 50%로 설정
                 backgroundRepeat: 'no-repeat',
                 boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.45)', // 그림자 효과
                 border: 'none',         // 테두리 없음

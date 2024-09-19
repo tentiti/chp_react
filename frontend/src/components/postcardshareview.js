@@ -14,10 +14,9 @@ const backgrounds = [
 ];
 
 const modelPositions = [
-  { x: 67, y: 150, width: 147, height: 190 },
-  { x: 67, y: 150, width: 147, height: 190 },
-  { x: 168, y: 102, width: 147, height: 190 },
-  { x: 196, y: 65, width: 147, height: 190 },
+  { x: 16.75, y: 31.5, width: 36.75},
+  { x: 40.25, y: 27.4, width: 36.75},
+  { x: 45.25, y: 25, width: 36.75},
 ];
 
 const PostcardShareView = () => {
@@ -159,10 +158,11 @@ const PostcardShareView = () => {
 
       <div id="createdImages" style={{
         position: 'fixed',
-        top: '9px',
-        width: 'calc((100% - 108px)',
+        top: '58px',
+        width: '100vw',  // 창 너비를 100%로 맞춤
+        height: 'auto',
         maxWidth: '390px',
-        height: 'calc(100% - 108px)',
+        aspectRatio: '1572/2614',  // 16:9 비율을 유지
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -170,14 +170,13 @@ const PostcardShareView = () => {
         zIndex: '900',
         overflow: 'hidden',
         backgroundImage: `url(/static/stockimages/share_postcardfinal_${postcard.number}.png)`,
-        backgroundSize: 'contain',
+        backgroundSize: 'cover',  // 배경 이미지가 컨테이너를 덮도록 설정
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',  // 이미지가 가운데에 위치하게 설정
       }}>
 
 
-        //움짤
-        {postcard.gif_name && (
+
           <img
             key={gifKey} // Ensure the GIF is reloaded by changing the key
             src={`/api/uploads/${postcard.gif_name}`}
@@ -187,22 +186,20 @@ const PostcardShareView = () => {
               overflow: 'hidden',
 
               zIndex: '900',
-              top: `calc(${modelPositions[postcard.number].y}px * 0.8)`,
-              left: `calc(${modelPositions[postcard.number].x}px * 0.8)`,
-              width: `calc(${modelPositions[postcard.number].width}px * 0.8)`,
-              height: `calc(${modelPositions[postcard.number].width}px * 0.8)`,
+              top: `calc(${modelPositions[postcard.number-1].y}% + 0px)`,
+              left: `calc(${modelPositions[postcard.number-1].x}% + 0px)`,
+              width: `calc(${modelPositions[postcard.number-1].width}% + 0px)`,
+              height:'auto',
             }}
           />
-        )}
+  
 
-        //한마디
-      
         <div
           style={{
             position: 'absolute',
-            top: '83.5%',
+            top: '73.5%',
             zIndex: '900',
-            width: '85%',
+            width: '83%',
             color: '#412823',
             fontSize: '12px',
             textAlign: 'center',
@@ -220,7 +217,7 @@ const PostcardShareView = () => {
         <div
           style={{
             position: 'absolute',
-            top: '91%',
+            top: '81.2%',
             zIndex: '900',
             width: '20%',
             color: '#412823',
@@ -242,7 +239,7 @@ const PostcardShareView = () => {
         <div
           style={{
             position: 'absolute',
-            top: '90%',
+            top: '86.4%',
             zIndex: '900',
             width: '20%',
             color: '#412823',
@@ -275,17 +272,22 @@ const PostcardShareView = () => {
         style={{
           position: 'fixed',
           zIndex: '200000',
-          top: '60vh',
-          padding: '10px 20px',
-          backgroundColor: '#412823',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '5px',
+          top: '75vh',
+          marginBottom: '60px',
           cursor: 'pointer',
           overflow: 'hidden',
+
+          /* 캐릭터 생성하기 */
+          width: '170px',
+          height: '35px',
+
+          background: '#F8F6F1',
+          border: '1px solid #E6E1DC',
+          boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.25)',
+
         }}
       >
-        Play Audio & Restart GIF
+        음악과 함께 춤추기
       </button>
 
       {/* Add the audio element for test.mp3 */}

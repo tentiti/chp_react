@@ -9,7 +9,7 @@ function Invitation({ onBack }) {
 
   const handleBack = () => {
     setIsSlideIn(false);
-    setTimeout(() => onBack(), 700); // 애니메이션이 완료된 후 Back 호출
+    setTimeout(() => onBack(), 700);
   };
 
   return (
@@ -20,7 +20,6 @@ function Invitation({ onBack }) {
         right: isSlideIn ? '0' : '-100%',
         width: '100%',
         height: '100%',
-        zIndex: 2000,
         transition: 'right 0.7s ease',
         backgroundColor: 'transparent',
         overflow: 'hidden',
@@ -45,14 +44,14 @@ function Invitation({ onBack }) {
         }}
       ></div>
 
-      {/* 이 div도 슬라이드 하게 만듦 */}
+      {/* Header */}
       <div
         style={{
           position: 'absolute',
           top: 0,
-          left: isSlideIn ? '0' : '-100%', // 슬라이드 효과를 추가
+          right: isSlideIn ? '0' : '-150%',
           width: '100%',
-          transition: 'left 0.7s ease',
+          transition: 'right 0.7s ease',
           height: '58px',
           zIndex: 1000,
           borderTopLeftRadius: '20px',
@@ -135,15 +134,17 @@ function Invitation({ onBack }) {
         />
       </div>
 
+      {/* Button container */}
       <div
         style={{
           position: 'fixed',
           bottom: '10%',
+          right: isSlideIn ? '0%' : '-150%',
           left: 0,
-          right: 0,
           zIndex: 999,
           display: 'flex',
           justifyContent: 'center',
+          transition: 'right 0.7s ease',
         }}
       >
         <a

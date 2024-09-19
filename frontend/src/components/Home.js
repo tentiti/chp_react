@@ -219,7 +219,7 @@ function Home() {
   }, [isFloatingVisible]);
 
   return (
-    <div className="App">
+    <div className="App" style={{height: '100%', overflow: 'hidden'}}>
       {!isInvitationVisible && (
         <div id="headerLoader" style={{ backgroundColor: isInvitationVisible ? 'transparent' : '#f8f6f1', left: '50%', transform: 'translateX(-50%)', width: '390px' }}>
           <header style={{ backgroundColor: 'transparent', width: '390px' }}>
