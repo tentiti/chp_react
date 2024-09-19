@@ -20,32 +20,44 @@
   font-style: normal;
 }
 
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 body {
   font-family: "Inter", sans-serif;
   color: #412823;
-  background-color: transparent;
-  margin: 0;
-  padding: 0;
+  background-color: #f8f6f1;
   display: flex;
   flex-direction: column;
-  min-height: 100%;
-  overflow-y: hidden;
 }
 
-#headerLoader {
-  background-color: #f8f6f1;
+.App {
   position: fixed;
   top: 0;
   left: 50%;
-  transform: translateX(-50%); /* 가운데로 이동 */
-  width: 100%;
+  transform: translateX(-50%);
+  width: 390px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#headerLoader {
+  flex-shrink: 0;
+  background-color: #f8f6f1;
   height: 58px;
   z-index: 10005;
 }
 
 header {
-  position: fixed;
-  width: 100%; /* 부모 요소에 명시적으로 390px 설정 */
+  left: 50%;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -60,39 +72,24 @@ header {
   width: 100%;
   z-index: 1005;
   background: transparent;
-  background-color: transparent;
-  /* background-color: red !important; */
 }
 
 .container {
-  position: fixed;
-  top: 58px; /* 헤더의 높이 */
-  bottom: 50px; /* 푸터의 높이 */
-  left: 0;
-  width: 100%;
-  height: calc(100% - 108px); /* 전체 높이에서 헤더와 푸터의 높이를 뺌 */
+  flex-grow: 1;
   overflow-y: auto;
   background-color: #f8f6f1;
-  display: flex;
-  flex-direction: column;
-
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .container::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
 }
 
 #ajax-content {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; /* 컨텐츠를 위쪽으로 정렬 */
-
-  /* padding-bottom: 50px; 하단에 여백 추가 */
-}
-.container.slide-out {
-  transform: translateX(-100%);
+  justify-content: flex-start;
 }
 
 .mainImage {
@@ -107,16 +104,12 @@ header {
 
 .image-grid {
   position: relative;
-  top: 0px;
   width: 100%;
   overflow: hidden;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   background-color: #f8f6f1;
   gap: 1px;
-
-  flex-grow: 1; /* 남은 공간을 채우도록 설정 */
-  /* padding-bottom: 70px; 하단에 여백 추가 */
 }
 
 .image-item {
@@ -132,15 +125,11 @@ header {
 }
 
 footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
+  flex-shrink: 0;
   height: 50px;
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
-  text-align: center;
   align-items: center;
   background-color: #f8f6f1;
   z-index: 1005;
@@ -193,38 +182,28 @@ a:focus {
   color: #f59191;
 }
 
-.invitation-content {
+.invitation-container {
   position: fixed;
   top: 0;
-  left: 0;
+  right: -100%;
   width: 100%;
   height: 100%;
-  opacity: 0;
-  transform: translateX(100%);
-  transition: transform 0.7s ease-out, opacity 0.7s ease-out;
-  background-color: #f8f6f1;
   z-index: 2000;
-  overflow-y: auto;
+  transition: right 0.7s ease;
+}
+
+.invitation-container.visible {
+  right: 0;
+}
+
+.invitation-content {
+  height: 100%;
+  background-color: #f8f6f1;
+  overflow: hidden;
 }
 
 .invitation-content.slide-in {
-  opacity: 1;
   transform: translateX(0);
-}
-
-.background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 2000;
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-attachment: fixed;
-  z-index: 1;
-  opacity: 1;
 }
 
 #inv_text {
@@ -270,28 +249,4 @@ a:focus {
   color: #f8f6f1;
   background: #ed9a9a;
   border: 1px solid #e6e1dc;
-}
-
-.invitation-container {
-  position: fixed;
-  top: 0;
-  right: -100%; /* 기본적으로 화면 밖에 위치 */
-  width: 100%;
-  height: 100%;
-  z-index: 2000;
-  transition: right 0.7s ease;
-}
-
-.invitation-container.visible {
-  right: 0; /* 슬라이드 인 될 때 화면 안으로 들어옴 */
-}
-
-.invitation-content {
-  height: 100%;
-  background-color: #f8f6f1;
-  overflow: hidden;
-}
-
-.invitation-content.slide-in {
-  transform: translateX(0);
 }
