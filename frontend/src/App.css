@@ -73,8 +73,9 @@ body {
 }
 
 .fixed-size-container {
-  width: 390px; /* Fixed width */
-  height: 780px; /* Fixed height */
+  width: 451px; /* Fixed width */
+  height: 100%;
+  max-height: 900px; /* Fixed height */
   background-color: #f8f6f1;
   display: flex;
   justify-content: center;

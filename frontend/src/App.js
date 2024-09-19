@@ -27,10 +27,12 @@ function App() {
     return 'desktop';
   };
 
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const deviceType = getDeviceType();
+
   const checkWindowSize = () => {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const deviceType = getDeviceType();
+
 
     if ((deviceType === 'tablet' || deviceType === 'desktop') && (width < 390 || height < 780)) {
       setShowSizeInfo(true);
@@ -41,8 +43,11 @@ function App() {
 
   useEffect(() => {
     // Initial device type check
+    const width = window.innerWidth;
+    const height = window.innerHeight;
     const deviceType = getDeviceType();
-    if (deviceType === 'tablet' || deviceType === 'desktop') {
+
+    if ((deviceType === 'tablet' || deviceType === 'desktop') && (width > 450 || height <780)) {
       setIsFixedSize(true);
     } else {
       setIsFixedSize(false);
