@@ -329,11 +329,16 @@ const PlaceSelection = () => {
                 </div>
 
                 <img src={currentDescription.image} alt="Example" style={{ 
-                    width: '100%', 
-                    height: 'auto',
-                    marginTop: '20px',  
-                    marginBottom: '102px',
+                    width: '100%',
+                    height: '100%',
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    objectFit: 'contain',
+                    paddingTop: '85px',
+                    paddingBottom: '20px',
+                    boxSizing: 'border-box',
                 }} />
+
             </div>
 
             {/* Bottom button */}

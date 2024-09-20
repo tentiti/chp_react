@@ -233,6 +233,10 @@ const handleAssetSelection = (category, index) => {
           action = mixer.clipAction(gltf.animations[0]);
           action.setLoop(THREE.LoopRepeat);
           action.clampWhenFinished = true;
+          // action.paused = true;
+          action.play();
+          const frameDuration = 1 / 24;  // For 24fps animation
+          mixer.update(frameDuration);  // Move animation forward by 1 frame
           action.paused = true;
         }
 
@@ -297,7 +301,9 @@ const handleAssetSelection = (category, index) => {
       // rendererRef.gammaFactor = 2.2;
       // rendererRef.gammaOutput = true;
 
-      rendererRef.current.setSize(400, 400);
+      rendererRef.current.setSize(window.innerWidth, window.innerHeight); // 창 크기에 맞춰 초기화
+      cameraRef.current.aspect = window.innerWidth / window.innerHeight;
+      cameraRef.current.updateProjectionMatrix();
       rendererRef.current.setClearColor(0x000000, 0);
 
       hiddenRendererRef.current = new THREE.WebGLRenderer({ 
@@ -1036,7 +1042,35 @@ const clearExpressionCanvas = useCallback(() => {
     }
   }, [selectedCategory]);
   
-
+  useEffect(() => {
+    const handleResize = () => {
+      if (canvasRef.current && hiddenCanvasRef.current && rendererRef.current && hiddenRendererRef.current) {
+        // canvasRef와 hiddenCanvasRef의 크기를 창 크기에 맞춰 설정
+        const width = canvasRef.current.clientWidth;
+        const height = canvasRef.current.clientHeight;
+  
+        rendererRef.current.setSize(width, height); // renderer 크기 업데이트
+        hiddenRendererRef.current.setSize(width, height); // hidden renderer 크기 업데이트
+  
+        // 카메라의 종횡비를 새 크기에 맞춰 업데이트
+        cameraRef.current.aspect = width / height;
+        cameraRef.current.updateProjectionMatrix();
+  
+        console.log(`Canvas Width: ${width}, Canvas Height: ${height}`);
+      }
+    };
+  
+    // 창 크기가 변경될 때마다 handleResize 호출
+    window.addEventListener('resize', handleResize);
+    handleResize(); // 처음 렌더링 시 크기 체크
+  
+    return () => {
+      window.removeEventListener('resize', handleResize); // 언마운트 시 리스너 제거
+    };
+  }, []);
+  
+  
+  
 
   return (
     <div style={{
@@ -1087,16 +1121,19 @@ const clearExpressionCanvas = useCallback(() => {
       top:'58px',
       display: 'flex', 
       flexDirection: 'column', 
-      height: '100%', 
+      height: '40%', 
       alignItems: 'center',
       justifyContent: 'start',
-      overflow: 'hidden' 
+      overflowX: 'hidden' ,
+      backgroundColor: 'salmon',
       }}>
       
       <canvas
         ref={canvasRef}
         style={{
           height: '40%',
+          width: 'auto',
+          aspectRatio: 1 / 1, /* 정사각형 비율 유지 */
           minHeight:'100px',
           flexGrow: 1,
         }}
@@ -1358,8 +1395,9 @@ const clearExpressionCanvas = useCallback(() => {
       position: 'absolute',
       // top: '-250px',  // 캔버스의 250px 상단을 숨김
       left: '0',
-      width: '400px',  // 고정된 900px 너비
-      height: '300px',  // 고정된 900px 높이
+      width: '100%',  // 고정된 900px 너비
+      height: '100%',  // 고정된 900px 높이
+      size: 'contain',  // 이미지 크기를 커버로 설정
       pointerEvents: 'none', // 이미지에 클릭이 되지 않게 설정
       zIndex: 1000,
     }}
