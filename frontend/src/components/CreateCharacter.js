@@ -9,7 +9,7 @@ import { UseVideo } from './VideoContext.js'; // Context에서 가져옴
 import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
 import { isTablet, isDesktop } from 'react-device-detect';
 
-const CreateCharacter = () => {
+const CreateCharacter = ({isFixedSize}) => {
 
   const [isInvitationVisible, setIsInvitationVisible] = useState(false); // Invitation의 가시성을 관리하는 상태
   const [isFloatingVisible, setIsFloatingVisible] = useState(true); // 플로팅 버튼 가시성 관리 상태
@@ -301,7 +301,9 @@ const handleAssetSelection = (category, index) => {
       // rendererRef.gammaFactor = 2.2;
       // rendererRef.gammaOutput = true;
 
-      rendererRef.current.setSize(window.innerWidth, window.innerHeight); // 창 크기에 맞춰 초기화
+      const canvasParent = canvasRef.current.parentNode;
+
+      rendererRef.current.setSize(canvasParent.clientWidth, canvasParent.clientHeight * 0.42); // 창 크기에 맞춰 초기화
       cameraRef.current.aspect = window.innerWidth / window.innerHeight;
       cameraRef.current.updateProjectionMatrix();
       rendererRef.current.setClearColor(0x000000, 0);
@@ -1025,462 +1027,559 @@ const clearExpressionCanvas = useCallback(() => {
     if (selectedCategory === 'EXPRESSION') {
       // alert('표정 모드!');
       // 표정 그리기 모드일 때 카메라 위치를 조정
-      cameraRef.current.position.set(0, 12, 20);  // 예시: 카메라를 더 가까이 이동
-      cameraRef.current.lookAt(new THREE.Vector3(0, 5, 0));  // 원하는 좌표로 카메라가 바라보게 설정
+      cameraRef.current.position.set(0, 10, 15);  // 예시: 카메라를 더 가까이 이동
+      cameraRef.current.lookAt(new THREE.Vector3(0, 5.3, 0));  // 원하는 좌표로 카메라가 바라보게 설정
       cameraRef.current.updateProjectionMatrix();
     } else if (selectedCategory === 'HEAD') {
-
-       // 머리 그리기 모드일 때 카메라 위치를 조정
-       cameraRef.current.position.set(0, 12, 30);  // 예시: 카메라를 더 가까이 이동
-       cameraRef.current.lookAt(new THREE.Vector3(0, 5, 0));  // 원하는 좌표로 카메라가 바라보게 설정
+       // 머리 고르기 모드일 때 카메라 위치를 조정
+       cameraRef.current.position.set(0, 7, 12);  // 예시: 카메라를 더 가까이 이동
+       cameraRef.current.lookAt(new THREE.Vector3(0, 5.8, 0));  // 원하는 좌표로 카메라가 바라보게 설정
        cameraRef.current.updateProjectionMatrix();
     } else {
       // 다른 카테고리로 돌아갈 때 카메라 위치를 원래대로 되돌림
-      cameraRef.current.position.set(0, 1, 50);  // 기본 카메라 위치로 되돌리기
-      cameraRef.current.lookAt(new THREE.Vector3(0, 3.2, 0));
+      cameraRef.current.position.set(0, 9, 50);  // 기본 카메라 위치로 되돌리기
+      cameraRef.current.lookAt(new THREE.Vector3(0, 2.5, 0));
       cameraRef.current.updateProjectionMatrix();
+      
     }
   }, [selectedCategory]);
-  
   useEffect(() => {
     const handleResize = () => {
-      if (canvasRef.current && hiddenCanvasRef.current && rendererRef.current && hiddenRendererRef.current) {
-        // canvasRef와 hiddenCanvasRef의 크기를 창 크기에 맞춰 설정
-        const width = canvasRef.current.clientWidth;
-        const height = canvasRef.current.clientHeight;
+      if (canvasRef.current) {
+        const canvasParent = canvasRef.current.parentNode;
   
-        rendererRef.current.setSize(width, height); // renderer 크기 업데이트
-        hiddenRendererRef.current.setSize(width, height); // hidden renderer 크기 업데이트
+        // 상태에 따른 controls의 최소 높이 계산 (기본값을 낮춤)
+        let controlsHeight = 390; // 기본 최소 높이로 수정
+        if (selectedCategory === 'HEAD') {
+          controlsHeight = 450; // HEAD 상태일 때
+        } else if (selectedCategory === 'EXPRESSION') {
+          controlsHeight = 360; // EXPRESSION 상태일 때
+        }
   
-        // 카메라의 종횡비를 새 크기에 맞춰 업데이트
-        cameraRef.current.aspect = width / height;
+        // 전체 화면에서 controls 높이를 제외한 남은 부분을 canvas 영역으로 설정
+        let parentWidth = canvasParent.clientWidth;
+        let parentHeight = window.innerHeight - controlsHeight;
+
+        if (isFixedSize) {
+          // PC일 경우 canvas 크기를 고정
+          parentWidth = 390;
+          parentHeight = 780 - controlsHeight;
+          canvasRef.current.style.marginLeft = '-110px';
+        
+        }
+  
+        // 렌더러 크기 설정
+        rendererRef.current.setSize(parentWidth, parentHeight);
+  
+        // 캔버스 크기 설정
+        canvasRef.current.style.width = `${parentWidth}px`;
+        canvasRef.current.style.height = `${parentHeight}px`;
+  
+        // 카메라 비율 업데이트
+        cameraRef.current.aspect = parentWidth / parentHeight;
         cameraRef.current.updateProjectionMatrix();
-  
-        console.log(`Canvas Width: ${width}, Canvas Height: ${height}`);
       }
     };
   
-    // 창 크기가 변경될 때마다 handleResize 호출
     window.addEventListener('resize', handleResize);
-    handleResize(); // 처음 렌더링 시 크기 체크
+    handleResize(); // 초기 실행 시 크기 맞추기
   
     return () => {
-      window.removeEventListener('resize', handleResize); // 언마운트 시 리스너 제거
+      window.removeEventListener('resize', handleResize);
     };
-  }, []);
-  
-  
+  }, [selectedCategory]);
   
 
   return (
-    <div style={{
-        width: isDesktop || isTablet ? '390px' : '100%',
-    }}>
+<div
+  style={{
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
+  }}
+>
+  {/* Invitation이 보일 때 */}
+  {isInvitationVisible && (
+    <div
+      className={`invitation-container ${
+        isInvitationVisible ? "visible" : ""
+      }`}
+      style={{ zIndex: "1000" }}
+    >
+      <Invitation onBack={handleBackClick} /> {/* Invitation 컴포넌트 및 뒤로가기 핸들러 */}
+    </div>
+  )}
 
-
-      {/* Invitation이 보일 때 */}
-      {isInvitationVisible && (
-        <div className={`invitation-container ${isInvitationVisible ? 'visible' : ''}`}>
-          <Invitation onBack={handleBackClick} /> {/* Invitation 컴포넌트 및 뒤로가기 핸들러 */}
-        </div>
-      )}
-
-    <div style={{ 
-      overflow: 'auto',
+  <div
+    style={{
+      overflow: "auto",
       backgroundImage: `url('/static/stockimages/background_paper.png')`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      height: '100%',
-      minHeight: '780px'
-       }} id="whatareYou">
-      {overlayVisible && (
-        <div id="overlay" className="overlay">
-          <div className="overlay-content">
-            <img
-              src="../static/stockimages/maker_invitation.png"
-              alt="Invitation"
-            />
-
-          </div>
-        </div>
-      )}
-
-      <Header title="춤 복장 선택하기" onMenuClick={handleMenuClick} />
-
-
-       {/* 녹화 중일 때 보여줄 "녹화중입니다" 이미지 */}
-      {isRecording && (
-        <div id="splash-screen" className="splash-screen">
-        <img src="/static/stockimages/making.png" alt="Splash" style={{ position: 'Fixed', width: '100%', height: '100%', objectFit: 'cover', top: '0', left:'0', zIndex: '999999999' }} />
-        <img src="/static/stockimages/loading-circle.gif" alt="Splash" style={{ width: '60px', position: 'Fixed', left:'calc(50% - 32px)', top:'50%',zIndex: '999999999' }} />
-        </div>
-      )}
-
-    <div id="container" style={{ 
-      position:'relative',
-      top:'58px',
-      display: 'flex', 
-      flexDirection: 'column', 
-      height: '40%', 
-      alignItems: 'center',
-      justifyContent: 'start',
-      overflowX: 'hidden' ,
-      backgroundColor: 'salmon',
-      }}>
-      
-      <canvas
-        ref={canvasRef}
-        style={{
-          height: '40%',
-          width: 'auto',
-          aspectRatio: 1 / 1, /* 정사각형 비율 유지 */
-          minHeight:'100px',
-          flexGrow: 1,
-        }}
-      />
-      <canvas ref={hiddenCanvasRef} style={{ display: 'none' }} />
-
-      <div className="controls" style={{ 
-        height:'100%',
-        marginTop: '0', 
-        display: 'flex', 
-        flexDirection: 'column-reverse',
-        backgroundColor: 'transparent'
-         }}>
-      
-      <div id="botbottoms" style={{ display: 'flex', flexDirection: 'Column' }}>
-      
-        <div className="category-selection">
-          {CATEGORIES.map((category, index) => (
-
-<button
-  key={category.name}
-  onClick={() => handleCategorySelection(category)}  // Handles category selection on click
-  className={`color-button ${selectedCategory === category.name ? 'selected' : ''}`}
-  disabled={category.name === 'BOTTOM' && isDressSelected}  // Disable button based on conditions
-  style={{
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: '0',
-    width: '44px',
-    height: '44px',
-    backgroundColor: 'transparent',  // Ensure background is transparent
-    cursor: 'pointer',
-    position: 'relative',
-    boxSizing: 'border-box',
-    border: 'none',  // Remove border from button
-    outline: 'none',  // Removes pink outline on click
-    WebkitTapHighlightColor: 'transparent', /* 클릭 시 하이라이트 제거 */
-    userSelect: 'none',  // 텍스트 선택 방지
-  }}
->
-  <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" overflow ='visible'>
-    <defs>
-      {/* Adjust drop shadow filter to prevent clipping */}
-      <filter id="drop-shadow-path-filter" x="-50%" y="-50%" width="200%" height="200%" filterUnits="userSpaceOnUse">
-        <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="rgba(0, 0, 0, 0.25)" />
-      </filter>
-    </defs>
-
-    {/* Apply shadow directly to the path and scale it to fit the 44x44 size */}
-    <path
-      d="M31.732 24.906C31.3723 25.5071 29.9437 27.7978 27.161 29.7447C22.4124 33.067 17.3387 32.7323 15.527 32.6887C9.3294 32.5388 4.97102 28.6501 3.13725 25.9566C1.24676 23.18 -2.05667 18.3511 2.45184 9.31604C6.10884 1.98759 10.1052 1.45598 13.6287 0.508273C20.5745 -1.35954 28.416 1.9484 32.7435 9.97204C35.264 14.6458 34.2974 20.6183 31.732 24.9057V24.906Z"
-      fill={selectedCategory === category.name ? '#e9a7a7' : '#bab9b3'}  // Fill color based on selection
-      filter="url(#drop-shadow-path-filter)"  // Apply shadow directly to the path
-      stroke="#E6E1DC"  // Border color following the path
-      strokeWidth="1"  // Border thickness
-      transform="scale(1.25 1.25)"  // Scale the path to fit within 44x44
-    />
-  </svg>
-
-  {/* Text label inside the button */}
-  <span style={{
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    color: '#f8f6f1',
-    fontSize: '12px',
-  }}>
-    {CATEGORY_NAME_MAP[category.name]}  {/* Display category name */}
-  </span>
-</button>
-
-
-          ))}
-        </div>
-
-        <div className="create-character-container">
-          <button className="create-character" onClick={startRecording}>
-            캐릭터 생성하기
-          </button>
-        </div>
-
-      </div>
-
-      {/* Asset Grid (표정 카테고리를 선택했을 때와 그렇지 않을 때) */}
-      <div className={`asset-grid ${selectedCategory === 'EXPRESSION' ? 'expanded' : ''}`} style={{ 
-        display: 'flex',
-        flexDirection: 'column',
-      }}>
-      {selectedCategory === 'EXPRESSION' ? (
-        <>
-
-        {/* 버튼들을 가로로 배치하는 컨테이너 */}
-        <div id="expressionTools" style={{ 
-          position:'sticky', 
-
-          width: '100%',
-          height:'60px',
-
-          display: 'flex', 
-          flexDirection:'row', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          paddingLeft:'10px',
-          boxSizing: 'border-box',
-          zIndex: '999999',
-          borderTop: '1px solid #E6E1DC',
-          borderBottom: '1px solid #E6E1DC',
-          }}
-          >
-
-          {/* 색상 선택 버튼 */}
-          <div className="expression-color-selection" style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', // 'alignItens'를 'alignItems'로 수정
-            width: '75%',
-            height: '100%'
-          }}>
-        {GRAYSCALE_COLORS.map((colorObj, index) => (
-          <button
-          key={index}
-          onClick={() => {
-            setExpressionDrawingColor(colorObj.color);
-            clearCanvasWithColor(colorObj.color);
-            handleHeadSelection(index);
-            setSelectedFaceColor(colorObj.color);
-          }}
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            border: 'none',
-            padding: '0',
-            width: '32px',
-            height: '32px',
-            position: 'relative',
-            boxSizing: 'border-box',
-            background: 'none',
-            filter: 'drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.5))',
-          }}
-        >
-          <svg width="32" height="32" viewBox="0 0 35 33" fill="none" xmlns="http://www.w3.org/2000/svg" style={{position: 'absolute', top: 0, left: 0}}>
-            <mask id={`mask-${index}`} maskUnits="userSpaceOnUse" x="0" y="0" width="35" height="33">
-              <path d="M31.732 24.906C31.3723 25.5071 29.9437 27.7978 27.161 29.7447C22.4124 33.067 17.3387 32.7323 15.527 32.6887C9.3294 32.5388 4.97102 28.6501 3.13725 25.9566C1.24676 23.18 -2.05667 18.3511 2.45184 9.31604C6.10884 1.98759 10.1052 1.45598 13.6287 0.508273C20.5745 -1.35954 28.416 1.9484 32.7435 9.97204C35.264 14.6458 34.2974 20.6183 31.732 24.9057V24.906Z" fill="white"/>
-            </mask>
-            <g mask={`url(#mask-${index})`}>
-              <rect width="35" height="33" fill={colorObj.bigColor} />
-            </g>
-          </svg>
-          <svg
-            width="23"
-            height="23"
-            viewBox="0 0 28 23"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-58%, -50%)',
-            }}
-          >
-            <mask id={`small-mask-${index}`} maskUnits="userSpaceOnUse" x="0" y="0" width="28" height="23">
-              <path d="M8.99724 2.29525C9.37989 2.01516 10.8738 0.96221 13.1275 0.476599C16.9729 -0.352017 20.0668 1.17971 21.1914 1.67968C25.0386 3.38958 26.7561 6.94617 27.2027 9.10064C27.663 11.3215 28.4736 15.1879 23.2868 19.6336C19.0796 23.2398 16.435 22.5281 13.978 22.1984C9.13463 21.5487 5.08135 17.4449 4.46305 11.3235C4.10306 7.75802 6.26882 4.29377 8.99724 2.29525Z" fill="white"/>
-            </mask>
-            <g mask={`url(#small-mask-${index})`}>
-              <rect width="28" height="23" fill={colorObj.smallColor} />
-            </g>
-          </svg>
-
-          {selectedFaceColor === colorObj.color && (
-            <img 
-              src="/static/stockimages/check.png" 
-              alt="check" 
-              style={{
-                position: 'absolute',
-                width: '45%',
-                height: '45%',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-              }} 
-            />
-          )}
-        </button>
-
-        ))}
-      </div>
-
-        {/* 연필/지우개 토글 버튼 */}
-
-        <div className="expression-tool-selection" style={{ 
-          display: 'flex', 
-          justifyContent: 'space-around', 
-          alignItems: 'center',
-          marginLeft: '10px',
-          width: 'calc(25%)'}}
-          >
-          <button
-            onClick={() => setExpressionIsErasing(!expressionIsErasing)}
-            style={{
-              width: '32px',           // 너비 32px
-              height: '32px',          // 높이 32px
-              borderRadius: '50%',     // 둥근 원 모양
-              backgroundColor: '#000', // 배경색 검정
-              backgroundImage: `url(${expressionIsErasing ? 'static/stockimages/eraser.png' : 'static/stockimages/pencil.png'})`, // 조건에 따라 배경 이미지 변경
-              backgroundPosition: 'center',
-              backgroundSize: '70%',
-              backgroundRepeat: 'no-repeat',
-              boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.45)', // 그림자 효과
-              border: 'none',         // 테두리 없음
-              cursor: 'pointer',      // 마우스 커서 변경
-            }}
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      height: "100vh",
+      width: "100vw",
+      // minHeight: '780px'
+    }}
+    id="whatareYou"
+  >
+    {/* 처음 초대장 */}
+    {overlayVisible && (
+      <div id="overlay" className="overlay">
+        <div className="overlay-content">
+          <img
+            src="../static/stockimages/maker_invitation.png"
+            alt="Invitation"
           />
-
-          {/* 적용 버튼 */}
-          <div className="apply-button" style={{ 
-            display: 'flex', 
-            justifyContent: 'center',
-            alignItems:'center' 
-            }}>
-            <button
-              onClick={applyExpressionTextureToModel}
-              style={{
-                width: '32px',           // 너비 32px
-                height: '32px',          // 높이 32px
-                borderRadius: '50%',     // 둥근 원 모양
-                backgroundColor: '#000', // 배경색 검정
-                backgroundImage: 'url(static/stockimages/apply.png)', // apply.png 이미지 사용
-                backgroundPosition: 'center',
-                backgroundSize: '60%',   // 이미지 크기를 50%로 설정
-                backgroundRepeat: 'no-repeat',
-                boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.45)', // 그림자 효과
-                border: 'none',         // 테두리 없음
-                cursor: 'pointer',      // 마우스 커서 변경
-              }}
-            />
-          </div>
-
         </div>
-
       </div>
+    )}
 
-      <div
-  style={{
-    position: 'relative',
-    width: '400px',  // 너비를 고정된 크기로 설정
-    height: '400px',  // 고정된 높이
-    overflow: 'hidden',  // 초과된 부분을 숨기기
-  }}
->
-  {/* 배경 이미지 */}
-  <img
-    src="static/stockimages/facebackground.png"
-    alt="Face Background"
-    style={{
-      position: 'absolute',
-      // top: '-250px',  // 캔버스의 250px 상단을 숨김
-      left: '0',
-      width: '100%',  // 고정된 900px 너비
-      height: '100%',  // 고정된 900px 높이
-      size: 'contain',  // 이미지 크기를 커버로 설정
-      pointerEvents: 'none', // 이미지에 클릭이 되지 않게 설정
-      zIndex: 1000,
-    }}
-  />
+    <Header title="춤 복장 선택하기" onMenuClick={handleMenuClick} />
 
-  {/* 표정 그리기용 캔버스 */}
-  <canvas
-    ref={expressionCanvasRef}
-    width={400}  // 실제 캔버스의 고정된 해상도
-    height={400} // 실제 캔버스의 고정된 해상도
-    style={{
-      position: 'absolute',
-      top: '-250px',  // 250px 상단을 숨김
-      left: '0',
-      width: '900px',  // 고정된 너비
-      height: '900px', // 고정된 높이
-      background: 'transparent', // 배경을 투명하게 설정
-      transform: 'translate(-30px, -20px)',  // X축으로 -500px 이동하여 오른쪽을 보이게 함
-      
-      zIndex: 2,  // 캔버스가 이미지 위에 렌더링되도록 설정
-    }}
-    // 마우스 이벤트
-    onMouseDown={startExpressionDrawing}
-    onMouseMove={drawExpression}
-    onMouseUp={finishExpressionDrawing}
-    // 터치 이벤트 
-    onTouchStart={startExpressionDrawing}
-    onTouchMove={drawExpression}
-    onTouchEnd={finishExpressionDrawing}
-  />
-</div>
-
-
-    </>
-
-      ) : (
-      <>
-      {activeCategory && activeCategory.assets.map((asset, index) => (
-      <div
-        className="pictures"
-        key={index}
-        style={{
-          maxWidth: '100%',
-          maxHeight: '100%',
-          borderRadius: '18px',
-          // border: selectedIndices[activeCategory.name] === index ? '3px solid #E9A7A7' : 'none', // 선택된 항목에 경계선 추가
-          backgroundColor: selectedIndices[activeCategory.name] === index ? '#E9A7A7' : '#EDECE7', // 선택된 항목에 배경색 추가
-        }}
-        onClick={() => {
-          handleAssetSelection(activeCategory.name, index); // 카테고리별 선택된 인덱스 업데이트
-          const modelPath = activeCategory.useColor
-          ? `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}_${selectedColor || 'Black'}.glb`
-          : `/static/models/${activeCategory.name.toLowerCase()}_${index + 1}.glb`;
-        
-          console.log(modelPath);
-          loadModel(modelPath, activeCategory.name, activeCategory.useColor);
-        }}
-      >
+    {/* 녹화 중일 때 보여줄 "녹화중입니다" 이미지 */}
+    {isRecording && (
+      <div id="splash-screen" className="splash-screen">
         <img
-          src={`/static/assetImages/${
-            activeCategory.useColor
-            ? `${activeCategory.name.toLowerCase()}_${index + 1}_${selectedColor}`
-            : `${activeCategory.name.toLowerCase()}_${index + 1}`
-          }.png`}
-          alt={`Asset ${index}`}
+          src="/static/stockimages/making.png"
+          alt="Splash"
           style={{
-            width:'100%',
-            height:'100%',
-            borderRadius: '18px',
-            boxSizing: 'content-box',
+            position: "Fixed",
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            top: "0",
+            left: "0",
+            zIndex: "999999999",
           }}
         />
+ 
       </div>
-      ))}
-      </>
-      )}
-      </div>
+    )}
 
+    {/* 전체 컨테이너 */}
+    <div
+      id="container"
+      style={{
+        position: "relative",
+        top: "58px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "start",
+        overflow: "hidden",
+        // backgroundColor: "salmon",
+        zIndex: "10",
+      }}
+    >
+      <canvas id="ourcanvas" ref={canvasRef} />
+      <canvas ref={hiddenCanvasRef} style={{ display: "none" }} />
 
-      {activeCategory && activeCategory.useColor && (
-        <div className="color-selection">
-          {COLORS.map((color, index) => (
-                <button
+      <div className="controls" style={{
+        left: 0,
+      }}>
+        <div id="botbottoms" style={{ display: "flex", flexDirection: "Column" }}>
+          <div className="category-selection">
+            {CATEGORIES.map((category, index) => (
+              <button
+                key={category.name}
+                onClick={() => handleCategorySelection(category)} // Handles category selection on click
+                className={`color-button ${
+                  selectedCategory === category.name ? "selected" : ""
+                }`}
+                disabled={category.name === "BOTTOM" && isDressSelected} // Disable button based on conditions
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: "0",
+                  width: "44px",
+                  height: "44px",
+                  backgroundColor: "transparent", // Ensure background is transparent
+                  cursor: "pointer",
+                  position: "relative",
+                  boxSizing: "border-box",
+                  border: "none", // Remove border from button
+                  outline: "none", // Removes pink outline on click
+                  WebkitTapHighlightColor: "transparent", /* 클릭 시 하이라이트 제거 */
+                  userSelect: "none", // 텍스트 선택 방지
+                }}
+              >
+                <svg
+                  width="44"
+                  height="44"
+                  viewBox="0 0 44 44"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  overflow="visible"
+                >
+                  <defs>
+                    {/* Adjust drop shadow filter to prevent clipping */}
+                    <filter
+                      id="drop-shadow-path-filter"
+                      x="-50%"
+                      y="-50%"
+                      width="200%"
+                      height="200%"
+                      filterUnits="userSpaceOnUse"
+                    >
+                      <feDropShadow
+                        dx="0"
+                        dy="4"
+                        stdDeviation="4"
+                        floodColor="rgba(0, 0, 0, 0.25)"
+                      />
+                    </filter>
+                  </defs>
+
+                  {/* Apply shadow directly to the path and scale it to fit the 44x44 size */}
+                  <path
+                    d="M31.732 24.906C31.3723 25.5071 29.9437 27.7978 27.161 29.7447C22.4124 33.067 17.3387 32.7323 15.527 32.6887C9.3294 32.5388 4.97102 28.6501 3.13725 25.9566C1.24676 23.18 -2.05667 18.3511 2.45184 9.31604C6.10884 1.98759 10.1052 1.45598 13.6287 0.508273C20.5745 -1.35954 28.416 1.9484 32.7435 9.97204C35.264 14.6458 34.2974 20.6183 31.732 24.9057V24.906Z"
+                    fill={
+                      selectedCategory === category.name
+                        ? "#e9a7a7"
+                        : "#bab9b3"
+                    } // Fill color based on selection
+                    filter="url(#drop-shadow-path-filter)" // Apply shadow directly to the path
+                    stroke="#E6E1DC" // Border color following the path
+                    strokeWidth="1" // Border thickness
+                    transform="scale(1.25 1.25)" // Scale the path to fit within 44x44
+                  />
+                </svg>
+
+                {/* Text label inside the button */}
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    color: "#f8f6f1",
+                    fontSize: "12px",
+                  }}
+                >
+                  {CATEGORY_NAME_MAP[category.name]} {/* Display category name */}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div className="create-character-container">
+            <button className="create-character" onClick={startRecording}>
+              캐릭터 생성하기
+            </button>
+          </div>
+        </div>
+
+        {/* Asset Grid (표정 카테고리를 선택했을 때와 그렇지 않을 때) */}
+        <div
+          className={`asset-grid ${
+            selectedCategory === "EXPRESSION" ? "expanded" : ""
+          }`}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {selectedCategory === "EXPRESSION" ? (
+            <>
+              {/* 버튼들을 가로로 배치하는 컨테이너 */}
+              <div id="expressionTools">
+                {/* 색상 선택 버튼 */}
+                <div
+                  className="expression-color-selection"
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center", // 'alignItens'를 'alignItems'로 수정
+                    width: "75%",
+                    height: "100%",
+                  }}
+                >
+                  {GRAYSCALE_COLORS.map((colorObj, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setExpressionDrawingColor(colorObj.color);
+                        clearCanvasWithColor(colorObj.color);
+                        handleHeadSelection(index);
+                        setSelectedFaceColor(colorObj.color);
+                      }}
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        border: "none",
+                        padding: "0",
+                        width: "32px",
+                        height: "32px",
+                        position: "relative",
+                        boxSizing: "border-box",
+                        background: "none",
+                        filter:
+                          "drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.5))",
+                      }}
+                    >
+                      <svg
+                        width="32"
+                        height="32"
+                        viewBox="0 0 35 33"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        style={{ position: "absolute", top: 0, left: 0 }}
+                      >
+                        <mask
+                          id={`mask-${index}`}
+                          maskUnits="userSpaceOnUse"
+                          x="0"
+                          y="0"
+                          width="35"
+                          height="33"
+                        >
+                          <path
+                            d="M31.732 24.906C31.3723 25.5071 29.9437 27.7978 27.161 29.7447C22.4124 33.067 17.3387 32.7323 15.527 32.6887C9.3294 32.5388 4.97102 28.6501 3.13725 25.9566C1.24676 23.18 -2.05667 18.3511 2.45184 9.31604C6.10884 1.98759 10.1052 1.45598 13.6287 0.508273C20.5745 -1.35954 28.416 1.9484 32.7435 9.97204C35.264 14.6458 34.2974 20.6183 31.732 24.9057V24.906Z"
+                            fill="white"
+                          />
+                        </mask>
+                        <g mask={`url(#mask-${index})`}>
+                          <rect
+                            width="35"
+                            height="33"
+                            fill={colorObj.bigColor}
+                          />
+                        </g>
+                      </svg>
+                      <svg
+                        width="23"
+                        height="23"
+                        viewBox="0 0 28 23"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        style={{
+                          position: "absolute",
+                          top: "50%",
+                          left: "50%",
+                          transform: "translate(-58%, -50%)",
+                        }}
+                      >
+                        <mask
+                          id={`small-mask-${index}`}
+                          maskUnits="userSpaceOnUse"
+                          x="0"
+                          y="0"
+                          width="28"
+                          height="23"
+                        >
+                          <path
+                            d="M8.99724 2.29525C9.37989 2.01516 10.8738 0.96221 13.1275 0.476599C16.9729 -0.352017 20.0668 1.17971 21.1914 1.67968C25.0386 3.38958 26.7561 6.94617 27.2027 9.10064C27.663 11.3215 28.4736 15.1879 23.2868 19.6336C19.0796 23.2398 16.435 22.5281 13.978 22.1984C9.13463 21.5487 5.08135 17.4449 4.46305 11.3235C4.10306 7.75802 6.26882 4.29377 8.99724 2.29525Z"
+                            fill="white"
+                          />
+                        </mask>
+                        <g mask={`url(#small-mask-${index})`}>
+                          <rect
+                            width="28"
+                            height="23"
+                            fill={colorObj.smallColor}
+                          />
+                        </g>
+                      </svg>
+
+                      {selectedFaceColor === colorObj.color && (
+                        <img
+                          src="/static/stockimages/check.png"
+                          alt="check"
+                          style={{
+                            position: "absolute",
+                            width: "45%",
+                            height: "45%",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                          }}
+                        />
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {/* 연필/지우개 토글 버튼 */}
+                <div
+                  className="expression-tool-selection"
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-around",
+                    alignItems: "center",
+                    paddingLeft: "10px",
+                    width: "25%",
+                  }}
+                >
+                  <button
+                    onClick={() =>
+                      setExpressionIsErasing(!expressionIsErasing)
+                    }
+                    style={{
+                      width: "32px", // 너비 32px
+                      height: "32px", // 높이 32px
+                      borderRadius: "50%", // 둥근 원 모양
+                      backgroundColor: "#000", // 배경색 검정
+                      backgroundImage: `url(${
+                        expressionIsErasing
+                          ? "static/stockimages/eraser.png"
+                          : "static/stockimages/pencil.png"
+                      })`, // 조건에 따라 배경 이미지 변경
+                      backgroundPosition: "center",
+                      backgroundSize: "70%",
+                      backgroundRepeat: "no-repeat",
+                      boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.45)", // 그림자 효과
+                      border: "none", // 테두리 없음
+                      cursor: "pointer", // 마우스 커서 변경
+                    }}
+                  />
+
+                  {/* 적용 버튼 */}
+                  <div
+                    className="apply-button"
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <button
+                      onClick={applyExpressionTextureToModel}
+                      style={{
+                        width: "32px", // 너비 32px
+                        height: "32px", // 높이 32px
+                        borderRadius: "50%", // 둥근 원 모양
+                        backgroundColor: "#000", // 배경색 검정
+                        backgroundImage:
+                          "url(static/stockimages/apply.png)", // apply.png 이미지 사용
+                        backgroundPosition: "center",
+                        backgroundSize: "60%", // 이미지 크기를 50%로 설정
+                        backgroundRepeat: "no-repeat",
+                        boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.45)", // 그림자 효과
+                        border: "none", // 테두리 없음
+                        cursor: "pointer", // 마우스 커서 변경
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 얼굴그리기 */}
+              <div
+                style={{
+                  position: "relative",
+                  width: "100%", // 너비를 고정된 크기로 설정
+                  aspectRatio: "800 / 586", // 가로 세로 비율을 이미지에 맞춤
+                  overflow: "hidden", // 초과된 부분을 숨기기
+                  background: "red",
+                }}
+              >
+                {/* 배경 이미지 */}
+                <img
+                  src="static/stockimages/facebackground.png"
+                  alt="Face Background"
+                  style={{
+                    position: "absolute",
+                    left: "0",
+                    width: "100%", // 고정된 900px 너비
+                    height: "100%", // 고정된 900px 높이
+                    size: "contain", // 이미지 크기를 커버로 설정
+                    pointerEvents: "none", // 이미지에 클릭이 되지 않게 설정
+                    zIndex: 1000,
+                  }}
+                />
+
+                {/* 표정 그리기용 캔버스 */}
+                <canvas
+                  ref={expressionCanvasRef}
+                  width={400} // 실제 캔버스의 고정된 해상도
+                  height={400} // 실제 캔버스의 고정된 해상도
+                  style={{
+                    position: "absolute",
+                    top: "-250px", // 250px 상단을 숨김
+                    left: "0",
+                    width: "900px", // 고정된 너비
+                    height: "900px", // 고정된 높이
+                    background: "transparent", // 배경을 투명하게 설정
+                    transform: "translate(-30px, -20px)", // X축으로 -500px 이동하여 오른쪽을 보이게 함
+                    zIndex: 2, // 캔버스가 이미지 위에 렌더링되도록 설정
+                  }}
+                  // 마우스 이벤트
+                  onMouseDown={startExpressionDrawing}
+                  onMouseMove={drawExpression}
+                  onMouseUp={finishExpressionDrawing}
+                  // 터치 이벤트
+                  onTouchStart={startExpressionDrawing}
+                  onTouchMove={drawExpression}
+                  onTouchEnd={finishExpressionDrawing}
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              {activeCategory &&
+                activeCategory.assets.map((asset, index) => (
+                  <div
+                    className="pictures"
+                    key={index}
+                    style={{
+                      maxWidth: "100%",
+                      maxHeight: "100%",
+                      borderRadius: "18px",
+                      backgroundColor:
+                        selectedIndices[activeCategory.name] === index
+                          ? "#E9A7A7"
+                          : "#EDECE7", // 선택된 항목에 배경색 추가
+                    }}
+                    onClick={() => {
+                      handleAssetSelection(activeCategory.name, index); // 카테고리별 선택된 인덱스 업데이트
+                      const modelPath = activeCategory.useColor
+                        ? `/static/models/${
+                            activeCategory.name.toLowerCase()
+                          }_${index + 1}_${
+                            selectedColor || "Black"
+                          }.glb`
+                        : `/static/models/${
+                            activeCategory.name.toLowerCase()
+                          }_${index + 1}.glb`;
+
+                      console.log(modelPath);
+                      loadModel(
+                        modelPath,
+                        activeCategory.name,
+                        activeCategory.useColor
+                      );
+                    }}
+                  >
+                    <img
+                      src={`/static/assetImages/${
+                        activeCategory.useColor
+                          ? `${activeCategory.name.toLowerCase()}_${
+                              index + 1
+                            }_${selectedColor}`
+                          : `${activeCategory.name.toLowerCase()}_${
+                              index + 1
+                            }`
+                      }.png`}
+                      alt={`Asset ${index}`}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: "18px",
+                        boxSizing: "content-box",
+                      }}
+                    />
+                  </div>
+                ))}
+            </>
+          )}
+        </div>
+
+        {activeCategory && activeCategory.useColor && (
+          <div className="color-selection">
+            {COLORS.map((color, index) => (
+              <button
                 key={color.name}
                 onClick={() => {
                   selectColor(activeCategory.name, color.name);
@@ -1488,22 +1587,40 @@ const clearExpressionCanvas = useCallback(() => {
                 }}
                 className="color-button"
                 style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  border: 'none',
-                  padding: '0',
-                  width: '32px',
-                  height: '32px',
-                  position: 'relative',
-                  boxSizing: 'border-box',
-                  background: 'none',
-                  filter: 'drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25))',
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  border: "none",
+                  padding: "0",
+                  width: "32px",
+                  height: "32px",
+                  position: "relative",
+                  boxSizing: "border-box",
+                  background: "none",
+                  filter:
+                    "drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25))",
                 }}
               >
-                <svg width="32" height="32" viewBox="0 0 35 33" fill="none" xmlns="http://www.w3.org/2000/svg" style={{position: 'absolute', top: 0, left: 0}}>
-                  <mask id={`mask-${index}`} maskUnits="userSpaceOnUse" x="0" y="0" width="35" height="33">
-                    <path d="M31.732 24.906C31.3723 25.5071 29.9437 27.7978 27.161 29.7447C22.4124 33.067 17.3387 32.7323 15.527 32.6887C9.3294 32.5388 4.97102 28.6501 3.13725 25.9566C1.24676 23.18 -2.05667 18.3511 2.45184 9.31604C6.10884 1.98759 10.1052 1.45598 13.6287 0.508273C20.5745 -1.35954 28.416 1.9484 32.7435 9.97204C35.264 14.6458 34.2974 20.6183 31.732 24.9057V24.906Z" fill="white"/>
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 35 33"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  style={{ position: "absolute", top: 0, left: 0 }}
+                >
+                  <mask
+                    id={`mask-${index}`}
+                    maskUnits="userSpaceOnUse"
+                    x="0"
+                    y="0"
+                    width="35"
+                    height="33"
+                  >
+                    <path
+                      d="M31.732 24.906C31.3723 25.5071 29.9437 27.7978 27.161 29.7447C22.4124 33.067 17.3387 32.7323 15.527 32.6887C9.3294 32.5388 4.97102 28.6501 3.13725 25.9566C1.24676 23.18 -2.05667 18.3511 2.45184 9.31604C6.10884 1.98759 10.1052 1.45598 13.6287 0.508273C20.5745 -1.35954 28.416 1.9484 32.7435 9.97204C35.264 14.6458 34.2974 20.6183 31.732 24.9057V24.906Z"
+                      fill="white"
+                    />
                   </mask>
                   <g mask={`url(#mask-${index})`}>
                     <rect width="35" height="33" fill={color.bigCircle} />
@@ -1516,14 +1633,24 @@ const clearExpressionCanvas = useCallback(() => {
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                   style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-58%, -50%)',
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-58%, -50%)",
                   }}
                 >
-                  <mask id={`small-mask-${index}`} maskUnits="userSpaceOnUse" x="0" y="0" width="28" height="23">
-                    <path d="M8.99724 2.29525C9.37989 2.01516 10.8738 0.96221 13.1275 0.476599C16.9729 -0.352017 20.0668 1.17971 21.1914 1.67968C25.0386 3.38958 26.7561 6.94617 27.2027 9.10064C27.663 11.3215 28.4736 15.1879 23.2868 19.6336C19.0796 23.2398 16.435 22.5281 13.978 22.1984C9.13463 21.5487 5.08135 17.4449 4.46305 11.3235C4.10306 7.75802 6.26882 4.29377 8.99724 2.29525Z" fill="white"/>
+                  <mask
+                    id={`small-mask-${index}`}
+                    maskUnits="userSpaceOnUse"
+                    x="0"
+                    y="0"
+                    width="28"
+                    height="23"
+                  >
+                    <path
+                      d="M8.99724 2.29525C9.37989 2.01516 10.8738 0.96221 13.1275 0.476599C16.9729 -0.352017 20.0668 1.17971 21.1914 1.67968C25.0386 3.38958 26.7561 6.94617 27.2027 9.10064C27.663 11.3215 28.4736 15.1879 23.2868 19.6336C19.0796 23.2398 16.435 22.5281 13.978 22.1984C9.13463 21.5487 5.08135 17.4449 4.46305 11.3235C4.10306 7.75802 6.26882 4.29377 8.99724 2.29525Z"
+                      fill="white"
+                    />
                   </mask>
                   <g mask={`url(#small-mask-${index})`}>
                     <rect width="28" height="23" fill={color.smallCircle} />
@@ -1531,29 +1658,28 @@ const clearExpressionCanvas = useCallback(() => {
                 </svg>
 
                 {selectedColor === color.name && (
-            <img 
-              src="/static/stockimages/check.png" 
-              alt="check" 
-              style={{
-                position: 'absolute',
-                width: '45%',
-                height: 'auto',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-              }} 
-            />
-          )}
-
+                  <img
+                    src="/static/stockimages/check.png"
+                    alt="check"
+                    style={{
+                      position: "absolute",
+                      width: "45%",
+                      height: "auto",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                    }}
+                  />
+                )}
               </button>
-          
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
       </div>
     </div>
   </div>
 </div>
+
 
         );
       };

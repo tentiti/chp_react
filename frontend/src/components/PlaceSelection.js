@@ -218,6 +218,7 @@ const PlaceSelection = () => {
                         width: '100%',
                         padding: '0 5px',
                         boxSizing: 'border-box',
+                        
                     }}>
                         <div 
                             style={{ 
@@ -225,6 +226,7 @@ const PlaceSelection = () => {
                                 fontSize: '22px',
                                 color: 'rgba(65,30,45,0.3)',
                                 zIndex: 1000,
+                                textShadow: '0px 2px 2px rgba(0, 0, 0, 0.25)'
                             }}
                             onClick={handlePrevious}
                         >
@@ -265,6 +267,7 @@ const PlaceSelection = () => {
 
                 {/* Work details */}
                 <div id="workdetails" style={{ 
+                    letterSpacing:`-0.025em`,
                     width: '100%',
                     maxWidth: '390px',
                     margin: '0 auto',
@@ -306,7 +309,8 @@ const PlaceSelection = () => {
                         bottom: isScrolledToBottom ? 'auto' : '80px',
                         width: '100%',
                         height: '65px',
-                        border: '1px solid #E6E1DC',
+                        borderTop: !isScrolledToBottom ?  '1px solid #E6E1DC' : 'none',
+                        borderBottom: isScrolledToBottom ?  '1px solid #E6E1DC' : 'none',
                         backgroundColor: '#F8F6F1',
                         cursor: 'pointer',
                         textAlign: 'center',

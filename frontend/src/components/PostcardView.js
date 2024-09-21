@@ -7,21 +7,26 @@ import { UseVideo } from './VideoContext';
 import { isTablet, isDesktop } from 'react-device-detect';
 import Header from './Header';
 import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
+import Credit from './Credit'
 
 const PostcardView = () => {
   //초대
   const [isInvitationVisible, setIsInvitationVisible] = useState(false); // Invitation의 가시성을 관리하는 상태
-  const [isFloatingVisible, setIsFloatingVisible] = useState(true); // 플로팅 버튼 가시성 관리 상태
 
+  //크레딧
+  const [isCreditVisible, setIsCreditVisible] = useState(false);
+  
   // Invitation을 보이게 하는 함수 (메뉴 클릭 시 호출됨)
   const handleMenuClick = () => {
-    setIsInvitationVisible(true);
+    // setIsInvitationVisible(true);
+    setIsCreditVisible(true);
     // setIsFloatingVisible(false); // Invitation을 보이면 플로팅 버튼을 숨김
   };
 
   // Invitation을 숨기고 원래 화면으로 돌아가는 함수 (뒤로가기 클릭 시 호출됨)
   const handleBackClick = () => {
-    setIsInvitationVisible(false);
+    // setIsInvitationVisible(false);
+    setIsCreditVisible(false);
     // setIsFloatingVisible(true); // Invitation을 숨기고 플로팅 버튼을 다시 보이게 함
   };
   const { videoFiles } = UseVideo(); // Blob URL 가져오기 (배열로 여러 개의 비디오 파일)
@@ -387,6 +392,12 @@ const PostcardView = () => {
       {isInvitationVisible && (
         <div className={`invitation-container ${isInvitationVisible ? 'visible' : ''}`}>
           <Invitation onBack={handleBackClick} /> {/* Invitation 컴포넌트 및 뒤로가기 핸들러 */}
+        </div>
+      )}
+
+    {isCreditVisible && (
+        <div className={`invitation-container ${isCreditVisible ? 'visible' : ''}`}>
+          <Credit onBack={handleBackClick} /> {/* Invitation 컴포넌트 및 뒤로가기 핸들러 */}
         </div>
       )}
      

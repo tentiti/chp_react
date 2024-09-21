@@ -113,8 +113,8 @@ const PostcardShareView = () => {
       backgroundImage: `url('/static/stockimages/background_paper.png')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
-      width: isFixedSize ? '390px' : '100vw', // 고정 크기 또는 가로 100%
-      height: isFixedSize ? '780px' : '100vh', // 고정 크기 또는 세로 100%
+      width: isFixedSize ? '390px' : '100%', // 고정 크기 또는 가로 100%
+      height: isFixedSize ? '780px' : '100%', // 고정 크기 또는 세로 100%
 
       display: 'flex',
       flexDirection: 'column',
@@ -159,10 +159,10 @@ const PostcardShareView = () => {
       <div id="createdImages" style={{
         position: 'fixed',
         top: '58px',
-        width: '100vw',  // 창 너비를 100%로 맞춤
-        height: 'auto',
-        maxWidth: '390px',
-        aspectRatio: '1572/2614',  // 16:9 비율을 유지
+        // width: '100%',  // 창 너비를 100%로 맞춤
+        height: 'calc(100% - 70px)',  // 높이는 전체에서 160px을 뺀 값으로 설정
+        aspectRatio: '9/18',  // 16:9 비율을 유지
+        minWidth: '200px',  // 최대 너비 제한
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -170,11 +170,10 @@ const PostcardShareView = () => {
         zIndex: '900',
         overflow: 'hidden',
         backgroundImage: `url(/static/stockimages/share_postcardfinal_${postcard.number}.png)`,
-        backgroundSize: 'cover',  // 배경 이미지가 컨테이너를 덮도록 설정
+        backgroundSize: 'contain',  // 배경 이미지가 컨테이너를 덮도록 설정
         backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'center',  // 이미지가 가운데에 위치하게 설정
+        backgroundPosition: 'center Top',  // 이미지가 가운데에 위치하게 설정
       }}>
-
 
 
           <img
@@ -197,7 +196,7 @@ const PostcardShareView = () => {
         <div
           style={{
             position: 'absolute',
-            top: '73.0%',
+            top: '60.0%',
             zIndex: '900',
             width: '83%',
             color: '#412823',
@@ -217,7 +216,7 @@ const PostcardShareView = () => {
         <div
           style={{
             position: 'absolute',
-            top: '81.2%',
+            top: '67.2%',
             zIndex: '900',
             width: '20%',
             color: '#412823',
@@ -239,7 +238,7 @@ const PostcardShareView = () => {
         <div
           style={{
             position: 'absolute',
-            top: '86.4%',
+            top: '71.7%',
             zIndex: '900',
             width: '20%',
             color: '#412823',
@@ -247,22 +246,27 @@ const PostcardShareView = () => {
             fontSize: '8px',
             fontFamily: 'pretandard, sans-serif',
             position: 'relative',
-            left: '105px',
+            left: '28%',
             textAlign: 'center',
+            verticalAlign: 'middle',
             overflow: 'hidden',
           }}
         >
           {postcard.name}
         </div>
 
+
+
+
+      </div>
+
               {/* Add a button to start audio playback and restart the GIF */}
-      <button 
+        <button 
         onClick={handlePlayAudioAndRestartGIF} 
         style={{
           position: 'absolute',
           zIndex: '200000',
-          top: '95%',
-          marginBottom: '60px',
+          bottom: '65px',
           cursor: 'pointer',
           overflow: 'hidden',
 
@@ -273,14 +277,11 @@ const PostcardShareView = () => {
           background: '#F8F6F1',
           border: '1px solid #E6E1DC',
           boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.25)',
-
+          color: '#412823',
         }}
       >
         음악과 함께 춤추기
       </button>
-
-
-      </div>
 
       <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', display: 'none' }}></canvas>
 

@@ -86,7 +86,7 @@ function Home() {
         const containerRect = container.getBoundingClientRect();
         const maxX = Math.min(containerRect.width - buttonWidth, 390 - buttonWidth);
         const maxY = Math.min(containerRect.height - buttonHeight, 780 - buttonHeight);
-        console.log("Container dimensions:", { width: containerRect.width, height: containerRect.height, maxX, maxY });
+        // console.log("Container dimensions:", { width: containerRect.width, height: containerRect.height, maxX, maxY });
         return { maxX, maxY };
       };
   
@@ -144,8 +144,10 @@ function Home() {
           if (posX >= maxX - collisionMargin - buttonWidth) posX = maxX - collisionMargin - buttonWidth;
           if (posY <= collisionMargin + 58) posY = collisionMargin + 58;
           if (posY >= maxY - collisionMargin - buttonHeight) posY = maxY - collisionMargin - buttonHeight;
-      
+          console.log(now);
+          
           if (now - lastCollisionTime > collisionCooldown) {
+            console.log(now);
             angle = Math.random() * 2 * Math.PI; // New random angle on collision
             lastCollisionTime = now;
             floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
@@ -156,7 +158,7 @@ function Home() {
         floatingButton.style.left = `${posX}px`;
         floatingButton.style.top = `${posY}px`;
       
-        console.log("Button position updated:", { posX, posY, collision });
+        // console.log("Button position updated:", { posX, posY, collision });
       
         requestAnimationFrame(moveFloatingButton);
       }
@@ -182,8 +184,8 @@ function Home() {
       window.addEventListener('resize', updateContainerDimensions);
 
     } else {
-      console.log("Floating button or container not found, or isFloatingVisible is false:", 
-        { floatingButton: !!floatingButton, container: !!container, isFloatingVisible });
+      // console.log("Floating button or container not found, or isFloatingVisible is false:", 
+        // { floatingButton: !!floatingButton, container: !!container, isFloatingVisible });
     }
 
     function initializeAjaxLinks() {
@@ -218,7 +220,7 @@ function Home() {
     }
 
     function handleScroll(e) {
-      console.log('Scroll event:', e.target.scrollTop);
+      // console.log('Scroll event:', e.target.scrollTop);
     }
 
     adjustContainerHeight();
@@ -234,9 +236,9 @@ function Home() {
   }, [isFloatingVisible]);
 
   return (
-    <div className="App" style={{height: '100%', overflow: 'hidden'}}>
-      {!isInvitationVisible && (
-        <div id="headerLoader" style={{ backgroundColor: isInvitationVisible ? 'transparent' : '#f8f6f1', left: '50%', transform: 'translateX(-50%)', width: '390px' }}>
+    <div className="App" style={{height: '100%', overflow: 'hidden', width: '100%'}}>
+
+      <div id="headerLoader" style={{ backgroundColor: isInvitationVisible ? 'transparent' : '#f8f6f1', left: '50%', transform: 'translateX(-50%)', width: '100%', zIndex: '100'}}>
           <header style={{ backgroundColor: 'transparent', width: '390px' }}>
             <div className="titleArea" style={{ width: '100%' }}>
               <div style={{ fontFamily: 'ClimateCrisisKR-1979', flexGrow: 0, textAlign: 'left' }}>
@@ -249,7 +251,7 @@ function Home() {
                 display:'flex', 
                 justifyContent:'center', 
                 alignItems:"center",
-                marginLeft: 'auto'
+                // marginLeft: 'auto'
               }}>
                 <img src="/static/icons/hamburger.png" alt="menu" id="menu-button" />
               </div>
@@ -257,8 +259,6 @@ function Home() {
           </header>
           
         </div>
-      )}
-
       <div className="container" id="content" ref={containerRef}>
       {isFloatingVisible && <div ref={floatingButtonRef} className="floating"></div>}
         <div id="ajax-content">
@@ -301,12 +301,14 @@ function Home() {
       </div>
 
       {isInvitationVisible && (
-        <div className={`invitation-container ${isInvitationVisible ? 'visible' : ''}`}>
+        <div className={`invitation-container ${isInvitationVisible ? 'visible' : ''}`}style={{
+          zIndex: '1000',
+        }}>
           <Invitation onBack={handleBackClick} />
         </div>
       )}
 
-      <footer style={{letterSpacing:'-0.025em'}}>
+      <footer style={{letterSpacing:'-0.025em', zIndex:'100'}}>
         <div>2024. 10. 12 - 10.29.</div>
         <div className="footerBorder">|</div>
         <a href="https://google.com">김화순 개인전</a>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-function Invitation({ onBack }) {
+function Credit({ onBack }) {
   const [isSlideIn, setIsSlideIn] = useState(false);
 
   useEffect(() => {
@@ -21,7 +21,7 @@ function Invitation({ onBack }) {
         width: '100%',
         height: '100%',
         transition: 'right 0.7s ease',
-        backgroundColor: 'transparent !important',
+        backgroundColor: 'yellowgreen',
         overflow: 'hidden',
         zIndex: '999999',
       }}
@@ -39,7 +39,7 @@ function Invitation({ onBack }) {
           backgroundPosition: 'center center',
           backgroundAttachment: 'fixed',
           borderTopLeftRadius: '20px',
-          zIndex: '999999 !important',
+          zIndex: 1,
           opacity: 1,
         }}
       ></div>
@@ -178,4 +178,4 @@ function Invitation({ onBack }) {
   );
 }
 
-export default Invitation;
+export default Credit;

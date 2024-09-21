@@ -60,18 +60,6 @@ body {
   overflow: hidden;
 }
 
-.scaled-container {
-  width: 390px; /* 기준 너비 */
-  height: 844px; /* 기준 높이 */
-  background-color: #f8f6f1;
-  /* border: 1px solid #ccc; */
-  /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 그림자(optional) */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: transform 0.3s ease; /* 스케일링 애니메이션 */
-}
-
 .fixed-size-container {
   width: 390px; /* Fixed width */
   height: 780px; /* Fixed height */

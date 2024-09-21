@@ -5,9 +5,9 @@ import Header from './Header';
 import './CreateCharacter.css';
 
 const modelPositions = [
-  { x: 67, y: 150, width: 147, height: 190 },
-  { x: 168, y: 102, width: 147, height: 190 },
-  { x: 196, y: 65, width: 147, height: 190 },
+  { x: 20.85, y: 28.20, width: 45.79, height: 35.71 },
+  { x: 52.33, y: 19.17, width: 45.79, height: 35.71 },
+  { x: 61.06, y: 12.22, width: 45.79, height: 35.71 },
 ];
 
 const PostcardCreation = () => {
@@ -57,9 +57,7 @@ const PostcardCreation = () => {
 
   return (
     <div className="postcard-page">
-      <div style={{
-          fontFamily: 'Pretendard, sans-serif',
-        }}>
+      <div className="header-container">
         <Header title="답신 보내기" />
       </div>
 
@@ -83,9 +81,10 @@ const PostcardCreation = () => {
                   alt="Selected GIF"
                   className="gif-overlay"
                   style={{
-                    left: `${(currentModelPosition.x / 322) * 100}%`,
-                    top: `${(currentModelPosition.y / 532) * 100}%`,
-                    width: `${(currentModelPosition.width / 322) * 100}%`,
+                    left: `${currentModelPosition.x}%`,
+                    top: `${currentModelPosition.y}%`,
+                    width: `${currentModelPosition.width}%`,
+                    height: `${currentModelPosition.height}%`,
                   }}
                 />
               )}
@@ -93,7 +92,7 @@ const PostcardCreation = () => {
           )}
           <div className="forms">
             <div className="input-section">
-              <div className="input-group">
+              <div id="input-name">
                 <label htmlFor="name">이름 :</label>
                 <input
                   id="name"
@@ -103,7 +102,7 @@ const PostcardCreation = () => {
                   className={isNameEmpty ? 'empty' : ''}
                 />
               </div>
-              <div className="input-group">
+              <div id="input-comment">
                 <label htmlFor="comment">한마디 :</label>
                 <div className="textarea-container">
                   <div className={`textarea-background ${isCommentEmpty ? '' : 'hidden'}`}></div>
@@ -126,93 +125,89 @@ const PostcardCreation = () => {
             우리는 어떤 춤을 추게 될까요?
           </div>
         </div>
-
       </div>
 
       <div id="submitcontainer">
-          <button className="submit-button" onClick={handleSubmit}>
-            포스트카드 제출
-          </button>
+        <button className="submit-button" onClick={handleSubmit}>
+          포스트카드 제출
+        </button>
       </div>
       
       <style jsx>{`
-        body{
-          overflow: hidden;
-        }
         .postcard-page {
           font-family: 'Cafe24Simplehae', sans-serif;
-          background-color: #F8F6F1;
-          width: 100%;
-          min-width: 350px;
-          height: auto;
-          display: flex;
-          flex-direction: column;
-          align-items: start;
-          aspect-ratio: 331 / 540;
-
-          position: fixed;
-          top:0;
-          left:0;
           
-        }
-        .postcard-container {
-          position: relative;
-
           width: 100%;
-          aspect-ratio: 331 / 540;
-
-          box-sizing: border-box;
-          left: 0;
-          margin-bottom: 100px;
-        
+          height: 100%;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
+          position: fixed;
+          top: 0;
+          left: 0;
 
-          overflow: hidden;
+          // background-color: yellowgreen;
         }
-        .postcard-content {
-          background-image: url('/static/stockimages/postcard.png');
-          background-size: contain;
-          background-repeat: no-repeat;
-          background-position: center top;
-          
+        .header-container {
+          position: absolute;
+          top:0;
           width: 100%;
-          height: 100%;
+          height: 58px;
+          font-family: 'Pretendard', sans-serif;
+        }
+        .postcard-container {
+          width: 100%;
+          
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
 
-          max-width: 100vw; /* 화면의 가로 크기를 넘지 않도록 설정 */
-          max-height: 100vh; /* 화면의 세로 크기를 넘지 않도록 설정 */
+          // background: salmon;
+        }
 
+        .postcard-content {
+          margin-top: 68px;
+          margin-bottom: 90px;
+          margin-left: 20px;
+          margin-right: 20px;
+
+          background-image: url('/static/stockimages/postcard.png');
+          background-size: contain; /* 이미지가 비율을 유지하며 축소/확대됨 */
+          background-repeat: no-repeat;
+          background-position: center;
+          
+          width: 100%; /* 부모 요소 너비에 맞춤 */
+          max-width: 390px; /* 최대 너비 390px로 제한 */
+          aspect-ratio: 331 / 540; /* 비율 유지 */
+          
           position: relative;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-          margin: 10px;
+          
+          // box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          // background-color: yellow; /* 이미지가 채워지지 않은 부분에 노란 배경 */
         }
-        .postcard-background {
-          width: 100%;
-          height: 100%;
-          position: absolute;
-          top: 0;
-          left: 0;
-          object-fit: cover;
-        }
+
         .guide-text {
           position: absolute;
-          top: 13.5%;
+          top: 13.6%;
           left: 5%;
           right: 5%;
-          font-size: 0.9em;
+          font-size: 12px;
           color: #333;
           text-align: center;
           line-height: 2;
         }
+
         .background-container {
           position: absolute;
           top: 30%;
-          left: 53%;
+          left: 49%;
           width: 41%;
           height: 32%;
         }
@@ -228,95 +223,116 @@ const PostcardCreation = () => {
           object-fit: contain;
         }
         .forms {
-          width: 55%;
-          position: absolute;
-          top: 30.5%;
-        }
-        .input-section {
           position: absolute;
           top: 30%;
-          left: 10%;
-          right: 10%;
+          left: 15%;
+          width: 35%;
+          height: 40%;
+          // background: blue;
+          font-family: "Cafe24Simplehae";
+          font-size: 12px;
+          line-height: 2;
+        }
+        .input-section {
+          width: 100%;
+          height: 100%;
           display: flex;
           flex-direction: column;
-          gap: 15px;
+          justify-content: start;
+          width: 100%;
         }
-        .input-group {
+        #input-name {
           display: flex;
           flex-direction: column;
           align-items: flex-start;
-        }
-        .input-group label {
-          font-size: 0.8em;
-          color: #333;
-          margin-bottom: 5px;
-        }
-        .input-group input,
-        .input-group textarea {
           width: 100%;
-          border: none;
-          background: transparent;
-          font-size: 0.9em;
-          outline: none;
-          font-family: 'Cafe24Simplehae', sans-serif;
         }
-        .input-group input {
-          padding: 5px 0;
+        #input-name label {
+          font-size: 12px;
+          line-height: 2;
+          color: #333;
+          margin-bottom: 1%;
+          width: 100%;
+        }
+       #input-name input {
+          font-family: "Cafe24Simplehae";
+          font-size: 12px;
+          line-height: 2;
+          width: 100%;
           border-bottom: 1px solid #555;
           transition: border-bottom 0.3s ease;
         }
-        .input-group input:not(.empty) {
-          border-bottom: none;
+      #input-name input:not(.empty) {
+        border-bottom: none;
+      }
+
+      #input-comment {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+      }
+
+      #input-comment label {
+          font-size: 12px;
+          line-height: 2;
+          color: #333;
         }
+       #input-comment textarea {
+          width: 100%;
+          border: none;
+          height: 90px;
+          background: transparent;
+
+          margin-top:-5px;
+          
+          line-height: 2;
+          outline: none;
+          font-family: 'Cafe24Simplehae', sans-serif;
+          font-size: 12px;
+          // background: orange;
+
+          background-image: linear-gradient(transparent 95%, #555 96%);
+          background-size: 100% 25%;
+        }
+
         .textarea-container {
           width: 100%;
-          height: 110px;
-          position: relative;
+          height: 90px;
+          // background: red;
         }
-        .textarea-background {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          pointer-events: none;
-          background-image: linear-gradient(transparent 95%, #555 96%);
-          background-size: 100% 1.89em;
-          z-index: 0;
-          transition: opacity 0.3s ease;
-        }
+
         .textarea-background.hidden {
           opacity: 0;
         }
         .input-group textarea.lined-textarea {
           width: 100%;
-          height: 100%;
+          height: 150px;
           resize: none;
           background: transparent;
           border: none;
-          line-height: 1.8em;
+          line-height: 2;
           padding: 0;
           z-index: 1;
         }
         .char-count {
           align-self: flex-end;
-          font-size: 0.7em;
+          font-size: 12px;
           color: #777;
-          margin-top: 5px;
+          margin-top: 1%;
         }
         #finalwords {
           position: absolute;
           width: 90%;
-          font-size: 0.8em;
+          font-size: 12px;
           color: #333;
           text-align: center;
-          line-height: 2.3;
+          line-height: 2;
           bottom: 14.5%;
           left: 50%;
           transform: translateX(-50%);
         }
         #submitcontainer {
-          position: fixed;
+          position: absolute;
           bottom: 0;
           width: 100%;
           height: 80px;
@@ -328,11 +344,11 @@ const PostcardCreation = () => {
         }
         .submit-button {
           width: 170px;
-          height: 40px;
+          height: 35px;
           background-color: #F8F6F1;
           border: 1px solid #E6E1DC;
           color: #412823;
-          font-size: 0.9em;
+          font-size: 12px;
           cursor: pointer;
           box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
         }

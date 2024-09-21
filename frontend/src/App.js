@@ -7,6 +7,7 @@ import PlaceSelection from './components/PlaceSelection';
 import PostcardCreation from './components/PostcardCreation';
 import PostcardView from './components/PostcardView';
 import PostcardShareView from './components/PostcardShareView';
+import Credit from './components/Credit';
 import { VideoProvider } from './components/VideoContext';
 import './App.css';
 
@@ -60,7 +61,8 @@ function App() {
               <Route path="/Home" element={<Home />} />
               <Route path="/undefined" element={<Home />} />
               <Route path="/invitation" element={<Invitation />} />
-              <Route path="/CreateCharacter" element={<CreateCharacter />} />
+              <Route path="/Credit" element={<Credit />} />
+              <Route path="/CreateCharacter" element={<CreateCharacter isFixedSize={isFixedSize} />} />
               <Route path="/place-selection" element={<PlaceSelection />} />
               <Route path="/postcardcreation" element={<PostcardCreation />} />
               <Route path="/postcardview/:id" element={<PostcardView />} />
