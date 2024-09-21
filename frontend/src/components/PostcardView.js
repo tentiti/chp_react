@@ -120,7 +120,8 @@ const PostcardView = () => {
         video.muted = true;
         video.playsInline = true;
         video.autoplay = true;
-        const speed = 0.32;
+        // const speed = 0.32;
+        const speed = 1;
         video.playbackRate = speed;
 
         // 비디오가 반복될 때마다 playbackRate를 다시 설정

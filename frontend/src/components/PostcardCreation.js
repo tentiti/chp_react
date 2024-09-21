@@ -96,6 +96,8 @@ const PostcardCreation = () => {
           letterSpacing: '-0.5px', /* 자간 -0.5px */
           fontFamily: 'Cafe24Simplehae',
           color:'#412823',
+          backgroundImage: isCommentEmpty? "url('/static/stockimages/postcard_underlined.png')" : "url('/static/stockimages/postcard.png')" ,
+          
           // color:'pink',
         }}>
           
@@ -212,7 +214,6 @@ const PostcardCreation = () => {
           margin-left: 20px;
           margin-right: 20px;
 
-          background-image: url('/static/stockimages/postcard.png');
           background-size: contain; /* 이미지가 비율을 유지하며 축소/확대됨 */
           background-repeat: no-repeat;
           background-position: center;
@@ -354,12 +355,12 @@ const PostcardCreation = () => {
           outline: none;
           font-family: 'Cafe24Simplehae', sans-serif;
           font-size: calc(1rem * 0.9);
-          line-height: calc(1rem * 2.05);
+          line-height: calc(1rem * 1.7);
           font-weight: bold;
           color: #412823;
+          resize: none;
 
-          background-image: linear-gradient(transparent 95%, #555 99%);
-          background-size: 100% 19.1%;
+
         }
 
         .textarea-container {
