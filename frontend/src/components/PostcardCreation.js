@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Header from './Header';
@@ -10,7 +10,33 @@ const modelPositions = [
   { x: 61.06, y: 12.22, width: 45.79, height: 35.71 },
 ];
 
+//동적인 글자크기
+
+
 const PostcardCreation = () => {
+
+  const postcardRef = useRef(null); // Ref for postcard container
+  const [fontSize, setFontSize] = useState('12px'); // State for font size
+
+
+  useEffect(() => {
+    const updateFontSize = () => {
+      if (postcardRef.current) {
+        const parentWidth = postcardRef.current.offsetHeight; // Get parent width
+        const newFontSize = `${((parentWidth / 532) * (12)).toFixed(2)}px`; // Calculate font size
+        setFontSize(newFontSize); // Update font size state
+        // alert(newFontSize);
+      }
+    };
+
+    updateFontSize(); // Initial calculation
+    window.addEventListener('resize', updateFontSize); // Update on resize
+
+    return () => {
+      window.removeEventListener('resize', updateFontSize); // Clean up on unmount
+    };
+  }, []);
+
   const location = useLocation();
   const navigate = useNavigate();
   const { selectedBackground, gifUrl, realgifUrl, videoFiles } = location.state || {};
@@ -27,6 +53,7 @@ const PostcardCreation = () => {
   };
 
   const handleCommentChange = (e) => {
+    setIsCommentEmpty(false); 
     const value = e.target.value;
     if (value.length <= 75) {
       setComment(value);
@@ -62,11 +89,20 @@ const PostcardCreation = () => {
       </div>
 
       <div className="postcard-container">
-        <div className="postcard-content">
-          <div className="guide-text">
+        <div className="postcard-content" ref={postcardRef} style={{
+          fontWeight: 'bold',
+          fontSize: fontSize,
+          lineHeight: '2.3',
+          letterSpacing: '-0.5px', /* 자간 -0.5px */
+          fontFamily: 'Cafe24Simplehae',
+          color:'#412823',
+          // color:'pink',
+        }}>
+          
+          {/* <div className="guide-text">
             춤을 추실 준비가 되셨나요?<br />
             마지막으로 이름과 한마디를 적어주세요.
-          </div>
+          </div> */}
           {selectedBackground && (
             <div className="background-container">
               <div 
@@ -90,10 +126,11 @@ const PostcardCreation = () => {
               )}
             </div>
           )}
-          <div className="forms">
-            <div className="input-section">
+
+          <div className="input-section">
               <div id="input-name">
-                <label htmlFor="name">이름 :</label>
+                {/* <label htmlFor="name">이름 :</label> */}
+                <label htmlFor="name"> </label>
                 <input
                   id="name"
                   type="text"
@@ -103,7 +140,8 @@ const PostcardCreation = () => {
                 />
               </div>
               <div id="input-comment">
-                <label htmlFor="comment">한마디 :</label>
+                {/* <label htmlFor="comment">한마디 :</label> */}
+                <label htmlFor="comment"> </label>
                 <div className="textarea-container">
                   <div className={`textarea-background ${isCommentEmpty ? '' : 'hidden'}`}></div>
                   <textarea
@@ -117,13 +155,12 @@ const PostcardCreation = () => {
                 <div className="char-count">{comment.length}/75</div>
               </div>
             </div>
-          </div>
 
-          <div id="finalwords">
+          {/* <div id="finalwords">
             이제 춤을 추러 가봅시다.<br />
             우리의 춤판엔 어떤 사람들이 모였을까요?<br />
             우리는 어떤 춤을 추게 될까요?
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -179,10 +216,15 @@ const PostcardCreation = () => {
           background-size: contain; /* 이미지가 비율을 유지하며 축소/확대됨 */
           background-repeat: no-repeat;
           background-position: center;
+
+          filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.5));
+
+          aspect-ratio: 1292 / 2132 !important; /* 비율 유지 */
           
           width: 100%; /* 부모 요소 너비에 맞춤 */
           max-width: 390px; /* 최대 너비 390px로 제한 */
-          aspect-ratio: 331 / 540; /* 비율 유지 */
+          max-height: calc(100% - 180px); /* 최대 높이 640px로 제한 */
+          
           
           position: relative;
           display: flex;
@@ -193,23 +235,38 @@ const PostcardCreation = () => {
           // background-color: yellow; /* 이미지가 채워지지 않은 부분에 노란 배경 */
         }
 
-        .guide-text {
-          position: absolute;
-          top: 13.6%;
-          left: 5%;
-          right: 5%;
-          font-size: 12px;
-          color: #333;
-          text-align: center;
-          line-height: 2;
+        @media (min-width: 768px) {
+          .postcard-content {
+            width: 331px; /* Adjust for pc screens to fit better */
+          }
         }
 
+        .guide-text {
+          position: absolute;
+          top: 13%;
+          left:0;
+          width:100%;
+
+          text-align: center;
+          vertical-align: top;
+          
+        }
+
+        #finalwords {
+          position: absolute;
+          top: 70%;
+          width : 100%;
+          text-align : center;
+        }
+
+        
         .background-container {
           position: absolute;
-          top: 30%;
-          left: 49%;
-          width: 41%;
-          height: 32%;
+          top: 29%;
+          left: 50%;
+          width: 45%;
+          height: 36%;
+          // background-color: purple;
         }
         .background-image {
           width: 100%;
@@ -222,25 +279,20 @@ const PostcardCreation = () => {
           position: absolute;
           object-fit: contain;
         }
-        .forms {
-          position: absolute;
-          top: 30%;
-          left: 15%;
-          width: 35%;
-          height: 40%;
-          // background: blue;
-          font-family: "Cafe24Simplehae";
-          font-size: 12px;
-          line-height: 2;
-        }
+
         .input-section {
-          width: 100%;
+          position: absolute;
+          top:28.7%;
+          left: 10%;
+          width: 36%;
           height: 100%;
           display: flex;
           flex-direction: column;
           justify-content: start;
-          width: 100%;
+
+          margin-right: 20px;
         }
+
         #input-name {
           display: flex;
           flex-direction: column;
@@ -248,20 +300,27 @@ const PostcardCreation = () => {
           width: 100%;
         }
         #input-name label {
-          font-size: 12px;
-          line-height: 2;
-          color: #333;
-          margin-bottom: 1%;
+          font-size: 1em;
           width: 100%;
         }
        #input-name input {
+          position: absolute;
+          top: 1.5%;
+          right: 10%;
+          width: 65%;
+        
           font-family: "Cafe24Simplehae";
-          font-size: 12px;
-          line-height: 2;
-          width: 100%;
+          font-size: 1em;
+          font-weight: bold;
+          line-height: 1;
+          color: #412823;
+          background: transparent; /* 배경을 투명하게 설정 */
+          border: none; /* 기본 border 제거 */
+          outline: none; /* 클릭 시 나타나는 기본 outline 제거 */
           border-bottom: 1px solid #555;
           transition: border-bottom 0.3s ease;
         }
+
       #input-name input:not(.empty) {
         border-bottom: none;
       }
@@ -273,26 +332,34 @@ const PostcardCreation = () => {
       }
 
       #input-comment label {
-          font-size: 12px;
+          margin-top: 5.8%;
+          font-size: 1em;
           line-height: 2;
           color: #333;
+          margin-bottom: 45.6%;
         }
-       #input-comment textarea {
-          width: 100%;
-          border: none;
-          height: 90px;
-          background: transparent;
 
-          margin-top:-5px;
+       #input-comment textarea {
+          position: absolute;
+          width: 100%;
+          left: -2%;
+          border: none;
+          height: 26%;
+          background: transparent;
+          overflow: hidden;
+          margin-top:-5%;
+
+          vertical-align: bottom;
           
-          line-height: 2;
           outline: none;
           font-family: 'Cafe24Simplehae', sans-serif;
-          font-size: 12px;
-          // background: orange;
+          font-size: calc(1rem * 0.9);
+          line-height: calc(1rem * 2.05);
+          font-weight: bold;
+          color: #412823;
 
-          background-image: linear-gradient(transparent 95%, #555 96%);
-          background-size: 100% 25%;
+          background-image: linear-gradient(transparent 95%, #555 99%);
+          background-size: 100% 19.1%;
         }
 
         .textarea-container {
@@ -314,23 +381,16 @@ const PostcardCreation = () => {
           padding: 0;
           z-index: 1;
         }
+
         .char-count {
+          position: absolute;
+          top: 5.7%;
           align-self: flex-end;
           font-size: 12px;
           color: #777;
           margin-top: 1%;
         }
-        #finalwords {
-          position: absolute;
-          width: 90%;
-          font-size: 12px;
-          color: #333;
-          text-align: center;
-          line-height: 2;
-          bottom: 14.5%;
-          left: 50%;
-          transform: translateX(-50%);
-        }
+
         #submitcontainer {
           position: absolute;
           bottom: 0;
@@ -352,6 +412,11 @@ const PostcardCreation = () => {
           cursor: pointer;
           box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
         }
+          .hidden {
+        opacity: 0;
+        visibility: hidden;
+      }
+
       `}</style>
     </div>
   );

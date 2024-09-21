@@ -479,10 +479,13 @@ const PostcardView = () => {
         ref={canvasRef}
         style={{
           position: 'relative', // 상대적 위치로 설정하여 헤더 아래에 표시
-          top:'58px',
+          top:'0px',
           left: '0',
-          width: '70%',
+
+          aspectRatio: '9 / 16',
+          // width: '70%',
           height: 'calc(70vw * (16 / 9))',
+          maxHeight: 'calc(100vh - 178px)', // 화면 높이를 넘지 않도록 설정
           overflow: 'hidden',
           zIndex: '900', // 헤더보다 아래에 표시되도록 설정
           transform: 'translateY(-5%)',
@@ -496,8 +499,8 @@ const PostcardView = () => {
           position: 'fixed',
           right: '5%',
           bottom: '58px',
-          width: 'auto',
-          height: '3.5%',
+          width: '70%',
+          height: 'auto',
           zIndex: '1100',
         }}
       />

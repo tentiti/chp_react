@@ -289,7 +289,7 @@ const handleAssetSelection = (category, index) => {
       sceneRef.current = new THREE.Scene();
       sceneRef.current.background = null;
       cameraRef.current = new THREE.PerspectiveCamera(10, 1, 0.1, 1000);
-
+      
       rendererRef.current = new THREE.WebGLRenderer({ 
         antialias: true, 
         canvas: canvasRef.current, 
@@ -658,6 +658,14 @@ const handleAssetSelection = (category, index) => {
   
 
 const startRecording = async (setVideoFile) => {
+  cameraRef.current = new THREE.OrthographicCamera(
+    -5, // left
+    5,  // right
+    5,  // top
+    -5, // bottom
+    0.1, // near
+    1000 // far
+  );
    // 짧은 지연 후 녹화 시작
    await new Promise((resolve) => setTimeout(resolve, 10));
 
@@ -1563,8 +1571,8 @@ const clearExpressionCanvas = useCallback(() => {
                     className="pictures"
                     key={index}
                     style={{
-                      maxWidth: "100%",
-                      maxHeight: "100%",
+                      width: "100%",
+                      aspectRatio: "1 / 1",
                       borderRadius: "18px",
                       backgroundColor:
                         selectedIndices[activeCategory.name] === index
@@ -1604,7 +1612,7 @@ const clearExpressionCanvas = useCallback(() => {
                       alt={`Asset ${index}`}
                       style={{
                         width: "100%",
-                        height: "100%",
+                        aspectRatio: "1 / 1",
                         borderRadius: "18px",
                         boxSizing: "content-box",
                       }}

@@ -48,7 +48,7 @@ body {
   justify-content: center;
   align-items: center;
   background-color: #f8f6f1; /* 배경색 설정 */
-  overflow: hidden; /* 스크롤 제거 */
+  overflow: auto;
 }
 
 #root {
@@ -57,7 +57,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .fixed-size-container {
@@ -79,7 +79,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: 100%;
   background-color: #fff;
 }
 

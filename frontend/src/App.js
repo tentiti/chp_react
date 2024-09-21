@@ -28,6 +28,8 @@ function App() {
     const height = window.innerHeight;
     const deviceType = getDeviceType();
 
+    console.log(`Width: ${width}, Height: ${height}, Device Type: ${deviceType}`);
+
     setIsFixedSize(deviceType === 'tablet' || deviceType === 'desktop');
     setShowSizeInfo((deviceType === 'tablet' || deviceType === 'desktop') && (width < 390 || height < 780));
     setIsSizeChecked(true);

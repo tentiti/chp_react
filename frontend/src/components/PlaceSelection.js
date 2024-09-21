@@ -157,7 +157,7 @@ const PlaceSelection = () => {
             )}
 
             <div ref={containerRef} style={{ 
-                position: 'fixed',
+                position: 'absolute',
                 flex: 1, 
                 top: '58px',
                 left:0,
