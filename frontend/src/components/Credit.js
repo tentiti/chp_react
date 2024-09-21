@@ -33,55 +33,80 @@ const Credit = () => {
   const handleBackClick = () => setIsInvitationVisible(false);
 
   const startRecording = () => {
-    if (isRecording) return;
-
-    setIsRecording(true);
-    if (!audioRef.current || audioRef.current.readyState !== 4) return;
-
+    if (isRecording) return;  // 이미 녹화 중인 경우
+  
+    // alert('startRecording');
+    setIsRecording(true); // 녹화 상태 설정
+  
+    // if (!audioRef.current || audioRef.current.readyState !== 4) return;
+  
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
       audioSourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current);
     }
-    // audioRef.current.play();
 
+    // alert('audioContextRef.current');
+    audioRef.current.play().catch((err) => {
+      console.error('Audio playback failed:', err);
+    });
+  
     const destination = audioContextRef.current.createMediaStreamDestination();
     audioSourceRef.current.connect(destination);
     audioSourceRef.current.connect(audioContextRef.current.destination);
-
+  
     const canvasElement = rendererRef.current.domElement;
+    if (!canvasElement.captureStream) {
+      console.warn('captureStream is not supported in this browser.');
+      return;
+    }
+  
     const canvasStream = canvasElement.captureStream(24);
     const combinedStream = new MediaStream([...canvasStream.getTracks(), ...destination.stream.getTracks()]);
-
+  
     const recorder = new RecordRTC(combinedStream, {
       type: 'video',
       mimeType: 'video/mp4',
-      bitsPerSecond: 8000000,
+      bitsPerSecond: 4000000,
+      video: {
+        codec: 'H264',  
+        width: 1280, // 해상도 설정 가능
+        height: 720,
+        frameRate: 30 // iPhone에서 호환되는 프레임 레이트
+      },
     });
-
+  
     recorder.startRecording();
     recorderRef.current = recorder;
-
-    setTimeout(stopRecording, 8750);
+  
+    setTimeout(() => {
+      // alert('Attempting to stop recording');
+      stopRecording();
+    }, 3750);  // 3.75초 후 녹화 종료 시도
   };
-
+  
   const stopRecording = () => {
-    if (recorderRef.current) {
-      recorderRef.current.stopRecording(() => {
-        const blob = recorderRef.current.getBlob();
-        const url = URL.createObjectURL(blob);
-        setBlobUrl(url);
-        setIsRecording(false);
-        setIsRecordingDone(true);
-      });
+    if (!recorderRef.current) {
+      console.warn('Recorder reference is not set');
+      return;
     }
+  
+    // alert('stopRecording');
+    recorderRef.current.stopRecording(() => {
+      const blob = recorderRef.current.getBlob();
+      const url = URL.createObjectURL(blob);
+      setBlobUrl(url);
+      setIsRecording(false); // 녹화 상태 해제
+      setIsRecordingDone(true); // 녹화 완료 상태 설정
+    });
   };
+  
 
   const downloadVideo = () => {
     if (blobUrl) {
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = blobUrl;
-      a.download = `${postcard?.name}의 춤사위.mp4`;
+      a.download = `${postcard?.name}의 춤사위`;
       document.body.appendChild(a);
       a.click();
     }
@@ -160,34 +185,50 @@ const Credit = () => {
 
         const bgMaterial = new THREE.MeshBasicMaterial({ map: bgTexture });
         const bgMesh = new THREE.Mesh(new THREE.PlaneGeometry(frustumSize * (720 / 1280), frustumSize), bgMaterial);
-        bgMesh.position.z = -0.2;
-        // sceneRef.current.add(bgMesh);
+        bgMesh.position.z = -10;
+        sceneRef.current.add(bgMesh);
       });
 
-      const addText = (text, x, y, size = 50) => {
+      const addText = (text, x, y, size = 50, breakLine=false) => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
+        
+        canvas.width = 8192;
+        canvas.height = 4096;
       
-        canvas.width = 2048;
-        canvas.height = 2048;
-        const fontSize = size * 1;
-        ctx.font = `bold ${fontSize}px Cafe24Simplehae, sans-serif`;
-        ctx.fillStyle = 'rgba(65, 40, 35, 1)';
+        const fontSize = size * 3;
+        ctx.font = `bold ${fontSize}px Cafe24Simplehae`;
+        ctx.fillStyle = 'rgba(65, 40, 35, 1)'; // 밝은 노란색으로 변경
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'top';
+        ctx.textBaseline = 'middle';
       
-        const maxLineLength = 38;
+        const maxLineLength = 38; // 줄 길이를 줄여 더 많은 줄 바꿈 유도
+        const words = text.split(' ');
         const lines = [];
-        for (let i = 0; i < text.length; i += maxLineLength) {
-          lines.push(text.slice(i, i + maxLineLength));
-        }
+        let currentLine = '';
       
-        const lineHeight = fontSize * 2.8;
+        words.forEach(word => {
+          if ((currentLine + word).length <= maxLineLength) {
+            currentLine += (currentLine ? ' ' : '') + word;
+          } else {
+            lines.push(currentLine);
+            currentLine = word;
+          }
+        });
+        lines.push(currentLine); // 마지막 줄 추가
+      
+        const lineHeight = fontSize * 2.2;
         const totalTextHeight = lines.length * lineHeight;
+        const centerY = canvas.height / 2;
+      
+        // ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
       
         lines.forEach((line, index) => {
-          const adjustedYPos = canvas.height / 2 - totalTextHeight / 2 + index * lineHeight - 30;
-          ctx.fillText(line, canvas.width / 2, adjustedYPos);
+          const yPos = centerY - (totalTextHeight / 2) + index * (lineHeight-1);
+          ctx.fillText(line, canvas.width / 2, yPos);
         });
       
         const texture = new THREE.CanvasTexture(canvas);
@@ -196,19 +237,22 @@ const Credit = () => {
         texture.format = THREE.RGBAFormat;
       
         const aspectRatio = canvas.width / canvas.height;
-        const geometry = new THREE.PlaneGeometry(600 * aspectRatio, 600);
-        const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+        const geometry = new THREE.PlaneGeometry(10 * aspectRatio, 10); // 크기를 더 작게 조정
+        const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide });
         const mesh = new THREE.Mesh(geometry, material);
       
-        mesh.position.set(x, y, 0.1);
+        mesh.position.set(x, y, 1);
         sceneRef.current.add(mesh);
+
+        console.log(text);
+        
         return mesh;
       };
-
+      
       // Add texts
-      const commentMesh = addText(postcard.comment, 0, -165, 12);
-      const timestampMesh = addText(new Date(postcard.timestamp).toLocaleString(), 0, -210, 8);
-      const nameMesh = addText(postcard.name, 106, -236, 12);
+      const commentMesh = addText(postcard.comment, 0, -12.2, 94, true);
+      const timestampMesh = addText(postcard.timestamp, 0, -14.2, 60);
+      const nameMesh = addText(postcard.name, 5., -15.8, 80);
 
       setTextMeshes([commentMesh, timestampMesh, nameMesh]);
 
@@ -237,9 +281,53 @@ const Credit = () => {
     }
   }, [postcard]);
 
+  useEffect(() => {
+    const handleUnload = () => {
+      // 메모리 해제 로직
+      // if (animationFrameRef.current) {
+      //   cancelAnimationFrame(animationFrameRef.current);
+      // }
+  
+      textMeshes.forEach((mesh) => {
+        if (mesh) {
+          if (mesh.geometry) mesh.geometry.dispose();
+          if (mesh.material && mesh.material.map) mesh.material.map.dispose();
+          if (mesh.material) mesh.material.dispose();
+          if (mesh.parent) mesh.parent.remove(mesh);
+        }
+      });
+  
+      if (rendererRef.current) {
+        rendererRef.current.dispose();
+      }
+  
+      if (sceneRef.current) {
+        sceneRef.current.clear();
+      }
+  
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+  
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
+    };
+  
+    window.addEventListener('beforeunload', handleUnload);
+  
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+    };
+  }, [textMeshes, blobUrl]);
+  
+
   if (!postcard) return <div>Loading...</div>;
 
   const containerStyle = {
+    position: 'absolute',
+    top: '58px',
+    left: 0,
     position: 'relative',
     width: '100%',
     aspectRatio: '9 / 16',
@@ -248,8 +336,8 @@ const Credit = () => {
   };
 
   const canvasStyle = {
-    position: 'absolute',
-    top: '10px',
+    position: 'fixed',
+    top: '18px',
     left: 0,
     width: '100%',
     height: '100%',
@@ -308,11 +396,6 @@ const Credit = () => {
       <audio ref={audioRef} src="/static/test.mp3" loop></audio>
 
       <div ref={containerRef} style={containerStyle}>
-        <img
-          src={`/static/stockimages/postcardfinal_${postcard?.number}.png`}
-          alt="Background"
-          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'none' }}
-        />
         <canvas ref={canvasRef} style={canvasStyle} />
       </div>
 

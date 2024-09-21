@@ -66,11 +66,11 @@ function App() {
                 <Route path="/Home" element={<Home />} />
                 <Route path="/undefined" element={<Home />} />
                 <Route path="/invitation" element={<Invitation />} />
-                <Route path="/credit/:id" element={<Credit />} />
+                <Route path="/credit/:id" element={<PostcardView />} />
                 <Route path="/CreateCharacter" element={<CreateCharacter isFixedSize={isFixedSize} />} />
                 <Route path="/place-selection" element={<PlaceSelection />} />
                 <Route path="/postcardcreation" element={<PostcardCreation />} />
-                <Route path="/postcardview/:id" element={<PostcardView />} />
+                <Route path="/postcardview/:id" element={<Credit />} />
                 <Route path="/postcardshareview/:id" element={<PostcardShareView />} />
               </Routes>
             </Router>

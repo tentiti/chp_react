@@ -11,6 +11,7 @@ from flask_socketio import SocketIO, emit
 import os
 import uuid
 from datetime import datetime
+
 # import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageSequence
@@ -241,8 +242,8 @@ def get_postcard(id):
                     "png_name": postcard.gif_name.replace(".gif", ".png"),
                     "name": postcard.name,
                     "comment": postcard.comment,
-                    "timestamp": postcard.timestamp.strftime("%Y년 %m월 %d일에 함께한")
-                    + f"\n{postcard.id}번째 춤",
+                    "timestamp": postcard.timestamp.strftime("%Y년 %m월 %d일에 함께한 ")
+                    + f"{postcard.id}번째 춤",
                     "number": postcard.number,
                 }
             ),
@@ -268,8 +269,8 @@ def get_postcards():
                 "png_name": postcard.gif_name.replace(".gif", ".png"),
                 "name": postcard.name,
                 "comment": postcard.comment,
-                "timestamp": postcard.timestamp.strftime("%Y년 %m월 %d일에 함께한")
-                + f"{postcard.id}번째 춤",
+                "timestamp": postcard.timestamp.strftime("%Y년 %m월 %d일에 함께한 ")
+                + "{postcard.id}번째 춤",
                 "number": postcard.number,
             }
             for postcard in postcards
