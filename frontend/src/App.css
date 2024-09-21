@@ -72,7 +72,7 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%); /* Centering the container */
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* Optional shadow */
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.25); /* Optional shadow */
 }
 
 .size-info-container {

@@ -8,6 +8,7 @@ import { isTablet, isDesktop } from 'react-device-detect';
 import Header from './Header';
 import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
 import Credit from './Credit'
+import { useScene } from './SceneContext'; // SceneContext 사용
 
 const PostcardView = () => {
   //초대
@@ -29,6 +30,7 @@ const PostcardView = () => {
     setIsCreditVisible(false);
     // setIsFloatingVisible(true); // Invitation을 숨기고 플로팅 버튼을 다시 보이게 함
   };
+  
   const { videoFiles } = UseVideo(); // Blob URL 가져오기 (배열로 여러 개의 비디오 파일)
   const { id } = useParams();
   const [postcard, setPostcard] = useState(null);
@@ -387,6 +389,10 @@ const PostcardView = () => {
   // const handleMenuClick = () => {
   //   setShowImage(true);
   // };
+  const goToCreditPage = () => {
+    navigate('/credit');  // 버튼 클릭 시 /credit 경로로 이동
+  };
+
 
   return (
     <div style={{ backgroundImage: `url('/static/stockimages/background_paper.png')`, width: '100%', height: '100%', zIndex: '900' }}>
@@ -505,6 +511,7 @@ const PostcardView = () => {
           zIndex: '1100',
         }}
       />
+
       <div
         id="upbuttons"
         style={{
@@ -524,6 +531,10 @@ const PostcardView = () => {
           boxSizing: 'border-box',
         }}
       >
+      <button onClick={goToCreditPage}>
+        Go to Credit Page
+      </button>
+
         <button className="upbutton" onClick={downloadVideo} disabled={!blobUrl}>
           {isRecording ? '공유 영상 준비 중...' : '영상 저장하기'}
         </button>

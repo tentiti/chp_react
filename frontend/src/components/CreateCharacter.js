@@ -8,8 +8,13 @@ import Header from './Header.js';
 import { UseVideo } from './VideoContext.js'; // Context에서 가져옴
 import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
 import { isTablet, isDesktop } from 'react-device-detect';
+import { useScene } from './SceneContext'; // SceneContext 사용
+
 
 const CreateCharacter = ({isFixedSize}) => {
+
+  const { updateSceneData } = useScene(); // SceneContext의 업데이트 함수 사용
+
 
   const [isInvitationVisible, setIsInvitationVisible] = useState(false); // Invitation의 가시성을 관리하는 상태
   const [isFloatingVisible, setIsFloatingVisible] = useState(true); // 플로팅 버튼 가시성 관리 상태
@@ -657,7 +662,15 @@ const handleAssetSelection = (category, index) => {
   };
   
 
-const startRecording = async (setVideoFile) => {
+  const startRecording = async (setVideoFile) => {
+
+    // updateSceneData(sceneRef.current, cameraRef.current, rendererRef.current);
+    updateSceneData({
+      scene: sceneRef.current, 
+      camera: cameraRef.current, 
+      renderer: rendererRef.current
+    });
+    
   cameraRef.current = new THREE.OrthographicCamera(
     -5, // left
     5,  // right
@@ -686,7 +699,7 @@ const startRecording = async (setVideoFile) => {
   try {
     // Wait for both GIF and MP4 recordings to finish
     const gifUploadUrl = await startGifRecording();  // Return the gif URL directly
-    await startRecordingWithBackgrounds(setVideoFile);  // Handle MP4 recordings
+    // await startRecordingWithBackgrounds(setVideoFile);  // Handle MP4 recordings
 
     console.log("Recording completed", gifUploadUrl);
 
@@ -1311,9 +1324,9 @@ const clearExpressionCanvas = useCallback(() => {
           </div>
 
           <div className="create-character-container">
-            <button className="create-character" onClick={startRecording}>
-              캐릭터 생성하기
-            </button>
+          <button className="create-character" onClick={() => startRecording(sceneRef.current, cameraRef.current, rendererRef.current)}>
+            캐릭터 생성하기
+          </button>
           </div>
         </div>
 

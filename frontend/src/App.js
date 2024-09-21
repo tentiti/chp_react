@@ -9,6 +9,8 @@ import PostcardView from './components/PostcardView';
 import PostcardShareView from './components/PostcardShareView';
 import Credit from './components/Credit';
 import { VideoProvider } from './components/VideoContext';
+import { SceneProvider } from './components/SceneContext'; // SceneProvider import
+
 import './App.css';
 
 function App() {
@@ -56,22 +58,24 @@ function App() {
           <img src="/static/stockimages/sizeinfo.png" alt="Size Information" className="size-info-image" />
         </div>
       ) : (
-        <VideoProvider>
-          <Router>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/Home" element={<Home />} />
-              <Route path="/undefined" element={<Home />} />
-              <Route path="/invitation" element={<Invitation />} />
-              <Route path="/Credit" element={<Credit />} />
-              <Route path="/CreateCharacter" element={<CreateCharacter isFixedSize={isFixedSize} />} />
-              <Route path="/place-selection" element={<PlaceSelection />} />
-              <Route path="/postcardcreation" element={<PostcardCreation />} />
-              <Route path="/postcardview/:id" element={<PostcardView />} />
-              <Route path="/postcardshareview/:id" element={<PostcardShareView />} />
-            </Routes>
-          </Router>
-        </VideoProvider>
+        <SceneProvider>
+          <VideoProvider>
+            <Router>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/Home" element={<Home />} />
+                <Route path="/undefined" element={<Home />} />
+                <Route path="/invitation" element={<Invitation />} />
+                <Route path="/Credit" element={<Credit />} />
+                <Route path="/CreateCharacter" element={<CreateCharacter isFixedSize={isFixedSize} />} />
+                <Route path="/place-selection" element={<PlaceSelection />} />
+                <Route path="/postcardcreation" element={<PostcardCreation />} />
+                <Route path="/postcardview/:id" element={<PostcardView />} />
+                <Route path="/postcardshareview/:id" element={<PostcardShareView />} />
+              </Routes>
+            </Router>
+          </VideoProvider>
+        </SceneProvider>
       )}
     </div>
   );
