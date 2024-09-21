@@ -5,7 +5,7 @@ import axios from 'axios';
 import RecordRTC from 'recordrtc';
 import { UseVideo } from './VideoContext';
 import { isTablet, isDesktop } from 'react-device-detect';
-import Header from './Header';
+import Hpapereader from './Header';
 import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
 import Credit from './Credit'
 import { useScene } from './SceneContext'; // SceneContext 사용
@@ -30,7 +30,7 @@ const PostcardView = () => {
     setIsCreditVisible(false);
     // setIsFloatingVisible(true); // Invitation을 숨기고 플로팅 버튼을 다시 보이게 함
   };
-  
+
   const { videoFiles } = UseVideo(); // Blob URL 가져오기 (배열로 여러 개의 비디오 파일)
   const { id } = useParams();
   const [postcard, setPostcard] = useState(null);
@@ -390,7 +390,7 @@ const PostcardView = () => {
   //   setShowImage(true);
   // };
   const goToCreditPage = () => {
-    navigate('/credit');  // 버튼 클릭 시 /credit 경로로 이동
+    navigate(`/credit/${postcard.id}`);  // 버튼 클릭 시 /credit 경로로 이동
   };
 
 
@@ -450,37 +450,7 @@ const PostcardView = () => {
         </div>
       </header>
 
-      {showImage && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: '1200',
-            opacity: showImage ? 1 : 0, // 투명도를 상태에 따라 변경
-            transition: 'opacity 0.5s ease-in-out', // 트랜지션 추가
-          }}
-          onClick={handleCloseImage}
-        >
-          <img
-            src="/static/stockimages/inviflat.png"
-            alt="invitation"
-            style={{
-              maxWidth: '90%',
-              maxHeight: '90%',
-              zIndex: '999999',
-              opacity: showImage ? 1 : 0, // 이미지의 투명도도 동일하게 설정
-              transition: 'opacity 0.5s ease-in-out', // 트랜지션 추가
-            }}
-          />
-        </div>
-      )}
+
 
       <canvas
         ref={canvasRef}

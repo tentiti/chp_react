@@ -66,7 +66,7 @@ function App() {
                 <Route path="/Home" element={<Home />} />
                 <Route path="/undefined" element={<Home />} />
                 <Route path="/invitation" element={<Invitation />} />
-                <Route path="/Credit" element={<Credit />} />
+                <Route path="/credit/:id" element={<Credit />} />
                 <Route path="/CreateCharacter" element={<CreateCharacter isFixedSize={isFixedSize} />} />
                 <Route path="/place-selection" element={<PlaceSelection />} />
                 <Route path="/postcardcreation" element={<PostcardCreation />} />

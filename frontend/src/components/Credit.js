@@ -1,463 +1,225 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import RecordRTC from 'recordrtc';
-import { UseVideo } from './VideoContext';
-import { isTablet, isDesktop } from 'react-device-detect';
-import Header from './Header';
-import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
-// import Credit from './Credit'
-import { useScene } from './SceneContext'; // SceneContext 사용
+import Invitation from './Invitation';
+import { useScene } from './SceneContext';
+import './PostcardView.css';
 
 const Credit = () => {
-  //가져온 sceneData를 사용하기 위해 useScene 훅을 사용
-  const { sceneData } = useScene();
-
-  //이따가 렌더링할 캔버스
+  const audioContextRef = useRef(null);
+  const audioSourceRef = useRef(null);
+  const audioRef = useRef(null);
   const canvasRef = useRef(null);
-
-  //초대 혹은 크레딧 관련 코드
-  //초대
-  const [isInvitationVisible, setIsInvitationVisible] = useState(false); // Invitation의 가시성을 관리하는 상태
-
-  //크레딧
-  const [isCreditVisible, setIsCreditVisible] = useState(false);
-  
-  // Invitation을 보이게 하는 함수 (메뉴 클릭 시 호출됨)
-  const handleMenuClick = () => {
-    // setIsInvitationVisible(true);
-    setIsCreditVisible(true);
-    // setIsFloatingVisible(false); // Invitation을 보이면 플로팅 버튼을 숨김
-  };
-
-  // Invitation을 숨기고 원래 화면으로 돌아가는 함수 (뒤로가기 클릭 시 호출됨)
-  const handleBackClick = () => {
-    // setIsInvitationVisible(false);
-    setIsCreditVisible(false);
-    // setIsFloatingVisible(true); // Invitation을 숨기고 플로팅 버튼을 다시 보이게 함
-  };
-
-  //비디오 관련한 것들 -> 여기서 비디오 추출 관련된건 삭제하기
-  const { videoFiles } = UseVideo(); // Blob URL 가져오기 (배열로 여러 개의 비디오 파일)
-  const { id } = useParams();
-  const [postcard, setPostcard] = useState(null);
-  const [blobUrl, setBlobUrl] = useState(null); // State for storing the blob URL
-  const [isRecording, setIsRecording] = useState(true); // 상태 추가 (녹화 중 여부)
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
   const recorderRef = useRef(null);
-  const videoTextureRef = useRef(null); // Ref for video texture
+  const containerRef = useRef(null);
 
-  const [recordedBlob, setRecordedBlob] = useState(null);
-  const [isVideoReady, setIsVideoReady] = useState(false);
-  const audioRef = useRef(null);
+  const [isInvitationVisible, setIsInvitationVisible] = useState(false);
+  const [postcard, setPostcard] = useState(null);
+  const [blobUrl, setBlobUrl] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
 
-  //데스크탑 반응
-  const updateCanvasSize = () => {
-    const width = window.innerWidth; // 100vw
-    const height = (width / 9) * 16; // 16:9 aspect ratio
-  
-    if (isTablet || isDesktop) {
-      const a = 390;
-      const b = 693;
-      return { width: a, height: b }; // Use valid keys 'width' and 'height'
-    } 
-    return { width, height };
+  const { sceneData } = useScene();
+  const { id } = useParams();
+
+  const handleMenuClick = () => setIsInvitationVisible(true);
+  const handleBackClick = () => setIsInvitationVisible(false);
+
+  const startRecording = () => {
+    if (isRecording) return;
+
+    setIsRecording(true);
+    if (!audioRef.current || audioRef.current.readyState !== 4) return;
+
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      audioSourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current);
+    }
+
+    const destination = audioContextRef.current.createMediaStreamDestination();
+    audioSourceRef.current.connect(destination);
+    audioSourceRef.current.connect(audioContextRef.current.destination);
+
+    const canvasElement = rendererRef.current.domElement;
+    const canvasStream = canvasElement.captureStream(24);
+    const combinedStream = new MediaStream([...canvasStream.getTracks(), ...destination.stream.getTracks()]);
+
+    const recorder = new RecordRTC(combinedStream, {
+      type: 'video',
+      mimeType: 'video/mp4',
+      bitsPerSecond: 8000000,
+      video: {
+        width: 1080,
+        height: 1920,
+      },
+    });
+
+    recorder.startRecording();
+    recorderRef.current = recorder;
+
+    setTimeout(stopRecording, 5000);
   };
 
-  //엽서 가져오기 
+  const stopRecording = () => {
+    if (recorderRef.current) {
+      recorderRef.current.stopRecording(() => {
+        const blob = recorderRef.current.getBlob();
+        const url = URL.createObjectURL(blob);
+        setBlobUrl(url);
+        setIsRecording(false);
+
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
+      });
+    }
+  };
+
+  const downloadVideo = () => {
+    if (blobUrl) {
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = blobUrl;
+      a.download = `${postcard?.name}의 춤사위.mp4`;
+      document.body.appendChild(a);
+      a.click();
+    }
+  };
+
+  const shareVideo = async () => {
+    if (navigator.canShare && blobUrl) {
+      const response = await fetch(blobUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `${postcard?.name}의 춤사위.mp4`, { type: 'video/mp4' });
+
+      if (navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            title: 'Postcard Video',
+            text: 'Check out this postcard video!',
+            files: [file],
+          });
+          console.log('Video shared successfully');
+        } catch (error) {
+          console.error('Error sharing video:', error);
+        }
+      } else {
+        console.warn('Sharing not supported on this device');
+      }
+    } else {
+      console.warn('Sharing not supported or no video recorded');
+    }
+  };
+
   useEffect(() => {
     const fetchPostcard = async () => {
       try {
         const response = await axios.get(`/api/postcard/${id}`, { cache: 'no-cache' });
         if (response.status === 200) {
           setPostcard(response.data);
-        } else {
-          console.error('Error fetching postcard:', response.status);
         }
       } catch (error) {
-        console.error('Network error:', error);
+        console.error('Error fetching postcard:', error);
       }
     };
-
     fetchPostcard();
   }, [id]);
 
-
-
   useEffect(() => {
-    if (sceneData.scene && sceneData.camera && sceneData.renderer && canvasRef.current) {
+    const initThreeJS = async () => {
+      if (!sceneData.scene || !canvasRef.current) return;
 
-      const { scene, camera, renderer } = sceneData;
+      sceneRef.current = sceneData.scene;
 
-      const sceneRef = scene;
-      const cameraRef = camera;
-      const rendererRef = renderer;
+      const pixelRatio = window.devicePixelRatio || 1;
+      const width = 1080 * pixelRatio; // 실제 렌더링 해상도
+      const height = 1920 * pixelRatio;
 
-      const { width, height } = updateCanvasSize();
+      rendererRef.current = new THREE.WebGLRenderer({ canvas: canvasRef.current, alpha: true, antialias: true });
+      rendererRef.current.setSize(width, height);
+      rendererRef.current.setClearColor(0x000000, 0);
 
-      renderer.setSize(width, height);
-      camera.aspect = width / height; // 카메라 비율 업데이트
-      camera.updateProjectionMatrix(); // 프로젝션 매트릭스 업데이트
-      canvasRef.current.appendChild(renderer.domElement);
-      rendererRef.setClearColor(0xffffff);
+      const frustumSize = 40;
+      cameraRef.current = new THREE.OrthographicCamera(
+        (frustumSize * 1080) / 1920 / -2,
+        (frustumSize * 1080) / 1920 / 2,
+        frustumSize / 2,
+        frustumSize / -2,
+        0.1,
+        1000
+      );
+      cameraRef.current.position.set(0, 0, 5);
+      cameraRef.current.lookAt(0, 0, 0);
 
-      //배경 이미지 추가
       const loader = new THREE.TextureLoader();
-      const bgTexture = loader.loadAsync(`/static/stockimages/postcardfinal_${postcard.number}.png`);
-      bgTexture.colorSpace = THREE.SRGBColorSpace;
-      bgTexture.minFilter = THREE.LinearFilter;
-      bgTexture.magFilter = THREE.LinearFilter;
-      const bgGeometry = new THREE.PlaneGeometry(width, height);
-      const bgMaterial = new THREE.MeshBasicMaterial({ map: bgTexture });
-      const bgMesh = new THREE.Mesh(bgGeometry, bgMaterial);
+      loader.load(`/static/stockimages/postcardfinal_${postcard?.number}.png`, (bgTexture) => {
+        bgTexture.colorSpace = THREE.SRGBColorSpace;
+        bgTexture.anisotropy = rendererRef.current.capabilities.getMaxAnisotropy();
+        bgTexture.minFilter = THREE.LinearFilter;
+        bgTexture.magFilter = THREE.LinearFilter;
 
-      // Scale down the background mesh
-      // bgMesh.scale.set(0.8, 0.8, 1); // Adjust these values as needed
-      sceneRef.add(bgMesh);
-    
-
-      const addText = (text, x, y, size = 50) => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-      
-        canvas.width = 2048;
-        canvas.height = 2048;
-        const fontSize = size * 3;
-        ctx.font = `bold ${fontSize}px Cafe24Simplehae, sans-serif`;
-        ctx.fillStyle = 'rgba(65, 40, 35, 1)';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'top';
-      
-        const maxLineLength = 38;
-        const lines = [];
-        for (let i = 0; i < text.length; i += maxLineLength) {
-          lines.push(text.slice(i, i + maxLineLength));
-        }
-      
-        const lineHeight = fontSize * 2.8;
-        
-        // 전체 텍스트의 높이를 계산
-        const totalTextHeight = lines.length * lineHeight;
-      
-        // 텍스트 시작점을 조정하여 첫 줄이 고정된 Y 위치에 오도록 함
-        lines.forEach((line, index) => {
-          const adjustedYPos = canvas.height / 2 - totalTextHeight / 2 + index * lineHeight - 30;
-          ctx.fillText(line, canvas.width / 2, adjustedYPos);
-        });
-      
-        const xPos = (x / 393) * width;
-        let yPos = (y / 700) * height * 1.2;
-        if (text.length > 38) {
-          yPos -= 19;
-        } 
-      
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.minFilter = THREE.LinearFilter;
-        texture.magFilter = THREE.LinearFilter;
-        texture.format = THREE.RGBAFormat;
-      
-        const aspectRatio = canvas.width / canvas.height;
-        const geometry = new THREE.PlaneGeometry(600 * aspectRatio, 600);
-        const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
-        const mesh = new THREE.Mesh(geometry, material);
-      
-        mesh.position.set(xPos, yPos, 0.2);
-        sceneRef.add(mesh);
-      };
-      
-
-      addText(`${postcard.comment}`, 0, -165, 12);
-      addText(postcard.timestamp, 0, -210, 8);
-      addText(`${postcard.name}`, 106, -236, 12);
+        const bgMaterial = new THREE.MeshBasicMaterial({ map: bgTexture });
+        const bgMesh = new THREE.Mesh(new THREE.PlaneGeometry(frustumSize * (1080 / 1920), frustumSize), bgMaterial);
+        bgMesh.position.z = -3;
+        sceneRef.current.add(bgMesh);
+      });
 
       const animate = () => {
         requestAnimationFrame(animate);
-        rendererRef.render(sceneRef, cameraRef);
+        rendererRef.current.render(sceneRef.current, cameraRef.current);
       };
       animate();
+    };
+    initThreeJS();
+  }, [sceneData, postcard]);
+
+  useEffect(() => {
+    if (postcard) {
+      setTimeout(startRecording, 1000);
     }
+  }, [postcard]);
 
-    window.addEventListener('resize', () => {
-      const { width, height } = updateCanvasSize();
+  if (!postcard) return <div>Loading...</div>;
 
-      cameraRef.current.left = width / -2;
-      cameraRef.current.right = width / 2;
-      cameraRef.current.top = height / 2;
-      cameraRef.current.bottom = height / -2;
-      cameraRef.current.updateProjectionMatrix();
+  // 부모 div의 크기 및 스케일 동적 계산
+  const containerStyle = {
+    position: 'relative',
+    width: '100%',
+    aspectRatio: '9 / 16',
+    maxHeight: 'calc(100vh - 178px)',
+    overflow: 'hidden',
+  };
 
-      rendererRef.current.setSize(width, height);
-      canvasRef.current.style.width = `${width}px`;
-      canvasRef.current.style.height = `${height}px`;
-    });
-
-    const startRecording = () => {
-      if (!audioRef.current || !audioRef.current.readyState) {
-        console.error('Audio element is not initialized or not ready');
-        return;
-      }
-  
-      const canvasStream = canvasRef.current.captureStream(24);
-      const audioContext = new (window.AudioContext)();
-      const audioSource = audioContext.createMediaElementSource(audioRef.current);
-      const destination = audioContext.createMediaStreamDestination();
-  
-      audioSource.connect(destination);
-      audioSource.connect(audioContext.destination);
-  
-      const combinedStream = new MediaStream([...canvasStream.getTracks(), ...destination.stream.getTracks()]);
-  
-      const recorder = new RecordRTC(combinedStream, {
-        type: 'video',
-        mimeType: 'video/mp4',
-        bitsPerSecond: 8000000,
-      });
-  
-      recorder.startRecording();
-  
-  
-    if (audioRef.current) {
-      // 오디오 재생
-      audioRef.current.play().catch((err) => {
-        console.error('Audio playback failed:', err);
-      });
-    }
-  
-      recorderRef.current = recorder;
-  
-      setTimeout(() => stopRecording(), 18750);
-    };
-  
-    const stopRecording = () => {
-      if (recorderRef.current) {
-        recorderRef.current.stopRecording(() => {
-          const blob = recorderRef.current.getBlob();
-          const url = URL.createObjectURL(blob);
-          setBlobUrl(url);
-          setRecordedBlob(blob);
-          setIsRecording(false);
-  
-          if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.currentTime = 0;
-          }
-        });
-      }
-    };
-  
-    const downloadVideo = async () => {
-      if (navigator.clipboard) {
-        try {
-          await navigator.clipboard.writeText('hello world!');
-          console.log('Text copied to clipboard');
-        } catch (error) {
-          console.error('Failed to copy text:', error);
-        }
-      }
-  
-      if (blobUrl) {
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = blobUrl;
-        a.download = `${postcard?.name}의 춤사위.mp4`;
-        document.body.appendChild(a);
-        a.click();
-      }
-    };
-  
-    const shareVideo = async () => {
-      if (navigator.clipboard) {
-        try {
-          await navigator.clipboard.writeText('hello world!');
-          console.log('Text copied to clipboard');
-        } catch (error) {
-          console.error('Failed to copy text:', error);
-        }
-      }
-  
-      if (navigator.canShare && recordedBlob) {
-        const file = new File([recordedBlob], `${postcard?.name}의 춤사위.mp4`, { type: 'video/mp4' });
-  
-        if (navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({
-              title: 'Postcard Video',
-              text: 'Check out this postcard video!',
-              files: [file],
-            });
-            console.log('Video shared successfully');
-          } catch (error) {
-            console.error('Error sharing video:', error);
-          }
-        } else {
-          console.warn('Sharing not supported on this device');
-        }
-      } else {
-        console.warn('Sharing not supported or no video recorded');
-      }
-    };
-
-  }, [sceneData]);
-
-  const navigate = useNavigate();
-  // const handleMenuClick = () => {
-  //   setShowImage(true);
-  // };
-  const goToCreditPage = () => {
-    navigate('/credit');  // 버튼 클릭 시 /credit 경로로 이동
+  // 캔버스의 크기 및 스케일 동적 계산
+  const canvasStyle = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    transform: `scale(${containerRef.current ? containerRef.current.clientWidth / 1080 : 1}, ${containerRef.current ? containerRef.current.clientHeight / 1920 : 1})`,
+    transformOrigin: 'top left',
   };
 
   return (
-    <div style={{ backgroundImage: `url('/static/stockimages/background_paper.png')`, width: '100%', height: '100%', zIndex: '900' }}>
-      {isInvitationVisible && (
-        <div className={`invitation-container ${isInvitationVisible ? 'visible' : ''}`}>
-          <Invitation onBack={handleBackClick} /> {/* Invitation 컴포넌트 및 뒤로가기 핸들러 */}
-        </div>
-      )}
-
-    {isCreditVisible && (
-        <div className={`invitation-container ${isCreditVisible ? 'visible' : ''}`}>
-          <Credit onBack={handleBackClick} /> {/* Invitation 컴포넌트 및 뒤로가기 핸들러 */}
-        </div>
-      )}
-     
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {isInvitationVisible && <Invitation onBack={handleBackClick} />}
       <audio ref={audioRef} src="/static/test.mp3" loop></audio>
-      <header
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between', // 아이콘은 양쪽 끝으로, 텍스트는 가운데로
-          alignItems: 'center', // Vertically center all elements
-          width: '100%',
-          backgroundColor: 'transparent',
-          height: '58px',
-          backgroundColor: '#F8F6F1',
-          position: 'fixed',
-          top: '0',
-          zIndex: '1000',
-          left: '0',
-        }}
-      >
-        {/* Left Home Icon */}
-        <div onClick={() => navigate('/home')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', paddingLeft: '20px' }}>
-          <img src="/static/icons/home.png" alt="home" style={{ width: '24px', height: '24px' }} />
-        </div>
-
-        {/* Center Text */}
-        <div
-          style={{
-            textAlign: 'center',
-            fontSize: '20px',
-            color: '#412823',
-            lineHeight: '1',
-            position: 'absolute',
-            left: '50%',
-            transform: 'translateX(-50%)',
-          }}
-        >
-          {postcard?.name ? `'${postcard.name}'의 춤사위` : '춤사위'}
-        </div>
-
-        {/* Right Menu Icon */}
-        <div onClick={handleMenuClick} style={{ cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', paddingRight: '20px' }}>
-          <img src="/static/icons/hamburger.png" alt="menu" id="menu-button" />
-        </div>
-      </header>
-
-      {showImage && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: '1200',
-            opacity: showImage ? 1 : 0, // 투명도를 상태에 따라 변경
-            transition: 'opacity 0.5s ease-in-out', // 트랜지션 추가
-          }}
-          onClick={handleCloseImage}
-        >
-          <img
-            src="/static/stockimages/inviflat.png"
-            alt="invitation"
-            style={{
-              maxWidth: '90%',
-              maxHeight: '90%',
-              zIndex: '999999',
-              opacity: showImage ? 1 : 0, // 이미지의 투명도도 동일하게 설정
-              transition: 'opacity 0.5s ease-in-out', // 트랜지션 추가
-            }}
-          />
-        </div>
-      )}
-
-      <canvas
-        ref={canvasRef}
-        style={{
-          position: 'relative', // 상대적 위치로 설정하여 헤더 아래에 표시
-          top:'0px',
-          left: '0',
-
-          aspectRatio: '9 / 16',
-          // width: '70%',
-          height: 'calc(70vw * (16 / 9))',
-          maxHeight: 'calc(100vh - 178px)', // 화면 높이를 넘지 않도록 설정
-          overflow: 'hidden',
-          zIndex: '900', // 헤더보다 아래에 표시되도록 설정
-          transform: 'translateY(-5%)',
-        }}
-      />
-      {/* Promotion Image */}
-      <img
-        src="/static/stockimages/promotion.png"
-        alt="Promotion"
-        style={{
-          position: 'fixed',
-          right: '5%',
-          bottom: '58px',
-          width: '70%',
-          height: 'auto',
-          zIndex: '1100',
-        }}
-      />
-
-      <div
-        id="upbuttons"
-        style={{
-          position: 'fixed',
-          bottom: '0',
-          width: '100%',
-          height: '60px',
-          display: 'flex',
-          justifyContent: 'space-around',
-          alignItems: 'center',
-          backgroundColor: '#F8F6F1',
-          borderTop: '1px solid #E6E1DC',
-          zIndex: '1100',
-          gap: '20px',
-          padding: '0 10px',
-          overflow: 'hidden',
-          boxSizing: 'border-box',
-        }}
-      >
-      <button onClick={goToCreditPage}>
-        Go to Credit Page
-      </button>
-
-        <button className="upbutton" onClick={downloadVideo} disabled={!blobUrl}>
-          {isRecording ? '공유 영상 준비 중...' : '영상 저장하기'}
-        </button>
-        <button className="upbutton" onClick={shareVideo} disabled={!blobUrl}>
-          {isRecording ? '공유 영상 준비 중...' : '영상 공유하기'}
-        </button>
+      <div ref={containerRef} style={containerStyle}>
+        <img
+          src={`/static/stockimages/postcardfinal_${postcard?.number}.png`}
+          alt="Background"
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'none' }}
+        />
+        <canvas ref={canvasRef} style={canvasStyle} />
       </div>
+      <button onClick={downloadVideo}>영상 저장하기</button>
+      <button onClick={shareVideo}>영상 공유하기</button>
     </div>
   );
 };

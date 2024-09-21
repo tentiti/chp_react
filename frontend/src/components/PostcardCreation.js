@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Header from './Header';
 import './CreateCharacter.css';
+import Invitation from './Invitation';
 
 const modelPositions = [
   { x: 20.85, y: 28.20, width: 45.79, height: 35.71 },
@@ -82,10 +83,37 @@ const PostcardCreation = () => {
 
   const currentModelPosition = modelPositions[selectedBackground - 1];
 
+  const [isInvitationVisible, setIsInvitationVisible] = useState(false); // Invitation의 가시성을 관리하는 상태
+
+  const handleMenuClick = () => {
+    // alert('메뉴 클릭');
+    setIsInvitationVisible(true);
+    // setIsFloatingVisible(false); // Invitation을 보이면 플로팅 버튼을 숨김
+  };
+
+  // Invitation을 숨기고 원래 화면으로 돌아가는 함수 (뒤로가기 클릭 시 호출됨)
+  const handleBackClick = () => {
+    setIsInvitationVisible(false);
+    // setIsFloatingVisible(true); // Invitation을 숨기고 플로팅 버튼을 다시 보이게 함
+  };
+
   return (
     <div className="postcard-page">
+
+        {/* Invitation이 보일 때 */}
+  {isInvitationVisible && (
+    <div
+      className={`invitation-container ${
+        isInvitationVisible ? "visible" : ""
+      }`}
+      style={{ zIndex: "1000" }}
+    >
+      <Invitation onBack={handleBackClick} /> {/* Invitation 컴포넌트 및 뒤로가기 핸들러 */}
+    </div>
+  )}
+  
       <div className="header-container">
-        <Header title="답신 보내기" />
+        <Header title="답신 보내기" onMenuClick={handleMenuClick} />
       </div>
 
       <div className="postcard-container">

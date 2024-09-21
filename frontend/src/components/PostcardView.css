@@ -6,6 +6,15 @@
   font-style: normal;
 }
 
+body {
+  /* background-color: sandybrown !important; */
+  /* background-image: url("/static/stockimages/background_paper.png" )!important; */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+
+}
+
 .upbutton {
   /* 버튼 */
 

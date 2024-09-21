@@ -630,7 +630,8 @@ const handleAssetSelection = (category, index) => {
       });
   
       const fps = 24;  // GIF를 24fps로 설정
-      const totalFrames = 450;
+      // const totalFrames = 450;
+      const totalFrames = 12;
       let frameCount = 0;
   
       resetAndStartAnimation();
