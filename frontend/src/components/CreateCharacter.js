@@ -1038,7 +1038,7 @@ const clearExpressionCanvas = useCallback(() => {
     } else {
       // 다른 카테고리로 돌아갈 때 카메라 위치를 원래대로 되돌림
       cameraRef.current.position.set(0, 9, 50);  // 기본 카메라 위치로 되돌리기
-      cameraRef.current.lookAt(new THREE.Vector3(0, 2.5, 0));
+      cameraRef.current.lookAt(new THREE.Vector3(0, 3, 0));
       cameraRef.current.updateProjectionMatrix();
       
     }
@@ -1064,7 +1064,8 @@ const clearExpressionCanvas = useCallback(() => {
           // PC일 경우 canvas 크기를 고정
           parentWidth = 390;
           parentHeight = 780 - controlsHeight;
-          canvasRef.current.style.marginLeft = '-110px';
+          canvasRef.current.style.position = 'fixed';
+          canvasRef.current.style.top = '58px';
         
         }
   
@@ -1088,6 +1089,24 @@ const clearExpressionCanvas = useCallback(() => {
       window.removeEventListener('resize', handleResize);
     };
   }, [selectedCategory]);
+
+  useEffect(() => {
+    // 초대장이 보일 때 강제로 리사이즈 이벤트 발생
+    if (isInvitationVisible) {
+      window.dispatchEvent(new Event('resize'));
+    }
+  }, [isInvitationVisible]);
+
+  useEffect(() => {
+    const img = document.querySelector('.invitation-container #invitation-background');
+    if (img) {
+      img.onload = () => {
+        window.dispatchEvent(new Event('resize'));
+      };
+    }
+  }, [isInvitationVisible]);
+  
+  
   
 
   return (
@@ -1134,7 +1153,17 @@ const clearExpressionCanvas = useCallback(() => {
       </div>
     )}
 
-    <Header title="춤 복장 선택하기" onMenuClick={handleMenuClick} />
+    <Header 
+      id="ccheader"
+      title="춤 복장 선택하기" 
+      onMenuClick={handleMenuClick} 
+      style={{
+        display: isInvitationVisible ? 'none !important' : 'block', // 초대장이 보이면 none
+        zIndex: 100,
+        backgroundColor: 'green',
+      }}
+    />
+
 
     {/* 녹화 중일 때 보여줄 "녹화중입니다" 이미지 */}
     {isRecording && (
@@ -1152,6 +1181,16 @@ const clearExpressionCanvas = useCallback(() => {
             zIndex: "999999999",
           }}
         />
+
+        <img src="/static/stockimages/loading-circle.gif" alt="Logo" style={{
+          position: "Fixed",
+          top: "55%",
+          left: "50%",
+          width: '40px',
+          height: '40px',
+          transform: "translate(-50%, -50%)",
+          zIndex: "999999999",
+        }}/>
  
       </div>
     )}
