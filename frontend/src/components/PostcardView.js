@@ -5,7 +5,7 @@ import axios from 'axios';
 import RecordRTC from 'recordrtc';
 import { UseVideo } from './VideoContext';
 import { isTablet, isDesktop } from 'react-device-detect';
-import Hpapereader from './Header';
+import Header from './Header';
 import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
 import Credit from './Credit'
 import { useScene } from './SceneContext'; // SceneContext 사용
@@ -449,7 +449,6 @@ const PostcardView = () => {
           <img src="/static/icons/hamburger.png" alt="menu" id="menu-button" />
         </div>
       </header>
-
 
 
       <canvas

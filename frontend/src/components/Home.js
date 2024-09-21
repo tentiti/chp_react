@@ -144,10 +144,10 @@ function Home() {
           if (posX >= maxX - collisionMargin - buttonWidth) posX = maxX - collisionMargin - buttonWidth;
           if (posY <= collisionMargin + 58) posY = collisionMargin + 58;
           if (posY >= maxY - collisionMargin - buttonHeight) posY = maxY - collisionMargin - buttonHeight;
-          console.log(now);
+          // console.log(now);
           
           if (now - lastCollisionTime > collisionCooldown) {
-            console.log(now);
+            // console.log(now);
             angle = Math.random() * 2 * Math.PI; // New random angle on collision
             lastCollisionTime = now;
             floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
