@@ -94,3 +94,7 @@ s button:active {
   color: #e6e1dc !important; /* 글씨색 변경 */
   border-color: #e6e1dc !important; /* 테두리 색 변경 */
 }
+
+* {
+  overflow-x: hidden;
+}

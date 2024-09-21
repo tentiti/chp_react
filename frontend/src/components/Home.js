@@ -239,7 +239,7 @@ function Home() {
     <div className="App" style={{height: '100%', overflow: 'hidden', width: '100%'}}>
 
       <div id="headerLoader" style={{ backgroundColor: isInvitationVisible ? 'transparent' : '#f8f6f1', left: '50%', transform: 'translateX(-50%)', width: '100%', zIndex: '100'}}>
-          <header style={{ backgroundColor: 'transparent', width: '390px' }}>
+          <header id="mainheader" style={{ backgroundColor: 'transparent', width: '100%' }}>
             <div className="titleArea" style={{ width: '100%' }}>
               <div style={{ fontFamily: 'ClimateCrisisKR-1979', flexGrow: 0, textAlign: 'left' }}>
                 <span style={{ fontWeight: 200, fontSize: '15px', color: '#412823', lineHeight: '0.9', display: 'block' }}>이제</span>
@@ -275,8 +275,8 @@ function Home() {
             {postcards.map((postcard) => (
               <div className="image-item" key={postcard.id}>
                 <img
-                  // src={`/api/uploads/${postcard.png_name}?t=${new Date().getTime()}`} 
-                  src={`/api/uploads/${postcard.png_name}`} 
+                  src={`/api/uploads/${postcard.png_name}?t=${new Date().getTime()}`} 
+                  // src={`/api/uploads/${postcard.png_name}`} 
                   alt={`grid ${postcard.id}`}
                   onError={(e) => handleImageError(e, postcard.id)} 
                   onClick={() => window.location.href = `/postcardshareview/${postcard.id}`} 
@@ -304,7 +304,7 @@ function Home() {
         <div className={`invitation-container ${isInvitationVisible ? 'visible' : ''}`}style={{
           zIndex: '1000',
         }}>
-          <Invitation onBack={handleBackClick} />
+          <Invitation onBack={handleBackClick} showbutton={true} />
         </div>
       )}
 

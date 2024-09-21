@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-function Invitation({ onBack }) {
+function Invitation({ onBack, showbutton=false }) {
   const [isSlideIn, setIsSlideIn] = useState(false);
 
   useEffect(() => {
@@ -27,22 +27,26 @@ function Invitation({ onBack }) {
       }}
     >
       <div
+        id="invitation-background"
         style={{
           position: 'absolute',
           top: 0,
           left: 0,
           width: '100%',
           height: '100%',
-          backgroundImage: 'url("/static/stockimages/invitation_background.png")',
-          backgroundSize: 'cover',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center center',
-          backgroundAttachment: 'fixed',
+
           borderTopLeftRadius: '20px',
           zIndex: '999999 !important',
           opacity: 1,
         }}
-      ></div>
+      >
+        <img src= "/static/stockimages/invitation_background.png" alt='background' style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          borderTopLeftRadius: '20px',
+        }}></img>
+      </div>
 
       {/* Header */}
       <div
@@ -135,7 +139,8 @@ function Invitation({ onBack }) {
       </div>
 
       {/* Button container */}
-      <div
+      {showbutton &&(
+        <div
         style={{
           position: 'fixed',
           bottom: '10%',
@@ -174,6 +179,8 @@ function Invitation({ onBack }) {
           캐릭터 생성하기
         </a>
       </div>
+      )}
+      
     </div>
   );
 }

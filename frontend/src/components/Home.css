@@ -49,14 +49,18 @@ body {
 }
 
 #headerLoader {
-  flex-shrink: 0;
+  position: fixed;
+  /* left: 50%; */
+
+  width: 100% !important;
   background-color: #f8f6f1;
   height: 58px;
   z-index: 10005;
 }
 
-header {
-  left: 50%;
+#mainheader {
+  position: absolute;
+  /* left: 50%; */
   width: 100% !important;
   display: flex;
   justify-content: center;
@@ -76,6 +80,8 @@ header {
 }
 
 .container {
+  position: relative;
+  top: 58px;
   flex-grow: 1;
   overflow-y: auto;
   background-color: #f8f6f1;
