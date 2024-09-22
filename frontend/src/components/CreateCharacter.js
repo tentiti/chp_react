@@ -202,6 +202,7 @@ const handleAssetSelection = (category, index) => {
         });
       });
     }
+    
 
     // 원피스가 선택되었는지 여부 확인
       if (categoryName === 'TOP' && modelPath.includes('dress')) {
@@ -225,6 +226,19 @@ const handleAssetSelection = (category, index) => {
       (gltf) => {
         const model = gltf.scene;
         sceneRef.current.add(model);
+
+        model.traverse((child) => {
+          if (child.isMesh && child.name === 'HEAD') {
+            child.material.depthTest = false;  // 깊이 테스트 비활성화
+            child.material.depthWrite = false;  // 깊이 쓰기 비활성화
+            child.material.needsUpdate = true;
+          }
+        });
+
+        // if (categoryName === 'HEAD'){
+        //   model.position.set(0, 0.1, 0); // 필요시 위치 조정
+        //   model.scale.set(1.1, 1, 1.1); // 필요시 크기 조정
+        // }
 
         if (categoryName === 'HEAD' && storedExpressionTexture) {
           model.traverse((child) => {
@@ -367,7 +381,7 @@ const handleAssetSelection = (category, index) => {
 
     initThreeJS();
     loadModel('/static/models/animation_1.glb', 'Base', false, () => setLoadingStatus('Loaded Successfully'));
-
+    
     const animate = () => {
       requestAnimationFrame(animate);
     
