@@ -67,39 +67,37 @@ const PostcardShareView = () => {
   }, [id]);
 
   const handlePlayAudioAndRestartGIF = () => {
+    // Append a unique timestamp to force the browser to reload the GIF
+    const newGifSrc = `/api/uploads/${postcard.gif_name}?t=${new Date().getTime()}`;
+    
+    // Restart GIF by updating the gifKey and GIF source with cache busting
+    setGifKey(prevKey => prevKey + 1);
+    
+    // Find the GIF element and change its src attribute with the new URL
+    const gifElement = document.querySelector(`#gifElement`);
+    
+    if (gifElement) {
+      // Temporarily set the GIF src to an empty string to force reload
+      gifElement.src = '';
+      alert('음악과 함께 춤추기를 시작합니다.');
+  
+      // // Add a slight delay before updating the GIF source
+      // setTimeout(() => {
+      //   gifElement.src = newGifSrc;
+      // }, 100); // A small delay to ensure the browser processes the change
+    }
+    
+    // Play the audio after resetting the GIF
     if (audioRef.current) {
+      audioRef.current.currentTime = 0; // Reset the audio to the start
       audioRef.current.play().catch(err => {
         console.error("Audio playback failed:", err);
       });
     }
-    // Restart GIF by updating the gifKey
-    setGifKey(prevKey => prevKey + 1);
   };
-
-  useEffect(() => {
-    if (canvasRef.current) {
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-
-      const geometry = new THREE.BoxGeometry();
-      const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-      const cube = new THREE.Mesh(geometry, material);
-      scene.add(cube);
-
-      camera.position.z = 5;
-
-      const animate = function () {
-        requestAnimationFrame(animate);
-        cube.rotation.x += 0.01;
-        cube.rotation.y += 0.01;
-        renderer.render(scene, camera);
-      };
-
-      animate();
-    }
-  }, [canvasRef]);
+  
+  
+  
 
   if (!postcard) {
     return <div>Loading...</div>;
@@ -184,6 +182,7 @@ const PostcardShareView = () => {
 
 
           <img
+            id="gifElement" 
             key={gifKey} // Ensure the GIF is reloaded by changing the key
             src={`/api/uploads/${postcard.gif_name}`}
             alt="GIF"
@@ -290,10 +289,6 @@ const PostcardShareView = () => {
       >
         음악과 함께 춤추기
       </button>
-
-      <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', display: 'none' }}></canvas>
-
-
 
       <footer style={{
           position: 'absolute',

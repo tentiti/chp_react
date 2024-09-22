@@ -3,7 +3,16 @@ import eventlet
 eventlet.monkey_patch()
 
 import random
-from flask import Flask, request, jsonify, send_from_directory, render_template, url_for
+from flask import (
+    Flask,
+    request,
+    jsonify,
+    send_from_directory,
+    render_template,
+    url_for,
+    abort,
+    send_file,
+)
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -120,7 +129,23 @@ def post_comment():
 
 @app.route("/api/uploads/<filename>", methods=["GET"])
 def get_video(filename):
-    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+    file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+
+    # 파일이 존재하지 않을 경우 404 오류를 반환합니다.
+    if not os.path.exists(file_path):
+        abort(404)
+
+    # 파일의 크기를 가져옵니다.
+    file_size = os.path.getsize(file_path)
+
+    try:
+        # send_file을 사용하여 파일을 전송하며, Content-Length 헤더를 명시적으로 추가합니다.
+        response = send_file(file_path, conditional=True)
+        response.headers["Content-Length"] = file_size
+        return response
+    except Exception as e:
+        print(f"Error sending file: {e}")
+        return "Error sending file", 500
 
 
 # 이미지 저장 폴더 경로 설정

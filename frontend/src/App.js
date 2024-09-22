@@ -17,6 +17,7 @@ function App() {
   const [isFixedSize, setIsFixedSize] = useState(false);
   const [showSizeInfo, setShowSizeInfo] = useState(false);
   const [showInstaInfo, setShowInstaInfo] = useState(false); // 추가된 상태
+  const [showKakaoInfo, setShowKakaoInfo] = useState(false); // 추가된 상태 
   const [isSizeChecked, setIsSizeChecked] = useState(false);
 
   const getDeviceType = () => {
@@ -31,6 +32,11 @@ function App() {
     return userAgent.includes("Instagram");
   };
 
+  const checkKakaoBrowser = () => {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    return userAgent.includes("Kakao");
+  };
+
   const checkWindowSize = useCallback(() => {  // useCallback to memoize the function
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -41,6 +47,7 @@ function App() {
     setIsFixedSize(deviceType === 'tablet' || deviceType === 'desktop');
     setShowSizeInfo((deviceType === 'tablet' || deviceType === 'desktop') && (width < 390 || height < 780));
     setShowInstaInfo(checkInstagramBrowser()); // 인스타그램 브라우저 감지 후 상태 업데이트
+    setShowKakaoInfo(checkKakaoBrowser()); // 카카오 브라우저 감지 후 상태 업데이트
     setIsSizeChecked(true);
   }, []);  // No dependencies for now
 
@@ -68,6 +75,10 @@ function App() {
         <div className="size-info-container">
           <img src="/static/stockimages/instainfo.png" alt="Instagram Browser Information" className="size-info-image" />
         </div>
+      ) : showKakaoInfo ? ( // 카카오 안내 정보 추가
+        <div className="size-info-container">
+          <img src="/static/stockimages/kakaoinfo.png" alt="Kakao Browser Information" className="size-info-image" />
+        </div> 
       ) : (
         <SceneProvider>
           <VideoProvider>
