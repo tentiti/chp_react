@@ -487,6 +487,7 @@ const handleAssetSelection = (category, index) => {
   
 
   const startRecording = async (setVideoFile) => {
+    setIsRecording(true); // 녹화 시작
 
   // updateSceneData(sceneRef.current, cameraRef.current, rendererRef.current);
   updateSceneData({
@@ -509,7 +510,6 @@ const handleAssetSelection = (category, index) => {
    await new Promise((resolve) => setTimeout(resolve, 30));
 
 
-  setIsRecording(true); // 녹화 시작
   
   // 100ms 지연을 위해 Promise와 setTimeout을 사용
   await new Promise((resolve) => setTimeout(resolve, 10)); // 100ms 대기

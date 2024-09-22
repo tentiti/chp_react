@@ -136,6 +136,11 @@ const PlaceSelection = () => {
     if (!currentDescription) {
         return <div>Loading...</div>;
     }
+
+    document.addEventListener('scroll', function() {
+        document.documentElement.scrollLeft = 0;  // 항상 가로 스크롤을 0으로 유지
+    });
+    
     
 
     return (
@@ -157,10 +162,6 @@ const PlaceSelection = () => {
                 </div>
             )}
 
-            <div id="top">
-                
-            </div>
-
             <div ref={containerRef} style={{ 
                 position: 'fixed',
                 flex: 1, 
@@ -178,31 +179,38 @@ const PlaceSelection = () => {
                 padding: '0 20px',  
                 boxSizing: 'border-box',
             }}>
-                {/* Image and Controls */}
+
+
+            <div id="top" style={{
+                display: 'flex',
+                flexDirection: 'column',
+                // justifyContent: 'center',
+                alignItems: 'center',
+                top: '0',
+            }}>
+
+                {/* Image and gif */}
                 <div id="picturecontainer" style={{ 
                     position: 'relative',
+
                     aspectRatio: '23 / 28',
                     
-                    height: 'calc(100vh - 225px)', // 200px for the work details
-                    minHeight: '225px',
+                    minHeight: (isDesktop || isTablet) ? '300px' : 'calc(95dvh - 410px)',
                     width: 'auto',
                     maxWidth: '400px',
+                    margin: '10px',
                     boxSizing: 'border-box',
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
+
+                    backgroundImage: `url(${backgrounds[currentIndex]})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+
                 }}>
-                    <img 
-                        src={backgrounds[currentIndex]}
-                        alt="Background"
-                        style={{ 
-                            width: 'auto', 
-                            height: '100%', 
-                            objectFit: 'cover', 
-                            maxWidth: '100%',
-                            maxHeight: '100%',
-                        }}
-                    />
+
                     {gifUrl && (
                         <img
                             src={`/api/uploads/${gifUrl}`}
@@ -229,36 +237,31 @@ const PlaceSelection = () => {
                         width: '100%',
                         padding: '0 30px',
                         boxSizing: 'border-box',
-                        
+                        fontSize: '22px',
+                        color: 'rgba(65,30,45,0.3)',
+                        zIndex: 1000,
+                        textShadow: '0px 2px 2px rgba(0, 0, 0, 0.25)',
+                        cursor: 'pointer',
                     }}>
                         <div 
-                            style={{ 
-                                cursor: 'pointer',
-                                fontSize: '22px',
-                                color: 'rgba(65,30,45,0.3)',
-                                zIndex: 1000,
-                                textShadow: '0px 2px 2px rgba(0, 0, 0, 0.25)'
-                            }}
                             onClick={handlePrevious}
                         >
                             &#9664;
                         </div>
                         <div 
-                            style={{ 
-                                right: '30px', 
-                                cursor: 'pointer',
-                                fontSize: '22px',
-                                color: 'rgba(65,30,45,0.3)',
-                                zIndex: 1000,
-                                textShadow: '0px 2px 2px rgba(0, 0, 0, 0.25)'
-                            }}
                             onClick={handleNext}
                         >
                             &#9654;
                         </div>
                     </div>
                 {/* Dot Indicators */}
-                <div style={{ display: 'flex', justifyContent: 'center', margin: '0' }}>
+                <div style={{ 
+                    position: 'relative',
+                    // top: 'calc(100% - 270px)',
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    margin: '0' ,
+                    }}>
                     {backgrounds.map((_, index) => (
                         <div 
                             key={index} 
@@ -273,37 +276,45 @@ const PlaceSelection = () => {
                     ))}
                 </div>
 
-                <hr style={{ width: '100%', margin: '10px 0', border: '0.5px solid #E6E1DC' }} />
+                <hr style={{ 
+                    width: '100%',
+                    marginTop: '5px 0', 
+                    border: '0.5px solid #E6E1DC' }} />
 
                 {/* Work details */}
                 <div id="workdetails" style={{ 
+                    position: 'relative',
                     letterSpacing:`-0.5px`,
                     width: '100%',
                     maxWidth: '390px',
-                    margin: '0 auto',
+                    marginTop: '-5px',
                     textAlign: 'center',
                     minHeight: '330px', // Minimum height for this section
                     maxHeight: '330px', // Minimum height for this section
                     // backgroundColor: 'blue',
                 }}>
-                    <p id='worktitle'>{currentDescription.title}</p>
-                    <p id="workdate">{currentDescription.date}</p>
-                    <p id="workexplanation">{currentDescription.text}</p>
+                    <div id='worktitle' >{currentDescription.title}</div>
+                    <div id="workdate">{currentDescription.date}</div>
+                    <div id="workexplanation">{currentDescription.text}</div>
+
+                    <div style={{ 
+                        position: 'relative',
+                        marginTop: '15px',
+                        color: '#9C9C9C', 
+                        fontSize: '8px', 
+                        display: 'block',
+                        width: '100%',
+                        textAlign: 'right',
+                        right: '20px',
+                    }}>
+                        * 해당 배경은 김화순 작가의 작품을 오마주하여 제작하였습니다.
+                    </div>
 
                 {/* Copyright text */}
-                <span style={{ 
-                    color: '#9C9C9C', 
-                    fontSize: '8px', 
-                    display: 'block',
-                    width: '100%',
-                    textAlign: 'right',
-                    margin: '5px 0',
-                }}>
-                    * 해당 배경은 김화순 작가의 작품을 오마주하여 제작하였습니다.
-                </span>
+                
                 </div>
 
-
+                </div>
 
                 {/* Scroll button */}
                 <div 
@@ -349,9 +360,10 @@ const PlaceSelection = () => {
                         alt="original work" 
                         style={{ 
                             position: 'relative',
+                            margin: '10px 0',
                             width: '100%',
                             height: 'auto',
-                            maxHeight: 'calc(100vh - 300px)',
+                            maxHeight: 'calc(100% - 80px)',
                             objectFit: 'contain',
                         }} 
                     />
