@@ -80,6 +80,7 @@ function App() {
           <img src="/static/stockimages/kakaoinfo.png" alt="Kakao Browser Information" className="size-info-image" />
         </div> 
       ) : (
+        
         <SceneProvider>
           <VideoProvider>
             <Router>

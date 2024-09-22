@@ -259,9 +259,14 @@ const Credit = () => {
         bgTexture.minFilter = THREE.LinearFilter;
         bgTexture.magFilter = THREE.LinearFilter;
 
+
         const bgMaterial = new THREE.MeshBasicMaterial({ map: bgTexture });
         const bgMesh = new THREE.Mesh(new THREE.PlaneGeometry(frustumSize * (720 / 1280), frustumSize), bgMaterial);
-        bgMesh.position.z = -50;
+        bgMesh.material.depthTest = false;
+        bgMesh.material.depthWrite = false;
+        bgMesh.renderOrder = -1; // 낮은 값일수록 먼저 렌더링됨
+
+        bgMesh.position.z = -100;
         sceneRef.current.add(bgMesh);
       });
 
