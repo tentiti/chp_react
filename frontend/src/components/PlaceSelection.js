@@ -146,7 +146,8 @@ const PlaceSelection = () => {
             width: '100%', 
             margin: '0', 
             left: '0', 
-            overflowY: 'hidden'
+            overflowY: 'hidden',
+            overflowX: 'hidden',
         }}>
             <Header title="장소 정하기" needthird={true} onMenuClick={handleMenuClick} style={{ position: 'fixed' }} />
         
@@ -156,8 +157,12 @@ const PlaceSelection = () => {
                 </div>
             )}
 
+            <div id="top">
+                
+            </div>
+
             <div ref={containerRef} style={{ 
-                position: 'absolute',
+                position: 'fixed',
                 flex: 1, 
                 top: '58px',
                 left:0,
@@ -165,6 +170,7 @@ const PlaceSelection = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
+                alignItems: 'center',   
                 width: '100%',
                 height: 'calc(100% - 138px)',
                 overflowY: 'auto',
@@ -175,9 +181,12 @@ const PlaceSelection = () => {
                 {/* Image and Controls */}
                 <div id="picturecontainer" style={{ 
                     position: 'relative',
-                    flexGrow: 1, // Grow to take remaining space
-                    height: 'calc(100% - 300px)', // 200px for the work details
-                    width: 'calc(100% - 300px) * 5 / 4',
+                    aspectRatio: '23 / 28',
+                    
+                    height: 'calc(100vh - 225px)', // 200px for the work details
+                    minHeight: '225px',
+                    width: 'auto',
+                    maxWidth: '400px',
                     boxSizing: 'border-box',
                     display: 'flex',
                     justifyContent: 'center',
@@ -197,26 +206,28 @@ const PlaceSelection = () => {
                     {gifUrl && (
                         <img
                             src={`/api/uploads/${gifUrl}`}
-                            alt="Generated GIF"
+                            alt="Generated Image"
                             style={{
                                 position: 'absolute',
-                                top: `${currentModelPosition.y / 400 * 100}%`,
+                                top: `${currentModelPosition.y / 400 * 80}%`,
                                 left: `${currentModelPosition.x / 500 * 100}%`,
-                                width: `${currentModelPosition.width / 400 * 100}%`,
-                                height: `${currentModelPosition.width / 400 * 100}%`,
-                                objectFit: 'contain',
+                                width: `${currentModelPosition.width / 400 * 120}%`,
+                                aspectRatio: '1 / 1',
                             }}
                         />
                     )}
-                    <div id="directions" style={{
+
+                </div>
+
+                <div id="directions" style={{
                         position: 'absolute',
                         display: 'flex',
                         flexDirection: 'row',
                         justifyContent: 'space-between',
-                        top: '50%',
+                        top: '30%',
                         left: '0',
                         width: '100%',
-                        padding: '0 5px',
+                        padding: '0 30px',
                         boxSizing: 'border-box',
                         
                     }}>
@@ -246,8 +257,6 @@ const PlaceSelection = () => {
                             &#9654;
                         </div>
                     </div>
-                </div>
-
                 {/* Dot Indicators */}
                 <div style={{ display: 'flex', justifyContent: 'center', margin: '0' }}>
                     {backgrounds.map((_, index) => (
@@ -268,13 +277,14 @@ const PlaceSelection = () => {
 
                 {/* Work details */}
                 <div id="workdetails" style={{ 
-                    letterSpacing:`-0.025em`,
+                    letterSpacing:`-0.5px`,
                     width: '100%',
                     maxWidth: '390px',
                     margin: '0 auto',
                     textAlign: 'center',
-                    Height: '30%',
-                    minHeight: '200px', // Minimum height for this section
+                    minHeight: '330px', // Minimum height for this section
+                    maxHeight: '330px', // Minimum height for this section
+                    // backgroundColor: 'blue',
                 }}>
                     <p id='worktitle'>{currentDescription.title}</p>
                     <p id="workdate">{currentDescription.date}</p>
@@ -317,6 +327,7 @@ const PlaceSelection = () => {
                         textAlign: 'center',
                         padding: '7px',
                         boxSizing: 'border-box',
+                        zIndex: 1000,
                     }}
                 >
                     <span>{isScrolledToBottom ? '장소 고르러 돌아가기' : '원본 작품 보러가기'}</span>
@@ -333,16 +344,17 @@ const PlaceSelection = () => {
                     />
                 </div>
 
-                <img src={currentDescription.image} alt="Example" style={{ 
-                    width: '100%',
-                    height: '100%',
-                    maxWidth: '100%',
-                    maxHeight: '100%',
-                    objectFit: 'contain',
-                    paddingTop: '85px',
-                    paddingBottom: '20px',
-                    boxSizing: 'border-box',
-                }} />
+                    <img 
+                        src={currentDescription.image} 
+                        alt="original work" 
+                        style={{ 
+                            position: 'relative',
+                            width: '100%',
+                            height: 'auto',
+                            maxHeight: 'calc(100vh - 300px)',
+                            objectFit: 'contain',
+                        }} 
+                    />
 
             </div>
 
@@ -358,6 +370,7 @@ const PlaceSelection = () => {
                 justifyContent: 'center',
                 alignItems: 'center',
                 backgroundColor: '#F8F6F1',
+                zIndex: 1000,
             }}>
                 <button id="scrolldownbutton" onClick={handleSelectPlace}>
                     여기서 춤추기

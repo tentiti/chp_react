@@ -20,7 +20,7 @@ function Home() {
       if (isTablet || isDesktop) {
         setMarginTop(0);
       } else {
-        setMarginTop(10);
+        setMarginTop(0);
       }
     };
 
@@ -54,8 +54,22 @@ function Home() {
   }, [bannerImages.length]);
 
   const handleImageError = (e, num) => {
-    e.target.src = `https://placehold.co/200x200?text=error! ${num}`;
+    const fallbackSrc = `https://placehold.co/200x200?text=Image+${num}+Error`;
+    
+    // 이미지 로드 재시도 횟수 관리
+    if (!e.target.attemptedRetries) {
+      e.target.attemptedRetries = 0;
+    }
+    
+    // 최대 1회까지 재시도
+    if (e.target.attemptedRetries < 1) {
+      e.target.attemptedRetries += 1;
+      e.target.src = e.target.src + `?retry=${e.target.attemptedRetries}`; // 캐시 무효화
+    } else {
+      e.target.src = fallbackSrc; // 실패 시 대체 이미지로 설정
+    }
   };
+  
 
   const handleMenuClick = () => {
     setIsInvitationVisible(true);
@@ -206,7 +220,7 @@ function Home() {
     initializeAjaxLinks();
 
     function adjustContainerHeight() {
-      const header = document.querySelector('header');
+      const header = document.querySelector('#header');
       const footer = document.querySelector('footer');
 
       if (header && footer && container) {
@@ -235,11 +249,30 @@ function Home() {
     };
   }, [isFloatingVisible]);
 
+
   return (
     <div className="App" style={{height: '100%', width: '100%'}}>
 
-      <div id="headerLoader" style={{ backgroundColor: isInvitationVisible ? 'transparent' : '#f8f6f1', left: '50%', transform: 'translateX(-50%)', width: '100%', zIndex: '100'}}>
-          <header style={{ backgroundColor: 'transparent', width: '100%' }}>
+      <div id="headerLoader" style={{ 
+        backgroundColor: isInvitationVisible ? 'transparent' : '#f8f6f1', 
+        left: '50%', 
+        transform: 'translateX(-50%)',
+         width: '100%', 
+         zIndex: '100', 
+         border: 'none !important',
+         display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+         }}>
+          <div id="header" style={{ 
+            backgroundColor: 'transparent', 
+            position:'absolute', 
+            width:"100%", 
+            height:"100%",
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
             <div className="titleArea" style={{ width: '100%' }}>
               <div style={{ fontFamily: 'ClimateCrisisKR-1979', flexGrow: 0, textAlign: 'left' }}>
                 <span style={{ fontWeight: 200, fontSize: '15px', color: '#412823', lineHeight: '0.9', display: 'block' }}>이제</span>
@@ -256,7 +289,7 @@ function Home() {
                 <img src="/static/icons/hamburger.png" alt="menu" id="menu-button" />
               </div>
             </div>
-          </header>
+          </div>
           
         </div>
       <div className="container" id="content" ref={containerRef}>
@@ -275,8 +308,8 @@ function Home() {
             {postcards.map((postcard) => (
               <div className="image-item" key={postcard.id}>
                 <img
-                  src={`/api/uploads/${postcard.png_name}?t=${new Date().getTime()}`} 
-                  // src={`/api/uploads/${postcard.png_name}`} 
+                  // src={`/api/uploads/${postcard.png_name}?t=${new Date().getTime()}`} 
+                  src={`/api/uploads/${postcard.png_name}`} 
                   alt={`grid ${postcard.id}`}
                   onError={(e) => handleImageError(e, postcard.id)} 
                   onClick={() => window.location.href = `/postcardshareview/${postcard.id}`} 
@@ -309,7 +342,7 @@ function Home() {
       )}
 
       <footer style={{letterSpacing:'-0.025em', zIndex:'100'}}>
-        <div>2024. 10. 12 - 10.29.</div>
+        <div>2024. 10. 12 - 11. 3.</div>
         <div className="footerBorder">|</div>
         <a href="https://google.com">김화순 개인전</a>
         <div className="footerBorder">|</div>

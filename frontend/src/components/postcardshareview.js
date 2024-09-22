@@ -105,6 +105,10 @@ const PostcardShareView = () => {
     return <div>Loading...</div>;
   }
 
+  document.body.addEventListener('touchmove', function (e) {
+    e.preventDefault();
+  }, { passive: false });
+
   return (
     <div style={{
       position: 'absolute',
@@ -113,14 +117,16 @@ const PostcardShareView = () => {
       backgroundImage: `url('/static/stockimages/background_paper.png')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
-      width: isFixedSize ? '390px' : '100%', // 고정 크기 또는 가로 100%
-      height: isFixedSize ? '780px' : '100%', // 고정 크기 또는 세로 100%
+      width: isFixedSize ? '390px' : '100dvw', // 고정 크기 또는 가로 100%
+      height: isFixedSize ? '780px' : '100dvh', // 고정 크기 또는 세로 100%
 
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'flex-start',
-      overflow: 'hidden',
+      overflowY: 'hidden',
+
+
     }}>
       <div
         style={{
@@ -197,12 +203,13 @@ const PostcardShareView = () => {
         <div
           style={{
             position: 'absolute',
-            top: '60.0%',
+            top: '60.5%',
             zIndex: '900',
             width: '83%',
             color: '#412823',
             fontSize: '12px',
             textAlign: 'center',
+            verticalAlign: 'top',
             lineHeight: '2',
             fontFamily: 'Cafe24Simplehae, sans-serif',
             wordWrap: 'break-word',

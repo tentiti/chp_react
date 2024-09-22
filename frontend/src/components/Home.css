@@ -61,13 +61,12 @@ body {
 #mainheader {
   position: absolute;
   /* left: 50%; */
-  width: 100% !important;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: transparent;
-  border: none !important;
 }
+
 
 .titleArea {
   display: flex;

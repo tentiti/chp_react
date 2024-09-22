@@ -174,8 +174,8 @@ def submit_postcard():
 
             # 이미지 자르기 (중앙을 기준으로 이미지 크기의 20%를 잘라냄)
             width, height = random_frame.size
-            crop_margin_width = int(width * 0.07)  # 양쪽에서 10%씩 잘라냄
-            crop_margin_height = int(height * 0.07)  # 위아래에서 10%씩 잘라냄
+            crop_margin_width = int(width * 0.12)  # 양쪽에서 10%씩 잘라냄
+            crop_margin_height = int(height * 0.12)  # 위아래에서 10%씩 잘라냄
 
             left = crop_margin_width
             upper = crop_margin_height

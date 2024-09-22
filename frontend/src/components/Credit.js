@@ -32,8 +32,72 @@ const Credit = () => {
   const handleMenuClick = () => setIsInvitationVisible(true);
   const handleBackClick = () => setIsInvitationVisible(false);
 
+  const [isHeadTextureApplied, setIsHeadTextureApplied] = useState(false);
+
+  // 머리 텍스처가 적용되었는지 확인하는 함수
+  const checkHeadTexture = () => {
+    if (!sceneRef.current) return;
+
+    let headMesh = null;
+
+    // scene을 순회하면서 head_1이라는 이름의 메쉬를 찾음
+    sceneRef.current.traverse((object) => {
+      if (object.isMesh && object.name === 'head_1') {
+        headMesh = object;
+      }
+    });
+
+    // head_1이 존재하고, 해당 메쉬에 텍스처가 적용되었는지 확인
+    if (headMesh && headMesh.material && headMesh.material.map) {
+      console.log('head_1 텍스처가 적용됨:', headMesh.material.map);
+      setIsHeadTextureApplied(true); // 텍스처가 적용되었으면 true로 설정
+    } else {
+      console.log('head_1 텍스처가 없음');
+      setIsHeadTextureApplied(false); // 텍스처가 없으면 false로 설정
+    }
+  };
+
+
+
+  //애니메이션 관련
+  const clock = new THREE.Clock();  // Define the clock instance here
+
+  //타이밍 관련
+  const [isReadyToRecord, setIsReadyToRecord] = useState(false);
+
+  const resetAndPlayAnimations = () => {
+    if (!sceneRef.current) return;
+  
+    sceneRef.current.traverse((object) => {
+      if (object.userData && object.userData.animationMixer) {
+        const mixer = object.userData.animationMixer;
+  
+        // 모든 액션을 멈추고 초기화한 후 재생
+        mixer.stopAllAction();
+  
+        mixer._actions.forEach((action) => {
+          action.reset();  // 애니메이션의 시작 상태로 되돌림
+          action.setLoop(THREE.LoopOnce);  // 애니메이션을 한 번만 실행하도록 설정
+          action.clampWhenFinished = true;  // 애니메이션 종료 후 마지막 프레임 유지
+          action.play();  // 애니메이션 재생
+        });
+
+        mixer.setTime(0);
+      }
+    });
+
+    sceneRef.current.traverse((child) => {
+      if (child.material && child.material.map) {
+        child.material.map.needsUpdate = true;
+      }
+    });
+
+    clock.start();
+  };
+  
+  
   const startRecording = () => {
-    if (isRecording) return;  // 이미 녹화 중인 경우
+    if (isRecording || !isReadyToRecord) return;  // 이미 녹화 중인 경우
   
     // alert('startRecording');
     setIsRecording(true); // 녹화 상태 설정
@@ -74,14 +138,17 @@ const Credit = () => {
         frameRate: 30 // iPhone에서 호환되는 프레임 레이트
       },
     });
-  
+
+
+    resetAndPlayAnimations();  // 애니메이션을 리셋하고 재생
+
     recorder.startRecording();
     recorderRef.current = recorder;
   
     setTimeout(() => {
       // alert('Attempting to stop recording');
       stopRecording();
-    }, 3750);  // 3.75초 후 녹화 종료 시도
+    }, 1750);  // 3.75초 후 녹화 종료 시도
   };
   
   const stopRecording = () => {
@@ -98,6 +165,9 @@ const Credit = () => {
       setIsRecording(false); // 녹화 상태 해제
       setIsRecordingDone(true); // 녹화 완료 상태 설정
     });
+
+    audioRef.current.play();
+    // resetAndPlayAnimations();
   };
   
 
@@ -176,6 +246,12 @@ const Credit = () => {
       cameraRef.current.position.set(0, 0, 5);
       cameraRef.current.lookAt(0, 0, 0);
 
+      sceneRef.current.traverse((child) => {
+        if (child.material && child.material.map) {
+          child.material.map.needsUpdate = true;
+        }
+      });
+
       const loader = new THREE.TextureLoader();
       loader.load(`/static/stockimages/postcardfinal_${postcard?.number}.png`, (bgTexture) => {
         bgTexture.colorSpace = THREE.SRGBColorSpace;
@@ -185,7 +261,7 @@ const Credit = () => {
 
         const bgMaterial = new THREE.MeshBasicMaterial({ map: bgTexture });
         const bgMesh = new THREE.Mesh(new THREE.PlaneGeometry(frustumSize * (720 / 1280), frustumSize), bgMaterial);
-        bgMesh.position.z = -10;
+        bgMesh.position.z = -50;
         sceneRef.current.add(bgMesh);
       });
 
@@ -258,6 +334,19 @@ const Credit = () => {
 
       const animate = () => {
         requestAnimationFrame(animate);
+
+        const delta = clock.getDelta();  // 경과된 시간
+
+        // scene 내의 모든 애니메이션 업데이트
+        sceneRef.current.traverse((object) => {
+          if (object.material && object.material.map) {
+            object.material.map.needsUpdate = true;  // 텍스처 갱신 강제
+          }
+          if (object.userData && object.userData.animationMixer) {
+            object.userData.animationMixer.update(delta);
+          }
+        })
+
         rendererRef.current.render(sceneRef.current, cameraRef.current);
       };
       animate();
@@ -274,6 +363,8 @@ const Credit = () => {
       });
     };
   }, [sceneData, postcard]);
+
+  
 
   useEffect(() => {
     if (postcard) {
@@ -320,8 +411,47 @@ const Credit = () => {
       window.removeEventListener('beforeunload', handleUnload);
     };
   }, [textMeshes, blobUrl]);
-  
 
+  useEffect(() => {
+    if (postcard) {
+      // Prepare audio and check if it's ready to play
+      audioRef.current.load();
+      audioRef.current.oncanplaythrough = () => {
+        setIsReadyToRecord(true);
+      };
+    }
+  }, [postcard]);
+
+  useEffect(() => {
+    if (isReadyToRecord) {
+      startRecording();
+    }
+  }, [isReadyToRecord]);
+
+  useEffect(() => {
+    let animationInterval;
+  
+    if (isRecordingDone) {
+      console.log('Recording is done, starting animation loop every 8.75 seconds.');
+  
+      const runAnimation = () => {
+        console.log('Resetting and playing animations.');
+        resetAndPlayAnimations();
+      };
+
+      runAnimation(); // Immediately trigger it once after recording is done
+  
+      animationInterval = setInterval(runAnimation, 8750); // Replay every 8.75 seconds
+    }
+  
+    return () => {
+      if (animationInterval) {
+        console.log('Clearing animation interval.');
+        clearInterval(animationInterval);
+      }
+    };
+  }, [isRecordingDone]);
+  
   if (!postcard) return <div>Loading...</div>;
 
   const containerStyle = {

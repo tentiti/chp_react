@@ -124,6 +124,7 @@ const PostcardCreation = () => {
           letterSpacing: '-0.5px', /* 자간 -0.5px */
           fontFamily: 'Cafe24Simplehae',
           color:'#412823',
+          backgroundImage: "url('/static/stockimages/postcard_underlined.png')" ,
           backgroundImage: isCommentEmpty? "url('/static/stockimages/postcard_underlined.png')" : "url('/static/stockimages/postcard.png')" ,
           
           // color:'pink',
@@ -200,7 +201,7 @@ const PostcardCreation = () => {
         </button>
       </div>
       
-      <style jsx>{`
+      <style>{`
         .postcard-page {
           font-family: 'Cafe24Simplehae', sans-serif;
           
@@ -237,10 +238,8 @@ const PostcardCreation = () => {
         }
 
         .postcard-content {
-          margin-top: 68px;
-          margin-bottom: 90px;
-          margin-left: 20px;
-          margin-right: 20px;
+          margin: 20px;
+          box-sizing: border-box;
 
           background-size: contain; /* 이미지가 비율을 유지하며 축소/확대됨 */
           background-repeat: no-repeat;
@@ -250,9 +249,10 @@ const PostcardCreation = () => {
 
           aspect-ratio: 1292 / 2132 !important; /* 비율 유지 */
           
-          width: 100%; /* 부모 요소 너비에 맞춤 */
+          width: calc(100% - 100px); /* 부모 요소 너비에 맞춤 */
           max-width: 390px; /* 최대 너비 390px로 제한 */
-          max-height: calc(100% - 180px); /* 최대 높이 640px로 제한 */
+          height: auto; /* 높이 0으로 설정 */
+          min-height: 200px; /* 최소 높이 0으로 설정 */
           
           
           position: relative;

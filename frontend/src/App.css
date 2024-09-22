@@ -42,13 +42,18 @@ html,
 body {
   margin: 0;
   padding: 0;
-  width: 100%;
-  height: 100%;
+  width: 100dvw;
+  height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #f8f6f1; /* 배경색 설정 */
-  overflow: auto;
+  overflow: hidden;
+}
+
+*::-webkit-scrollbar {
+  scrollbar-width: none; /* Firefox에서 스크롤바 숨기기 */
+  display: none;
 }
 
 #root {
@@ -72,7 +77,7 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%); /* Centering the container */
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.25); /* Optional shadow */
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); /* Optional shadow */
 }
 
 .size-info-container {

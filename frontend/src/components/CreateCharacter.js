@@ -111,15 +111,6 @@ const handleAssetSelection = (category, index) => {
     { name: 'ACCESSORY', assets: ['accessory1.png', 'accessory2.png', 'accessory3.png', 'accessory4.png', 'accessory5.png', 'accessory6.png', 'accessory7.png', 'accessory8.png', 'accessory9.png', 'accessory10.png', 'accessory11.png', 'accessory12.png', 'accessory13.png', 'accessory14.png', 'accessory15.png', 'accessory16.png', 'accessory17.png', 'accessory18.png'], useColor: false }, // 18개
     { name: 'EXPRESSION', assets: [], useColor: false },
   ];
-  
-  // const CATEGORIES = [
-  //   { name: 'HEAD', assets: ['head1.png', 'head2.png', 'head3.png'], useColor: true }, // 3개
-  //   { name: 'TOP', assets: ['top1.png', 'top2.png', 'top3.png'], useColor: false }, // 3개
-  //   { name: 'BOTTOM', assets: ['bottom1.png', 'bottom2.png', 'bottom3.png'], useColor: false }, // 3개
-  //   { name: 'SHOES', assets: ['shoes1.png', 'shoes2.png', 'shoes3.png', 'shoes4.png', 'shoes4.png', 'shoes6.png', 'shoes7.png', 'shoes8.png', 'shoes9.png', ], useColor: false }, // 3개
-  //   { name: 'ACCESSORY', assets: ['accessory1.png', 'accessory2.png', 'accessory3.png'], useColor: false }, // 3개
-  //   { name: 'EXPRESSION', assets: [], useColor: false },
-  // ];
 
   const COLORS = [
     { name: 'Red', bigCircle: '#E88181', smallCircle: '#F5A0A0' },
@@ -181,18 +172,6 @@ const handleAssetSelection = (category, index) => {
   const [expressionIsErasing, setExpressionIsErasing] = useState(false); // 지우개 여부
   const expressionCanvasRef = useRef(null); // 표정을 그리는 캔버스  
 
-  // 캔버스를 특정 색으로 초기화하는 함수
-  // const clearCanvasWithColor = (color = '#FFFFFF') => {
-  //   const canvas = expressionCanvasRef.current;
-  //   const ctx = canvas.getContext('2d');
-  //   ctx.fillStyle = color;
-  //   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  //   ctx.beginPath();
-  //   ctx.strokeStyle = '#000000';
-  //   ctx.lineWidth = 5;
-  //   ctx.closePath();
-  // };
-
   const clearCanvasWithColor = (color = 'transparent') => {
     const canvas = expressionCanvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -203,9 +182,6 @@ const handleAssetSelection = (category, index) => {
     }
     ctx.beginPath();  // 그리기 준비
   };
-  
-  
-
 
   const loadModel = useCallback((modelPath, categoryName, useColor = false, onLoad) => {
     const loader = new GLTFLoader();
@@ -303,8 +279,6 @@ const handleAssetSelection = (category, index) => {
       });
 
       rendererRef.currentoutputColorSpace = THREE.SRGBColorSpace;
-      // rendererRef.gammaFactor = 2.2;
-      // rendererRef.gammaOutput = true;
 
       const canvasParent = canvasRef.current.parentNode;
 
@@ -335,12 +309,6 @@ const handleAssetSelection = (category, index) => {
       sceneRef.current.add(directionalLight2);
 
       cameraRef.current.position.z = 5;
-
-      // OrbitControls 초기화
-      // controlsRef.current = new OrbitControls(cameraRef.current, rendererRef.current.domElement);
-      // controlsRef.current.enableDamping = true; // 부드러운 회전
-      // controlsRef.current.dampingFactor = 0.25; // 감속 비율
-      // controlsRef.current.enableZoom = true; // 줌 허용
 
         // AmbientLight (전체적으로 부드러운 조명)
       const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
@@ -375,11 +343,6 @@ const handleAssetSelection = (category, index) => {
       const delta = clockRef.current.getDelta();
       modelsRef.current.forEach(({ mixer }) => mixer.update(delta));
 
-      // // OrbitControls 업데이트
-      // if (controlsRef.current) {
-      //   controlsRef.current.update();
-      // }
-    
       if (rendererRef.current && sceneRef.current && cameraRef.current) {
         rendererRef.current.clear(); 
         rendererRef.current.setClearColor(0xffffff, 0);
@@ -428,192 +391,7 @@ const handleAssetSelection = (category, index) => {
       }
     });
   };
-  
 
-
-  const startRecordingWithBackgrounds = async () => {
-    console.log("Recording started");
-  
-    const backgroundImages = [
-      '/static/stockimages/bg1.png',
-      '/static/stockimages/bg2.png',
-      '/static/stockimages/bg3.png',
-    ];
-  
-    const modelPositions = [
-      { x: 67, y: 150, width: 147, height: 190 },
-      { x: 168, y: 102, width: 147, height: 190 },
-      { x: 196, y: 65, width: 147, height: 190 },
-    ];
-  
-    try {
-      resetAndStartAnimation();  // 애니메이션을 재생하는 함수 호출 추가
-
-      // 비동기 방식으로 모든 배경의 MP4 녹화를 시작하고, 각각의 MP4 파일을 addVideoFile로 넘김
-      const mp4Files = await Promise.all(backgroundImages.map((bgImage, index) =>
-        startRecordingForBackground(bgImage, modelPositions[index])
-      ));
-  
-      console.log("All recordings finished");
-  
-      // MP4 파일 모두 addVideoFile로 저장
-      mp4Files.forEach((mp4Blob, index) => {
-        const fileName = `animation_recording_${index + 1}.mp4`;
-  
-        // Blob이 생성되었는지 확인
-        console.log(`MP4 Blob for background ${index + 1}:`, mp4Blob);
-  
-        if (mp4Blob && mp4Blob.size > 0) {
-          console.log(`Blob size: ${mp4Blob.size} bytes`);
-        } else {
-          console.error('Blob is empty or not created correctly');
-          return;  // Blob이 제대로 생성되지 않았다면 다운로드 진행하지 않음
-        }
-  
-        // Blob을 addVideoFile로 저장
-        addVideoFile(mp4Blob);
-         // 자동으로 다운로드
-        downloadRecordedVideo(mp4Blob, fileName);
-      });
-    } catch (error) {
-      console.error("Error during recording:", error);
-    } finally {
-      setIsRecording(false); // 녹화 종료
-      console.log("Recording stopped");
-    }
-  };
-  
-  const downloadRecordedVideo = (blob, filename = 'recording.mp4') => {
-    const url = URL.createObjectURL(blob); // Blob을 URL로 변환
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = filename;  // 다운로드할 파일 이름 설정
-    document.body.appendChild(a);
-    a.click();
-  
-    // 다운로드 후 URL 객체 해제
-    setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 100);
-  };
-  
-  const startRecordingForBackground = async (backgroundImageSrc, { x, y, width, height }) => {
-    console.log('Starting recording for background:', backgroundImageSrc);
-  
-    const canvas = document.createElement('canvas');
-    canvas.width = 393;
-    canvas.height = 491;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  
-    const duration = 18.75; // 녹화 시간 18.75초
-    const fps = 30; // 프레임 속도 30fps
-    const totalFrames = Math.round(fps * duration); // 총 프레임 수 계산
-    const frameInterval = 1000 / fps; // 프레임 간 간격 (밀리초)
-    let frameCount = 0;
-  
-    const backgroundImage = new Image();
-    backgroundImage.src = backgroundImageSrc;
-  
-    const loadImage = () => {
-      return new Promise((resolve) => {
-        backgroundImage.onload = () => resolve(backgroundImage);
-      });
-    };
-  
-    await loadImage(); // 배경 이미지가 로드될 때까지 대기
-  
-    // 녹화 형식을 동적으로 결정 (MP4 또는 WebM)
-    let mimeType = '';
-    if (MediaRecorder.isTypeSupported('video/webm')) {
-      mimeType = 'video/webm';
-    } else if (MediaRecorder.isTypeSupported('video/mp4')) {
-      mimeType = 'video/mp4';
-    } else {
-      console.error('이 브라우저에서 지원하는 비디오 형식을 찾을 수 없습니다.');
-      return;
-    }
-  
-    // 녹화 시작
-    const stream = canvas.captureStream(fps);
-    const mediaRecorder = new MediaRecorder(stream, { mimeType });
-  
-    let chunks = [];
-  
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        chunks.push(event.data);
-      }
-    };
-  
-    return new Promise((resolve) => {
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: mimeType });
-        resolve(blob);
-      };
-  
-      mediaRecorder.start();
-  
-      const startTime = Date.now();
-  
-      // 프레임 캡처 및 애니메이션 처리
-      const captureFrame = () => {
-        if (frameCount < totalFrames) {
-          const delta = 1 / fps; // 고정된 fps 기반으로 delta 값을 계산
-          modelsRef.current.forEach(({ mixer }) => mixer.update(delta));
-      
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-      
-          hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
-      
-          if (hiddenCanvasRef.current) {
-            ctx.drawImage(hiddenCanvasRef.current, x, y, width, height);
-          }
-      
-          frameCount++;
-      
-          // 다음 프레임을 위한 시간 계산
-          const nextFrameTime = startTime + frameCount * frameInterval;
-          const now = Date.now();
-          const timeUntilNextFrame = Math.max(0, nextFrameTime - now);
-      
-          setTimeout(captureFrame, timeUntilNextFrame);  // 정해진 fps로 프레임 간격 유지
-        } else {
-          mediaRecorder.stop(); // 녹화 종료
-        }
-      };      
-  
-      captureFrame(); // 첫 프레임 캡처 시작
-    });
-  };
-  
-  
-  // 배경 이미지 크기 비율 맞추기 함수
-  const getImageFitDimensions = (imgWidth, imgHeight, canvasWidth, canvasHeight) => {
-    const imgAspectRatio = imgWidth / imgHeight;
-    const canvasAspectRatio = canvasWidth / canvasHeight;
-  
-    let targetWidth, targetHeight, offsetX, offsetY;
-  
-    if (imgAspectRatio > canvasAspectRatio) {
-      // 이미지가 더 넓음
-      targetWidth = canvasWidth;
-      targetHeight = canvasWidth / imgAspectRatio;
-      offsetX = 0;
-      offsetY = (canvasHeight - targetHeight) / 2;
-    } else {
-      // 이미지가 더 높음
-      targetHeight = canvasHeight;
-      targetWidth = canvasHeight * imgAspectRatio;
-      offsetX = (canvasWidth - targetWidth) / 2;
-      offsetY = 0;
-    }
-  
-    return { targetWidth, targetHeight, offsetX, offsetY };
-  };
-  
   const startGifRecording = () => {
     return new Promise((resolve) => {
       const canvas = document.createElement('canvas');
@@ -665,13 +443,14 @@ const handleAssetSelection = (category, index) => {
 
   const startRecording = async (setVideoFile) => {
 
-    // updateSceneData(sceneRef.current, cameraRef.current, rendererRef.current);
-    updateSceneData({
-      scene: sceneRef.current, 
-      camera: cameraRef.current, 
-      renderer: rendererRef.current
-    });
-    
+  // updateSceneData(sceneRef.current, cameraRef.current, rendererRef.current);
+  updateSceneData({
+    scene: sceneRef.current, 
+    camera: cameraRef.current, 
+    renderer: rendererRef.current
+  });
+
+  //녹화 카메라  
   cameraRef.current = new THREE.OrthographicCamera(
     -5, // left
     5,  // right
@@ -680,8 +459,9 @@ const handleAssetSelection = (category, index) => {
     0.1, // near
     1000 // far
   );
+
    // 짧은 지연 후 녹화 시작
-   await new Promise((resolve) => setTimeout(resolve, 10));
+   await new Promise((resolve) => setTimeout(resolve, 30));
 
 
   setIsRecording(true); // 녹화 시작
@@ -711,7 +491,6 @@ const handleAssetSelection = (category, index) => {
       state: {
         gifUrl: gifUploadUrl.stillfilename,  // Use the returned gif URL directly
         realgifUrl: gifUploadUrl.filename,
-        videoFiles: videoFiles,  // Pass the video files from context
       },
     });
 
@@ -719,10 +498,6 @@ const handleAssetSelection = (category, index) => {
     console.error("Error during recording:", error);
   }
 };
-
-  
-// console.log(process.env.REACT_APP_API_URL); // Check if API_URL is correct
-
 
 const uploadGif = async (gifBlob) => {
   const formData = new FormData();
@@ -734,10 +509,6 @@ const uploadGif = async (gifBlob) => {
           body: formData,
       });
 
-      // Log the response status for additional insight
-      // console.log('Response status:', response.status);
-      
-      // If the response is not OK, log more details
       if (!response.ok) {
           const errorText = await response.text();  // Get error message from the response body
           throw new Error(`GIF upload failed: ${response.status} ${response.statusText}. Server response: ${errorText}`);
@@ -747,10 +518,8 @@ const uploadGif = async (gifBlob) => {
       console.log('Upload response:', data);
 
       const filename = data.filename;
-      // console.log('GIF Filename:', filename);
 
       const gifUrl = `/api/uploads/${filename}`;
-      // console.log('Constructed GIF URL:', gifUrl);
 
       return data;
 
@@ -986,10 +755,6 @@ const uploadGif = async (gifBlob) => {
     });
   };
   
-  
-  
-  
-  
 useEffect(() => {
   const canvas = expressionCanvasRef.current;
 
@@ -1065,6 +830,7 @@ const clearExpressionCanvas = useCallback(() => {
       
     }
   }, [selectedCategory]);
+
   useEffect(() => {
     const handleResize = () => {
       if (canvasRef.current) {
@@ -1128,17 +894,16 @@ const clearExpressionCanvas = useCallback(() => {
     }
   }, [isInvitationVisible]);
   
-  
-  
-
   return (
-<div
-  style={{
-    width: "100%",
-    height: "100%",
-    overflow: "hidden",
-  }}
->
+  <div
+    id="oversize"
+    style={{
+      width: "100%",
+      height: "100%",
+      overflow: "hidden",
+    }}
+  >
+
   {/* Invitation이 보일 때 */}
   {isInvitationVisible && (
     <div
@@ -1163,59 +928,61 @@ const clearExpressionCanvas = useCallback(() => {
     }}
     id="whatareYou"
   >
-    {/* 처음 초대장 */}
-    {overlayVisible && (
-      <div id="overlay" className="overlay">
-        <div className="overlay-content">
-          <img
-            src="../static/stockimages/maker_invitation.png"
-            alt="Invitation"
-          />
-        </div>
-      </div>
-    )}
 
-    <Header 
-      id="ccheader"
-      title="춤 복장 선택하기" 
-      onMenuClick={handleMenuClick} 
-      style={{
-        display: isInvitationVisible ? 'none !important' : 'block', // 초대장이 보이면 none
-        zIndex: 100,
-        backgroundColor: 'green',
-      }}
-    />
-
-
-    {/* 녹화 중일 때 보여줄 "녹화중입니다" 이미지 */}
-    {isRecording && (
-      <div id="splash-screen" className="splash-screen">
+  {/* 처음 초대장 */}
+  {overlayVisible && (
+    <div id="overlay" className="overlay">
+      <div className="overlay-content">
         <img
-          src="/static/stockimages/making.png"
-          alt="Splash"
-          style={{
-            position: "Fixed",
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            top: "0",
-            left: "0",
-            zIndex: "999999999",
-          }}
+          src="../static/stockimages/maker_invitation.png"
+          alt="Invitation"
         />
-
-        <img src="/static/stockimages/loading-circle.gif" alt="Logo" style={{
-          position: "Fixed",
-          top: "55%",
-          left: "50%",
-          width: '40px',
-          height: '40px',
-          transform: "translate(-50%, -50%)",
-          zIndex: "999999999",
-        }}/>
- 
       </div>
-    )}
+    </div>
+  )}
+
+  <Header 
+    id="ccheader"
+    title="춤 복장 선택하기" 
+    onMenuClick={handleMenuClick} 
+    style={{
+      display: isInvitationVisible ? 'none !important' : 'block', // 초대장이 보이면 none
+      zIndex: 100,
+      backgroundColor: 'green',
+      height: '58px',
+      minHeight: '58px',
+    }}
+  />
+
+  {/* 녹화 중일 때 보여줄 "녹화중입니다" 이미지 */}
+  {isRecording && (
+    <div id="splash-screen" className="splash-screen">
+      <img
+        src="/static/stockimages/making.png"
+        alt="Splash"
+        style={{
+          position: "Fixed",
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          top: "0",
+          left: "0",
+          zIndex: "999999999",
+        }}
+      />
+
+      <img src="/static/stockimages/loading-circle.gif" alt="Logo" style={{
+        position: "Fixed",
+        top: "55%",
+        left: "50%",
+        width: '40px',
+        height: '40px',
+        transform: "translate(-50%, -50%)",
+        zIndex: "999999999",
+      }}/>
+
+    </div>
+  )}
 
     {/* 전체 컨테이너 */}
     <div
@@ -1740,8 +1507,6 @@ const clearExpressionCanvas = useCallback(() => {
     </div>
   </div>
 </div>
-
-
         );
       };
 

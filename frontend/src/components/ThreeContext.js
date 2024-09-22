@@ -1,20 +1,20 @@
 import React, { createContext, useContext, useRef } from 'react';
 import * as THREE from 'three';
 
-const ThreeContext = createContext();
+const SceneContext = createContext();
 
 export const useThree = () => {
-  return useContext(ThreeContext);
+  return useContext(SceneContext);
 };
 
-export const ThreeProvider = ({ children }) => {
+export const SceneProvider = ({ children }) => {
   const sceneRef = useRef(new THREE.Scene());
   const cameraRef = useRef(new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000));
   const rendererRef = useRef(new THREE.WebGLRenderer({ antialias: true }));
 
   return (
-    <ThreeContext.Provider value={{ sceneRef, cameraRef, rendererRef }}>
+    <SceneContext.Provider value={{ sceneRef, cameraRef, rendererRef }}>
       {children}
-    </ThreeContext.Provider>
+    </SceneContext.Provider>
   );
 };

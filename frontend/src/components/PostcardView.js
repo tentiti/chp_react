@@ -212,9 +212,9 @@ const PostcardView = () => {
       };
       
 
-      addText(`${postcard.comment}`, 0, -165, 12);
-      addText(postcard.timestamp, 0, -210, 8);
-      addText(`${postcard.name}`, 106, -236, 12);
+      addText(postcard?.comment ? `${postcard.comment}` : '메세지 가져오기 오류', 0, -165, 12);
+      addText(postcard?.timestamp ? `${postcard.timestamp}` : '시간 정보 가져오기 오류', 0, -210, 8);
+      addText(postcard?.name ? `${postcard.name}` : '이름 가져오기 오류', 106, -236, 12);
     };
 
     initThreeJS();
@@ -395,7 +395,15 @@ const PostcardView = () => {
 
 
   return (
-    <div style={{ backgroundImage: `url('/static/stockimages/background_paper.png')`, width: '100%', height: '100%', zIndex: '900' }}>
+    <div style={{ 
+      position: 'fixed',
+      backgroundImage: `url('/static/stockimages/background_paper.png')`, 
+      width: '100%', 
+      height: 'auto', 
+      backgroundSize: 'cover',
+      zIndex: '900',
+      overflow: 'hidden',
+      }}>
       {isInvitationVisible && (
         <div className={`invitation-container ${isInvitationVisible ? 'visible' : ''}`}>
           <Invitation onBack={handleBackClick} /> {/* Invitation 컴포넌트 및 뒤로가기 핸들러 */}
