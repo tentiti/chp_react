@@ -80,20 +80,34 @@ body {
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); /* Optional shadow */
 }
 
+/* 화면이 넓을 때 가로 크기 기준으로 스케일 조정 */
+@media (min-width: 500px) and (min-height: 500px) and (orientation: landscape) {
+  .fixed-size-container {
+    transform: scale(calc(100vh / 780)); /* 세로 기준으로 스케일 조정 */
+  }
+}
+
+/* 화면이 세로로 길 때 세로 크기 기준으로 스케일 조정 */
+@media (min-width: 500px) and (min-height: 500px) and (orientation: portrait) {
+  .fixed-size-container {
+    transform: scale(calc(100vw / 390)); /* 가로 기준으로 스케일 조정 */
+  }
+}
+
 .size-info-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100%;
-  background-color: #fff;
+  background-color: #f8f6f1;
 }
 
 .size-info-image {
-  max-width: 100%;
-  max-height: 100%;
+  width: 100vw;
+  height: 100vh;
   object-fit: contain;
 }
 
-button{
-  vertical-align: ;
+button {
+  vertical-align: center;
 }

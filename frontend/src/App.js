@@ -44,8 +44,9 @@ function App() {
 
     console.log(`Width: ${width}, Height: ${height}, Device Type: ${deviceType}`);
 
-    setIsFixedSize(deviceType === 'tablet' || deviceType === 'desktop');
-    setShowSizeInfo((deviceType === 'tablet' || deviceType === 'desktop') && (width < 390 || height < 780));
+    // setIsFixedSize(deviceType === 'tablet' || deviceType === 'desktop');setShowSizeInfo((deviceType === 'tablet' || deviceType === 'desktop') && (width < 390 || height < 780));
+    setIsFixedSize((deviceType === 'tablet' || deviceType === 'desktop') && (width >= 500 && height >= 500));
+    setShowSizeInfo((deviceType === 'tablet' || deviceType === 'desktop') && (width < 500 || height < 500));
     setShowInstaInfo(checkInstagramBrowser()); // 인스타그램 브라우저 감지 후 상태 업데이트
     setShowKakaoInfo(checkKakaoBrowser()); // 카카오 브라우저 감지 후 상태 업데이트
     setIsSizeChecked(true);
