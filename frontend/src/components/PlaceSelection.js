@@ -195,7 +195,7 @@ const PlaceSelection = () => {
 
                     aspectRatio: '23 / 28',
                     
-                    minHeight: (isDesktop || isTablet) ? '300px' : 'calc(95dvh - 410px)',
+                    minHeight: (isDesktop || isTablet) ? '340px' : 'calc(95dvh - 410px)',
                     width: 'auto',
                     maxWidth: '400px',
                     margin: '10px',

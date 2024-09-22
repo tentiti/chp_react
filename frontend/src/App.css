@@ -76,7 +76,7 @@ body {
   overflow: auto;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(var(--scale-fixed, 1)); /* Centering the container with scaling */
+  transform: translate(-50%, -50%) scale(1.1538); /* 450/390 = 1.1538, 900/780 = 1.1538 -> 확대 비율 계산 */
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); /* Optional shadow */
 }
 

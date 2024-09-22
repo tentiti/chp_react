@@ -460,34 +460,41 @@ const handleAssetSelection = (category, index) => {
       });
   
       const fps = 24;  // GIF를 24fps로 설정
-      const totalFrames = 450;
-      // const totalFrames = 12;
+      const totalFrames = 450;  // 450프레임짜리 영상
       let frameCount = 0;
-  
+      let lastTime = 0;  // 마지막 프레임 시간 저장
+      
       resetAndStartAnimation();
-  
+      
       gif.on('finished', async (blob) => {
         let gifUploadUrl = await uploadGif(blob);
         resolve(gifUploadUrl);  // 업로드 후 URL 반환
       });
-  
-      const captureFrame = () => {
+      
+      const captureFrame = (time) => {
         if (frameCount < totalFrames) {
-          const delta = 1 / 20;  // 프레임 속도에 맞춰 delta 값 조정 -> 잘못함..
-          modelsRef.current.forEach(({ mixer }) => mixer.update(delta));
-  
-          hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(hiddenCanvasRef.current, 0, 0);
-  
-          gif.addFrame(ctx, { copy: true, delay: 1000 / fps });
-          frameCount++;
-          requestAnimationFrame(captureFrame);
+          const elapsed = (time - lastTime) / 1000;  // 밀리초를 초로 변환
+          const frameTime = 1 / fps;  // 24fps 기준으로 한 프레임당 시간
+          
+          if (elapsed >= frameTime) {
+            const delta = elapsed;  // 경과된 시간을 delta로 사용
+            modelsRef.current.forEach(({ mixer }) => mixer.update(delta));
+      
+            hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(hiddenCanvasRef.current, 0, 0);
+      
+            gif.addFrame(ctx, { copy: true, delay: 1000 / fps });  // 24fps로 프레임 추가
+            frameCount++;
+            lastTime = time;  // 마지막 시간을 현재 시간으로 업데이트
+          }
+      
+          requestAnimationFrame(captureFrame);  // 다음 프레임 요청
         } else {
-          gif.render();
+          gif.render();  // GIF 렌더링 시작
         }
       };
-  
+      
       captureFrame();
     });
   };
@@ -1626,4 +1633,3 @@ const clearExpressionCanvas = useCallback(() => {
       };
 
 export default CreateCharacter;
-
