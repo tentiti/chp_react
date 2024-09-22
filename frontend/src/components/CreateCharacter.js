@@ -185,6 +185,8 @@ const handleAssetSelection = (category, index) => {
     ctx.beginPath();  // 그리기 준비
   };
 
+  const mixersRef = useRef([]);
+
   const loadModel = useCallback((modelPath, categoryName, useColor = false, onLoad) => {
     const loader = new GLTFLoader();
 
@@ -256,6 +258,7 @@ const handleAssetSelection = (category, index) => {
         let action = null;
 
         if (gltf.animations.length > 0) {
+          console.log('Animations:', gltf.animations);  // 애니메이션 클립을 출력해 확인
           action = mixer.clipAction(gltf.animations[0]);
           action.setLoop(THREE.LoopRepeat);
           action.clampWhenFinished = true;
@@ -265,6 +268,8 @@ const handleAssetSelection = (category, index) => {
           mixer.update(frameDuration);  // Move animation forward by 1 frame
           action.paused = true;
         }
+
+        mixersRef.current.push(mixer); 
 
         console.log({ model, mixer, action, categoryName });
 
@@ -454,8 +459,8 @@ const handleAssetSelection = (category, index) => {
         transparent: 'rgba(0,0,0,0)',
       });
   
-      const fps = 300;  // GIF를 24fps로 설정
-      const totalFrames = 45;
+      const fps = 24;  // GIF를 24fps로 설정
+      const totalFrames = 450;
       // const totalFrames = 12;
       let frameCount = 0;
   
@@ -468,7 +473,7 @@ const handleAssetSelection = (category, index) => {
   
       const captureFrame = () => {
         if (frameCount < totalFrames) {
-          const delta = 1 / 20;  // 프레임 속도에 맞춰 delta 값 조정
+          const delta = 1 / 20;  // 프레임 속도에 맞춰 delta 값 조정 -> 잘못함..
           modelsRef.current.forEach(({ mixer }) => mixer.update(delta));
   
           hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
@@ -491,16 +496,13 @@ const handleAssetSelection = (category, index) => {
   const startRecording = async (setVideoFile) => {
     setIsRecording(true); // 녹화 시작
 
-    const allMixers = modelsRef.current.map(item => item.mixer);
-
-    console.log('All mixers:', allMixers);
 
 
   updateSceneData({
     scene: sceneRef.current, 
     camera: cameraRef.current, 
     renderer: rendererRef.current,
-    mixer: modelsRef.current[0],  // 모델에 있는 mixer 중 하나를 넘김
+    mixer: modelsRef,
   });
 
   //녹화 카메라  
@@ -512,7 +514,6 @@ const handleAssetSelection = (category, index) => {
     0.1, // near
     1000 // far
   );
-
    // 짧은 지연 후 녹화 시작
    await new Promise((resolve) => setTimeout(resolve, 30));
 
@@ -671,7 +672,7 @@ const uploadGif = async (gifBlob) => {
       const grayscaleIndex = GRAYSCALE_COLORS.findIndex(colorObj => colorObj.color === expressionDrawingColor);
       if (grayscaleIndex >= 3 && grayscaleIndex <= 5) {
         ctx.lineWidth = 10;
-        ctx.strokeStyle = '#FFFFFF'; // 검정색으로 그리기
+        ctx.strokeStyle = '#000000'; // 검정색으로 그리기
       } else {
         // 그 외의 경우 흰색으로 그리고 굵기는 5
         ctx.lineWidth = 10;
@@ -867,8 +868,8 @@ const clearExpressionCanvas = useCallback(() => {
     if (selectedCategory === 'EXPRESSION') {
       // alert('표정 모드!');
       // 표정 그리기 모드일 때 카메라 위치를 조정
-      cameraRef.current.position.set(0, 10, 15);  // 예시: 카메라를 더 가까이 이동
-      cameraRef.current.lookAt(new THREE.Vector3(0, 5.3, 0));  // 원하는 좌표로 카메라가 바라보게 설정
+      cameraRef.current.position.set(0, 5.6, 14);  // 예시: 카메라를 더 가까이 이동
+      cameraRef.current.lookAt(new THREE.Vector3(0, 5.6, 0));  // 원하는 좌표로 카메라가 바라보게 설정
       cameraRef.current.updateProjectionMatrix();
     } else if (selectedCategory === 'HEAD') {
        // 머리 고르기 모드일 때 카메라 위치를 조정
@@ -1403,6 +1404,10 @@ const clearExpressionCanvas = useCallback(() => {
                   aspectRatio: "800 / 586", // 가로 세로 비율을 이미지에 맞춤
                   overflow: "hidden", // 초과된 부분을 숨기기
                   background: "rgb(244, 241, 241)", // 배경을 투명하게 설정
+                  height: '238px',
+                  // display: "flex",
+                  // justifyContent: "center",
+                  // alignItems: "center",
                 }}
               >
                 {/* 배경 이미지 */}
@@ -1414,27 +1419,28 @@ const clearExpressionCanvas = useCallback(() => {
                     left: "0",
                     width: "100%", // 고정된 900px 너비
                     height: "100%", // 고정된 900px 높이
-                    size: "contain", // 이미지 크기를 커버로 설정
+                    objectFit: "contain", // 이미지 크기를 커버로 설정
                     pointerEvents: "none", // 이미지에 클릭이 되지 않게 설정
-                    zIndex: 1000,
+                    zIndex: 4,
                   }}
                 />
 
                 {/* 표정 그리기용 캔버스 */}
                 <canvas
                   ref={expressionCanvasRef}
-                  width={400} // 실제 캔버스의 고정된 해상도
-                  height={400} // 실제 캔버스의 고정된 해상도
+                  width={900}  // 실제 캔버스의 고정된 해상도
+                  height={380} // 실제 캔버스의 고정된 해상도
                   style={{
-                    position: "absolute",
-                    // top: "-250px", // 250px 상단을 숨김
-                    left: "0",
-                    width: "400px", // 고정된 너비
-                    height: "400px", // 고정된 높이
-                    background: "transparent", // 배경을 투명하게 설정
-                    transform: "translate(80px, -30px)", // X축으로 -500px 이동하여 오른쪽을 보이게 함
+                    position: "relative",
+                    background: "blue", // 배경을 투명하게 설정clipPath: "inset(165px 550px 30px 80px)", // (80, 165)에서 (350, 350) 영역만 보이게 함
+                    clipPath: "inset(165px 550px 30px 70px)", // (80, 165)에서 (350, 350) 영역만 보이게 함
+                    // transform: "translate(0, 0)", // X축으로 -500px 이동하여 오른쪽을 보이게 함
                     zIndex: 2, // 캔버스가 이미지 위에 렌더링되도록 설정
-                    overflow: "hidden",
+                    // overflow: "hidden",
+                    // transform: "scale(2)",
+                    left: "calc(50% - 220px)",
+                    top: "calc(50% - 270px)",
+                    border: "10px solid red",
                   }}
                   // 마우스 이벤트
                   onMouseDown={startExpressionDrawing}

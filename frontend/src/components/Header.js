@@ -1,33 +1,37 @@
-// Header.js
 import React from 'react';
 
 const Header = ({ title, needthird = true, onMenuClick }) => {
   return (
-    <header style={{left:'0', width: '100%', boxSizing: 'border-box', background:'transparent', border: 'none'}}>
+    <header style={{ left: '0', width: '100%', boxSizing: 'border-box', background: 'transparent', border: 'none' }}>
       <div className="titleArea">
-        <div>
+        {/* 왼쪽의 백 버튼 */}
+        <div style = {{width: '10%', height:'40%'}}>
           <img
             src="/static/icons/back_double.png"
             alt="back"
             id="back-button"
             onClick={() => window.history.back()}
+            style={{ cursor: 'pointer' }}
           />
         </div>
-        <div style={{ fontSize: '20px', color: '#412823' }}>{title}</div>
-        <div>
-          
-        {needthird && (
-          
-            <button 
-              className="ajax-link" 
-              id="headerthirdbutton" 
-              style={{ marginLeft: 'auto', background: 'none', border: 'none' }}
-              onClick={onMenuClick} // 클릭 이벤트 핸들러 추가
+        
+        {/* 가운데 제목 */}
+        <div style={{ fontSize: '20px', color: '#412823', textAlign: 'center', flex: 1 }}>
+          {title}
+        </div>
+
+        {/* 오른쪽 메뉴 버튼 */}
+        <div style =  {{width: '10%', height:'40%'}}>
+          {needthird && (
+            <button
+              className="ajax-link"
+              id="headerthirdbutton"
+              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+              onClick={onMenuClick}
             >
               <img src="/static/icons/hamburger.png" alt="menu" id="menu-button" />
             </button>
-          
-        )}
+          )}
         </div>
       </div>
     </header>

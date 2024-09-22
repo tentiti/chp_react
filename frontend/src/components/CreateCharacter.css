@@ -97,7 +97,9 @@ header {
   width: 100vw;
   height: 57px;
   display: flex;
+  flex-direction: row;
   align-items: center;
+  justify-content: center;
   background-color: #f8f6f1 !important;
   z-index: 100;
   border-bottom: 1px solid #e6e1dc !important;
@@ -202,7 +204,7 @@ header {
 .asset-grid.expanded {
   display: flex !important;
   aspect-ratio: 393 / 344 !important;
-  min-height: 340px;
+  min-height: 290px;
   gap: 0px !important;
   padding: 0px !important;
   display: flex;

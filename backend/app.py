@@ -96,7 +96,14 @@ def upload_file():
     if file_ext.lower() == ".gif":
         try:
             gif = Image.open(file_path)
-            gif.seek(0)  # 첫 번째 프레임으로 이동
+            preselected_frames = [10, 50, 100, 150, 200, 250, 300, 350, 400, 449]
+
+            # 배열에서 랜덤하게 하나의 프레임 선택
+            random_frame = random.choice(preselected_frames)
+            gif.seek(random_frame)  # 랜덤 프레임으로 이동
+            
+            print('chose frame:', random_frame)
+
             still_filename = str(uuid.uuid4()) + ".png"
             still_file_path = os.path.join(app.config["UPLOAD_FOLDER"], still_filename)
 

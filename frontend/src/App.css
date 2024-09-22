@@ -76,21 +76,22 @@ body {
   overflow: auto;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%); /* Centering the container */
+  transform: translate(-50%, -50%) scale(var(--scale-fixed, 1)); /* Centering the container with scaling */
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); /* Optional shadow */
 }
 
-/* 화면이 넓을 때 가로 크기 기준으로 스케일 조정 */
-@media (min-width: 500px) and (min-height: 500px) and (orientation: landscape) {
+/* 390x780 크기 기준으로 스케일 조정 */
+@media (min-width: 500px) and (min-height: 500px) {
   .fixed-size-container {
-    transform: scale(calc(100vh / 780)); /* 세로 기준으로 스케일 조정 */
+    transform: translate(-50%, -50%) scale(var(calc(1/--scale-responsive), 1)); /* 세로 기준으로 스케일 조정 */
   }
 }
+
 
 /* 화면이 세로로 길 때 세로 크기 기준으로 스케일 조정 */
 @media (min-width: 500px) and (min-height: 500px) and (orientation: portrait) {
   .fixed-size-container {
-    transform: scale(calc(100vw / 390)); /* 가로 기준으로 스케일 조정 */
+    transform: scale(calc(390 / 100vw )); /* 가로 기준으로 스케일 조정 */
   }
 }
 

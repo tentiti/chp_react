@@ -38,30 +38,28 @@ const Credit = () => {
 
   // Clock 생성
   const clock = new THREE.Clock();
-  const  resetAndPlayAnimations  = () => {
-    if (!sceneRef.current) {
-      console.warn("Scene not available");
+  const resetAndPlayAnimations = () => {
+    const models = sceneData.mixer.current;  // modelsRef.current를 가져옴
+  
+    if (!models || models.length === 0) {
+      console.error("No models found");
       return;
     }
   
-    // scene 내부의 모든 객체를 순회
-    console.log(sceneRef.current);
-    sceneRef.current.children.forEach((object) => {
-      // console.log(object);
-      if (object.mixer) {
-        alert('Found an object with a mixer');
-      }
-      if (object.isMesh && object.mixer) {
-        alert('animation reset');
-        // 각 오브젝트가 mixer를 가지고 있다면 애니메이션 재시작
-        object.mixer.stopAllAction(); // 기존 액션을 중지
-        object.mixer.reset(); // 애니메이션을 처음으로 리셋
-        object.mixer.play(); // 애니메이션을 재시작
+    models.forEach((modelData, index) => {
+      console.log(`Processing model ${index}:`, modelData);
+  
+      const { mixer, action } = modelData;
+  
+      if (mixer && action) {
+        action.reset();  // 애니메이션을 처음으로 리셋
+        action.play();   // 애니메이션을 재시작
+      } else {
+        console.warn(`No mixer or action found for model ${index}`);
       }
     });
-  
-    console.log("All animations reset and restarted.");
   };
+  
   
 
   useEffect(() => {
@@ -102,14 +100,14 @@ const Credit = () => {
       bitsPerSecond: 4000000,
       video: {
         codec: 'H264',  
-        width: 1280, // 해상도 설정 가능
-        height: 720,
+        width: 1920, // 해상도 설정 가능
+        height: 1080,
         frameRate: 30 // iPhone에서 호환되는 프레임 레이트
       },
     });
 
 
-    // audioRef.current.play();
+    audioRef.current.play();
 
     resetAndPlayAnimations();  // 애니메이션을 리셋하고 재생
 
@@ -119,7 +117,7 @@ const Credit = () => {
     setTimeout(() => {
       // alert('Attempting to stop recording');
       stopRecording();
-    }, 5750);  // 3.75초 후 녹화 종료 시도
+    }, 18750);  // 3.75초 후 녹화 종료 시도
   };
   
   const stopRecording = () => {
@@ -128,17 +126,29 @@ const Credit = () => {
       return;
     }
   
-    // alert('stopRecording');
+    // Stop recording and create a blob in the desired format
     recorderRef.current.stopRecording(() => {
       const blob = recorderRef.current.getBlob();
-      const url = URL.createObjectURL(blob);
+      const mp4Blob = new Blob([blob], { type: 'video/mp4' }); // Explicitly force it as mp4
+      const url = URL.createObjectURL(mp4Blob);
       setBlobUrl(url);
       setIsRecording(false); // 녹화 상태 해제
       setIsRecordingDone(true); // 녹화 완료 상태 설정
     });
-
-    // resetAndPlayAnimations();
   };
+
+    // 녹화 종료 후 애니메이션 반복 재생 설정
+    useEffect(() => {
+      if (isRecordingDone) {
+        resetAndPlayAnimations();  // 녹화가 끝난 즉시 애니메이션 재생
+  
+        const animationInterval = setInterval(() => {
+          resetAndPlayAnimations();  // 18.75초마다 애니메이션 재실행
+        }, 18750);
+  
+        return () => clearInterval(animationInterval);  // 컴포넌트 언마운트 시 인터벌 정리
+      }
+    }, [isRecordingDone]);
   
 
   const downloadVideo = () => {
@@ -152,17 +162,23 @@ const Credit = () => {
     }
   };
 
+  // Function to share video using Web Share API
   const shareVideo = async () => {
+    if (navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText('hello world!');
+        console.log('Text copied to clipboard');
+      } catch (error) {
+        console.error('Failed to copy text:', error);
+      }
+    }
+
     if (navigator.canShare && blobUrl) {
       const response = await fetch(blobUrl);
       const blob = await response.blob();
-      const file = new File([blob], `${postcard?.name}의 춤사위.mp4`, { type: 'video/mp4' });
+      const file = new File([blob], `${postcard?.name}의 춤사위.mp4`, { type: 'video/mp4' }); // Explicitly force .mp4
 
       if (navigator.canShare({ files: [file] })) {
-        // alert(
-        //   '해시태그와 언급이 복사되었습니다. 함께 업로드 해주세요!\n아이폰이 아닐 경우 곧바로 공유가 어려울 수 있습니다. 필수 해시태그는 복사되었으니 함께 직접 업로드 해주세요.'
-        // );
-
         try {
           await navigator.share({
             title: 'Postcard Video',
@@ -199,10 +215,23 @@ const Credit = () => {
     const initThreeJS = async () => {
       if (!sceneData.scene || !canvasRef.current || !postcard) return;
 
+      // sceneRef.current = new THREE.Scene();
       sceneRef.current = sceneData.scene;
 
-      const width = 720;
-      const height = 1280;
+      // // 장면에서 모든 모델을 찾습니다
+      // const models = sceneRef.current.children.filter(child => child.type === "Group" || child.type === "Mesh");
+  
+      // // 첫 번째 모델을 제외한 나머지를 모두 제거합니다
+      // for (let i = 0; i < models.length; i++) {
+      //   sceneRef.current.remove(models[i]);
+      // }
+    
+
+      sceneRef.current.add(sceneData.mixer);  // SceneContext에서 가져온 모델 추가
+  
+
+      const width = 1080;
+      const height = 1920;
 
       rendererRef.current = new THREE.WebGLRenderer({ canvas: canvasRef.current, alpha: true, antialias: false,  powerPreference: "high-performance"  });
       rendererRef.current.setSize(width, height);
@@ -210,8 +239,8 @@ const Credit = () => {
 
       const frustumSize = 40;
       cameraRef.current = new THREE.OrthographicCamera(
-        (frustumSize * 720) / 1280 / -2,
-        (frustumSize * 720) / 1280 / 2,
+        (frustumSize * 1080) / 1920 / -2,
+        (frustumSize * 1080) / 1920 / 2,
         frustumSize / 2,
         frustumSize / -2,
         0.1,
@@ -338,7 +367,7 @@ const Credit = () => {
 
   useEffect(() => {
     if (postcard) {
-      setTimeout(startRecording, 1000); //1초간 녹화
+      // setTimeout(startRecording, 1000); //1초간 녹화
     }
   }, [postcard]);
 
@@ -378,16 +407,6 @@ const Credit = () => {
     };
   }, [textMeshes, blobUrl]);
 
-  // useEffect(() => {
-  //   if (postcard) {
-  //     // Prepare audio and check if it's ready to play
-  //     audioRef.current.load();
-  //     audioRef.current.oncanplaythrough = () => {
-  //       setIsReadyToRecord(true);
-  //     };
-  //   }
-  // }, [postcard]);
-
   useEffect(() => {
     if (isReadyToRecord) {
       startRecording();
@@ -423,7 +442,7 @@ const Credit = () => {
     left: 0,
     width: '100%',
     height: '100%',
-    transform: `scale(${containerRef.current ? containerRef.current.clientWidth / 720 : 1}, ${containerRef.current ? containerRef.current.clientHeight / 1280 : 1})`,
+    transform: `scale(${containerRef.current ? containerRef.current.clientWidth / 1080 : 1}, ${containerRef.current ? containerRef.current.clientHeight / 1920 : 1})`,
     transformOrigin: 'top left',
   };
 
@@ -432,7 +451,7 @@ const Credit = () => {
     audioRef.current.oncanplaythrough = () => {
       setIsReadyToRecord(true);
     };
-    audioRef.current.play();
+    // audioRef.current.play();
   };
 
   return (
@@ -530,9 +549,9 @@ const Credit = () => {
         <button className="upbutton" onClick={shareVideo} disabled={!blobUrl}>
           {!isRecordingDone ? '공유 영상 준비 중...' : '영상 공유하기'}
         </button>
-        <button className="upbutton" onClick={resetAndPlayAnimations}>
+        {/* <button className="upbutton" onClick={resetAndPlayAnimations}>
           애니메이션 재시작
-        </button>
+        </button> */}
 
 
 

@@ -16,6 +16,7 @@ import './App.css';
 function App() {
   const [isFixedSize, setIsFixedSize] = useState(false);
   const [showSizeInfo, setShowSizeInfo] = useState(false);
+  const [isResponsiveScale, setIsResponsiveScale] = useState(false);
   const [showInstaInfo, setShowInstaInfo] = useState(false); // 추가된 상태
   const [showKakaoInfo, setShowKakaoInfo] = useState(false); // 추가된 상태 
   const [isSizeChecked, setIsSizeChecked] = useState(false);
@@ -45,8 +46,9 @@ function App() {
     console.log(`Width: ${width}, Height: ${height}, Device Type: ${deviceType}`);
 
     // setIsFixedSize(deviceType === 'tablet' || deviceType === 'desktop');setShowSizeInfo((deviceType === 'tablet' || deviceType === 'desktop') && (width < 390 || height < 780));
-    setIsFixedSize((deviceType === 'tablet' || deviceType === 'desktop') && (width >= 500 && height >= 500));
     setShowSizeInfo((deviceType === 'tablet' || deviceType === 'desktop') && (width < 500 || height < 500));
+    setIsResponsiveScale((deviceType === 'tablet' || deviceType === 'desktop') && (width >= 700 && height >= 900));
+    setIsFixedSize((deviceType === 'tablet' || deviceType === 'desktop') && (width >= 700 && height >= 900));
     setShowInstaInfo(checkInstagramBrowser()); // 인스타그램 브라우저 감지 후 상태 업데이트
     setShowKakaoInfo(checkKakaoBrowser()); // 카카오 브라우저 감지 후 상태 업데이트
     setIsSizeChecked(true);

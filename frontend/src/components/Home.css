@@ -154,6 +154,7 @@ footer * {
 }
 
 .floating {
+  position: absolute;
   width: 60px;
   height: 60px;
   border-radius: 50%;
@@ -161,8 +162,6 @@ footer * {
   z-index: 10000;
   background-size: cover;
   background-position: center;
-  transition: left 0.1s ease-in-out, top 0.1s ease-in-out,
-    background-color 0.3s ease-in-out;
 }
 
 #mainBanner {

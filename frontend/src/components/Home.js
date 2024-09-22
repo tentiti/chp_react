@@ -12,23 +12,7 @@ function Home() {
   const [isInvitationVisible, setIsInvitationVisible] = useState(false);
   const [marginTop, setMarginTop] = useState(0);
   const [isFloatingVisible, setIsFloatingVisible] = useState(true);
-
-  useEffect(() => {
-    const updateMargin = () => {
-
-
-      if (isTablet || isDesktop) {
-        setMarginTop(0);
-      } else {
-        setMarginTop(0);
-      }
-    };
-
-    window.addEventListener('resize', updateMargin);
-    updateMargin();
-
-    return () => window.removeEventListener('resize', updateMargin);
-  }, []);
+  const floatingButtonRef = useRef(null);
 
   const bannerImages = [
     '/static/stockimages/mainbanner1.png',
@@ -36,12 +20,38 @@ function Home() {
     '/static/stockimages/mainbanner3.png'
   ];
 
-
+  //플로팅 사진 미리 반영// 배너 이미지와 플로팅 버튼 이미지 미리 로드
   useEffect(() => {
-    axios.get('/api/postcards')
-      .then(response => setPostcards(response.data))
-      .catch(error => console.error("There was an error fetching the postcards!", error));
-    // alert(postcards.data);
+    const preloadImages = (imageArray) => {
+      imageArray.forEach((imageSrc) => {
+        const img = new Image();
+        img.src = imageSrc;
+      });
+    };
+
+    preloadImages([
+      ...bannerImages,
+      '/static/images/buttonImages/button1.png',
+      '/static/images/buttonImages/button2.png',
+      '/static/images/buttonImages/button3.png',
+      '/static/images/buttonImages/button4.png',
+      '/static/images/buttonImages/button5.png',
+      '/static/images/buttonImages/button6.png',
+      '/static/images/buttonImages/button7.png',
+      '/static/images/buttonImages/button8.png'
+    ]);
+
+    const fetchPostcards = async () => {
+      try {
+        const response = await axios.get('/api/postcards');
+        setPostcards(response.data);
+      } catch (error) {
+        console.error("There was an error fetching the postcards!", error);
+      }
+    };
+
+    fetchPostcards();
+
     const imageInterval = setInterval(() => {
       setFade(false);
       setTimeout(() => {
@@ -51,7 +61,7 @@ function Home() {
     }, 3000);
 
     return () => clearInterval(imageInterval);
-  }, [bannerImages.length]);
+  }, []);
 
   const handleImageError = (e, num) => {
     const fallbackSrc = `https://placehold.co/200x200?text=Image+${num}+Error`;
@@ -62,7 +72,7 @@ function Home() {
     }
     
     // 최대 1회까지 재시도
-    if (e.target.attemptedRetries < 1) {
+    if (e.target.attemptedRetries < 2) {
       e.target.attemptedRetries += 1;
       e.target.src = e.target.src + `?retry=${e.target.attemptedRetries}`; // 캐시 무효화
     } else {
@@ -70,7 +80,6 @@ function Home() {
     }
   };
   
-
   const handleMenuClick = () => {
     setIsInvitationVisible(true);
     setIsFloatingVisible(false);
@@ -81,37 +90,16 @@ function Home() {
     setIsFloatingVisible(true);
   };
 
-  const floatingButtonRef = useRef(null);
-
   useEffect(() => {
-    
     const floatingButton = floatingButtonRef.current;
     const container = containerRef.current;
     
     if (floatingButton && container && isFloatingVisible) {
-      // console.log("Floating button and container found, isFloatingVisible:", isFloatingVisible);
-  
+
       const buttonWidth = 70;
       const buttonHeight = 70;
-      const collisionMargin = 10;
-      const collisionCooldown = 3000; // Reduced cooldown time
-  
-      const updateContainerDimensions = () => {
-        const containerRect = container.getBoundingClientRect();
-        const maxX = Math.min(containerRect.width - buttonWidth, 390 - buttonWidth);
-        const maxY = Math.min(containerRect.height - buttonHeight, 780 - buttonHeight);
-        // console.log("Container dimensions:", { width: containerRect.width, height: containerRect.height, maxX, maxY });
-        return { maxX, maxY };
-      };
-  
-      let { maxX, maxY } = updateContainerDimensions();
-  
-      let posX = Math.random() * maxX;
-      let posY = Math.random() * maxY;
-      let speed = 0.8; // Reduced speed
-      let angle = Math.random() * 2 * Math.PI;
-  
-      // console.log("Initial position:", { posX, posY });
+      const collisionMargin = 5;
+      const collisionCooldown = 2000; // Reduced cooldown time
   
       const buttonImages = [
         '/static/images/buttonImages/button1.png',
@@ -125,55 +113,69 @@ function Home() {
       ];
   
       let lastCollisionTime = 0;
+
+      const updateContainerDimensions = () => {
+        const containerRect = container.getBoundingClientRect();
+        const maxX = Math.min(containerRect.width - buttonWidth/2, 390 - buttonWidth /2);
+        const maxY = Math.min(containerRect.height - buttonHeight/2, 780 - buttonHeight/2);
+        return { maxX, maxY };
+      };
+  
+      let { maxX, maxY } = updateContainerDimensions();
+  
+      let posX = Math.random() * maxX;
+      let posY = Math.random() * maxY;
+      let angle = Math.random() * 2 * Math.PI;
+  
   
       function getRandomButtonImage() {
-        return buttonImages[Math.floor(Math.random() * buttonImages.length)];
+        const currentImage = floatingButton.style.backgroundImage;
+        let newImage;
+        do {
+          newImage = buttonImages[Math.floor(Math.random() * buttonImages.length)];
+        } while (newImage === currentImage);
+        return newImage;
       }
   
       function moveFloatingButton() {
         if (!isFloatingVisible) {
          return;
         }
-
-        const maxSpeed = 5; // 최대 속도 제한
-        let vx = Math.cos(angle) * speed;
-        let vy = Math.sin(angle) * speed;
-
         const now = Date.now();
         ({ maxX, maxY } = updateContainerDimensions());
-      
-        angle += (Math.random() - 0.5) * 0.1;
-        posX += Math.cos(angle) * speed;
-        posY += Math.sin(angle) * speed;
-      
+
+        const angleVariation = (Math.random() - 0.5) * 0.03; // Reduced from 0.1 to 0.03
+        angle += angleVariation;
+
+         // Reduce speed to make the movement slower
+        posX += Math.cos(angle) * (3 * 0.2);  // Speed reduced
+        posY += Math.sin(angle) * (3 * 0.2);  // Speed reduced
+
+    
         let collision = false;
       
         // Boundary handling
-        if (posX <= collisionMargin || posX >= maxX - collisionMargin - buttonWidth ||
-            posY <= collisionMargin + 29 || posY >= maxY - collisionMargin - buttonHeight) {
+        if (posX <= collisionMargin || posX >= maxX - collisionMargin) {
+          angle = Math.PI - angle; // Reflect horizontally
           collision = true;
-          
-          // Adjust position
-          if (posX <= collisionMargin) posX = collisionMargin;
-          if (posX >= maxX - collisionMargin - buttonWidth) posX = maxX - collisionMargin - buttonWidth;
-          if (posY <= collisionMargin + 58) posY = collisionMargin + 58;
-          if (posY >= maxY - collisionMargin - buttonHeight) posY = maxY - collisionMargin - buttonHeight;
-          // console.log(now);
-          
-          if (now - lastCollisionTime > collisionCooldown) {
-            // console.log(now);
-            angle = Math.random() * 2 * Math.PI; // New random angle on collision
-            lastCollisionTime = now;
-            floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
-          }
         }
-      
-        floatingButton.style.position = 'absolute';
+
+        if (posY <= collisionMargin + 29 || posY >= maxY - collisionMargin) {
+          angle = -angle; // Reflect vertically
+          collision = true;
+        }
+          
         floatingButton.style.left = `${posX}px`;
         floatingButton.style.top = `${posY}px`;
-      
-        // console.log("Button position updated:", { posX, posY, collision });
-      
+
+         // Smooth change in direction instead of random large changes
+          if (collision && now - lastCollisionTime > collisionCooldown) {
+            console.log("Collision detected, changing image", now, lastCollisionTime);
+            lastCollisionTime = now;
+            floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
+            collision = false;
+          }
+        
         requestAnimationFrame(moveFloatingButton);
       }
       
@@ -182,7 +184,7 @@ function Home() {
       floatingButton.style.width = `${buttonWidth}px`;
       floatingButton.style.height = `${buttonHeight}px`;
       floatingButton.style.backgroundSize = 'cover';
-      floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
+      // floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
       floatingButton.style.display = 'block';
       
       // 초기 위치 설정
@@ -252,7 +254,8 @@ function Home() {
 
   return (
     <div className="App" style={{height: '100%', width: '100%'}}>
-
+      {isFloatingVisible && <div ref={floatingButtonRef} className="floating"></div>}
+      
       <div id="headerLoader" style={{ 
         backgroundColor: isInvitationVisible ? 'transparent' : '#f8f6f1', 
         left: '50%', 
@@ -293,7 +296,6 @@ function Home() {
           
         </div>
       <div className="container" id="content" ref={containerRef}>
-      {isFloatingVisible && <div ref={floatingButtonRef} className="floating"></div>}
         <div id="ajax-content">
           <div className="mainImage" style={{ marginTop: `${marginTop}px`}}>
             <img 
@@ -322,17 +324,20 @@ function Home() {
             
           </div>
 
-          <span style={{
+          
+        </div>
+        <div style={{
             fontFamily: 'pretendard',
             fontSize: '9px',
             textAlign: 'center',
             color: '#412823',
-            marginTop: '20px',
-            marginBottom: '70px'
+            boxSizing: 'border-box',
+            paddingTop: '20px',
+            paddingBottom: '100px',
+            bacjgroundColor: 'blue',
 
           }}>이제 댄스타임 : 평화의 나무에 달빛이 닿은 날, 반짝이는 춤결<br />
-          기획 및 제작 | 유채영 김휴초</span>
-        </div>
+          기획 및 제작 | 유채영 김휴초</div>
       </div>
 
       {isInvitationVisible && (
