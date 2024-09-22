@@ -7,6 +7,7 @@ export const SceneProvider = ({ children }) => {
     scene: null,
     camera: null,
     renderer: null,
+    mixer: null,
   });
 
   const updateSceneData = (newSceneData) => {
@@ -15,6 +16,7 @@ export const SceneProvider = ({ children }) => {
     console.log('Scene:', newSceneData.scene);
     console.log('Camera:',  newSceneData.camera);
     console.log('Renderer:',  newSceneData.renderer);
+    console.log('Mixer:',  newSceneData.Mixer);
 
   };
 

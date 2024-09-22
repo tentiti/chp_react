@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -6,6 +6,7 @@ import RecordRTC from 'recordrtc';
 import Invitation from './Invitation';
 import { useScene } from './SceneContext';
 import './PostcardView.css';
+
 
 const Credit = () => {
   const audioContextRef = useRef(null);
@@ -32,70 +33,43 @@ const Credit = () => {
   const handleMenuClick = () => setIsInvitationVisible(true);
   const handleBackClick = () => setIsInvitationVisible(false);
 
-  const [isHeadTextureApplied, setIsHeadTextureApplied] = useState(false);
-
-  // 머리 텍스처가 적용되었는지 확인하는 함수
-  const checkHeadTexture = () => {
-    if (!sceneRef.current) return;
-
-    let headMesh = null;
-
-    // scene을 순회하면서 head_1이라는 이름의 메쉬를 찾음
-    sceneRef.current.traverse((object) => {
-      if (object.isMesh && object.name === 'head_1') {
-        headMesh = object;
-      }
-    });
-
-    // head_1이 존재하고, 해당 메쉬에 텍스처가 적용되었는지 확인
-    if (headMesh && headMesh.material && headMesh.material.map) {
-      console.log('head_1 텍스처가 적용됨:', headMesh.material.map);
-      setIsHeadTextureApplied(true); // 텍스처가 적용되었으면 true로 설정
-    } else {
-      console.log('head_1 텍스처가 없음');
-      setIsHeadTextureApplied(false); // 텍스처가 없으면 false로 설정
-    }
-  };
-
-
-
-  //애니메이션 관련
-  const clock = new THREE.Clock();  // Define the clock instance here
-
   //타이밍 관련
   const [isReadyToRecord, setIsReadyToRecord] = useState(false);
 
-  const resetAndPlayAnimations = () => {
-    if (!sceneRef.current) return;
+  // Clock 생성
+  const clock = new THREE.Clock();
+  const  resetAndPlayAnimations  = () => {
+    if (!sceneRef.current) {
+      console.warn("Scene not available");
+      return;
+    }
   
-    sceneRef.current.traverse((object) => {
-      if (object.userData && object.userData.animationMixer) {
-        const mixer = object.userData.animationMixer;
-  
-        // 모든 액션을 멈추고 초기화한 후 재생
-        mixer.stopAllAction();
-  
-        mixer._actions.forEach((action) => {
-          action.reset();  // 애니메이션의 시작 상태로 되돌림
-          action.setLoop(THREE.LoopOnce);  // 애니메이션을 한 번만 실행하도록 설정
-          action.clampWhenFinished = true;  // 애니메이션 종료 후 마지막 프레임 유지
-          action.play();  // 애니메이션 재생
-        });
-
-        mixer.setTime(0);
+    // scene 내부의 모든 객체를 순회
+    console.log(sceneRef.current);
+    sceneRef.current.children.forEach((object) => {
+      console.log(object);
+      if (object.mixer) {
+        alert('Found an object with a mixer');
+      }
+      if (object.isMesh && object.mixer) {
+        alert('animation reset');
+        // 각 오브젝트가 mixer를 가지고 있다면 애니메이션 재시작
+        object.mixer.stopAllAction(); // 기존 액션을 중지
+        object.mixer.reset(); // 애니메이션을 처음으로 리셋
+        object.mixer.play(); // 애니메이션을 재시작
       }
     });
-
-    // sceneRef.current.traverse((child) => {
-    //   if (child.material && child.material.map) {
-    //     child.material.map.needsUpdate = true;
-    //   }
-    // });
-
-    clock.start();
+  
+    console.log("All animations reset and restarted.");
   };
   
-  
+
+  useEffect(() => {
+    if (sceneData.mixer) {
+      resetAndPlayAnimations();
+    }
+  }, [sceneData.mixer, resetAndPlayAnimations]);
+
   const startRecording = () => {
     if (isRecording || !isReadyToRecord) return;  // 이미 녹화 중인 경우
   
@@ -109,11 +83,6 @@ const Credit = () => {
       audioSourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current);
     }
 
-    // alert('audioContextRef.current');
-    // audioRef.current.play().catch((err) => {
-    //   console.error('Audio playback failed:', err);
-    // });
-  
     const destination = audioContextRef.current.createMediaStreamDestination();
     audioSourceRef.current.connect(destination);
     audioSourceRef.current.connect(audioContextRef.current.destination);
@@ -138,7 +107,6 @@ const Credit = () => {
         frameRate: 30 // iPhone에서 호환되는 프레임 레이트
       },
     });
-
 
     resetAndPlayAnimations();  // 애니메이션을 리셋하고 재생
 
@@ -250,12 +218,7 @@ const Credit = () => {
       cameraRef.current.position.set(0, 0, 5);
       cameraRef.current.lookAt(0, 0, 0);
 
-      // sceneRef.current.traverse((child) => {
-      //   if (child.material && child.material.map) {
-      //     child.material.map.needsUpdate = true;
-      //   }
-      // });
-
+      //배경 넣기
       const loader = new THREE.TextureLoader();
       loader.load(`/static/stockimages/postcardfinal_${postcard?.number}.png`, (bgTexture) => {
         bgTexture.colorSpace = THREE.SRGBColorSpace;
@@ -343,22 +306,15 @@ const Credit = () => {
 
       const animate = () => {
         requestAnimationFrame(animate);
-
-        const delta = clock.getDelta();  // 경과된 시간
-
-        // scene 내의 모든 애니메이션 업데이트
-        sceneRef.current.traverse((object) => {
-          // if (object.material && object.material.map) {
-          //   object.material.map.needsUpdate = true;  // 텍스처 갱신 강제
-          // }
-          if (object.userData && object.userData.animationMixer) {
-            object.userData.animationMixer.update(delta);
-          }
-        })
-
+        const delta = clock.getDelta();
+        if (sceneData.mixer) {
+          sceneData.mixer.update(delta);  // SceneContext에서 가져온 mixer를 사용하여 애니메이션 업데이트
+        }
         rendererRef.current.render(sceneRef.current, cameraRef.current);
       };
+
       animate();
+
     };
 
     initThreeJS();
@@ -377,17 +333,13 @@ const Credit = () => {
 
   useEffect(() => {
     if (postcard) {
-      setTimeout(startRecording, 1000);
+      setTimeout(startRecording, 1000); //1초간 녹화
     }
   }, [postcard]);
 
   useEffect(() => {
     const handleUnload = () => {
-      // 메모리 해제 로직
-      // if (animationFrameRef.current) {
-      //   cancelAnimationFrame(animationFrameRef.current);
-      // }
-  
+
       textMeshes.forEach((mesh) => {
         if (mesh) {
           if (mesh.geometry) mesh.geometry.dispose();
@@ -438,29 +390,15 @@ const Credit = () => {
   }, [isReadyToRecord]);
 
   useEffect(() => {
-    let animationInterval;
-  
     if (isRecordingDone) {
-      console.log('Recording is done, starting animation loop every 8.75 seconds.');
-  
-      const runAnimation = () => {
-        console.log('Resetting and playing animations.');
+      const animationInterval = setInterval(() => {
         resetAndPlayAnimations();
-      };
+      }, 8750); //8.75초 이따 개선해야함
 
-      runAnimation(); // Immediately trigger it once after recording is done
-  
-      animationInterval = setInterval(runAnimation, 8750); // Replay every 8.75 seconds
+      return () => clearInterval(animationInterval);
     }
-  
-    return () => {
-      if (animationInterval) {
-        console.log('Clearing animation interval.');
-        clearInterval(animationInterval);
-      }
-    };
-  }, [isRecordingDone]);
-  
+  }, [isRecordingDone, resetAndPlayAnimations]);
+
   if (!postcard) return <div>Loading...</div>;
 
   const containerStyle = {
@@ -576,6 +514,12 @@ const Credit = () => {
         <button className="upbutton" onClick={shareVideo} disabled={!blobUrl}>
           {!isRecordingDone ? '공유 영상 준비 중...' : '영상 공유하기'}
         </button>
+
+        <button onClick={resetAndPlayAnimations}>
+          애니메이션 재시작
+        </button>
+
+
       </div>
     </div>
   );

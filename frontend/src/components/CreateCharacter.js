@@ -235,10 +235,10 @@ const handleAssetSelection = (category, index) => {
           }
         });
 
-        // if (categoryName === 'HEAD'){
-        //   model.position.set(0, 0.1, 0); // 필요시 위치 조정
-        //   model.scale.set(1.1, 1, 1.1); // 필요시 크기 조정
-        // }
+        if (categoryName === 'HEAD'){
+          model.position.set(0, 0.1, 0.5); // 필요시 위치 조정
+          // model.scale.set(1.03, 1.03, 1.03); // 필요시 크기 조정
+        }
 
         if (categoryName === 'HEAD' && storedExpressionTexture) {
           model.traverse((child) => {
@@ -452,9 +452,9 @@ const handleAssetSelection = (category, index) => {
         transparent: 'rgba(0,0,0,0)',
       });
   
-      const fps = 24;  // GIF를 24fps로 설정
-      // const totalFrames = 450;
-      const totalFrames = 12;
+      const fps = 300;  // GIF를 24fps로 설정
+      const totalFrames = 450;
+      // const totalFrames = 12;
       let frameCount = 0;
   
       resetAndStartAnimation();
@@ -466,7 +466,7 @@ const handleAssetSelection = (category, index) => {
   
       const captureFrame = () => {
         if (frameCount < totalFrames) {
-          const delta = 1 / fps;  // 프레임 속도에 맞춰 delta 값 조정
+          const delta = 1 / 20;  // 프레임 속도에 맞춰 delta 값 조정
           modelsRef.current.forEach(({ mixer }) => mixer.update(delta));
   
           hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
@@ -493,7 +493,8 @@ const handleAssetSelection = (category, index) => {
   updateSceneData({
     scene: sceneRef.current, 
     camera: cameraRef.current, 
-    renderer: rendererRef.current
+    renderer: rendererRef.current,
+    mixer: modelsRef.current[0]?.mixer  // 모델에 있는 mixer 중 하나를 넘김
   });
 
   //녹화 카메라  

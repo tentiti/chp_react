@@ -26,12 +26,13 @@ body {
 
 #worktitle {
   font-family: "ClimateCrisisKR-1979";
-  font-size: 17pt;
+  font-size: 17px;
   letter-spacing: -0.025em;
   line-height: 18pt;
   margin-bottom: -5px;
   width: 100%;
 }
+
 
 #workdate {
   font-family: "Pretendard", sans-serif;

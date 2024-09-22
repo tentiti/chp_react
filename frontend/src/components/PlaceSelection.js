@@ -360,10 +360,10 @@ const PlaceSelection = () => {
                         alt="original work" 
                         style={{ 
                             position: 'relative',
-                            margin: '10px 0',
-                            width: '100%',
+                            // margin: '10px 0',
+                            width: '100vw',
                             height: 'auto',
-                            maxHeight: 'calc(100% - 80px)',
+                            maxHeight: 'calc(100vh - 80px)',
                             objectFit: 'contain',
                         }} 
                     />

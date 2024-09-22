@@ -306,7 +306,9 @@ function Home() {
 
           <div className="image-grid">
             {postcards.map((postcard) => (
-              <div className="image-item" key={postcard.id}>
+              <div className="image-item" key={postcard.id} style={{
+                aspectRatio: '1/1',
+              }}>
                 <img
                   // src={`/api/uploads/${postcard.png_name}?t=${new Date().getTime()}`} 
                   src={`/api/uploads/${postcard.png_name}`} 
