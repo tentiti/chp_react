@@ -948,37 +948,33 @@ const clearExpressionCanvas = useCallback(() => {
       };
     }, []);
 
+    //스크롤 무시
     useEffect(() => {
-      const preventScroll = (event) => {
-        event.preventDefault(); // 기본적인 스크롤 이벤트를 막음
-      };
-  
       const allowScrollOnGrid = (event) => {
-        const gridElement = document.querySelector('.scrollable-grid');
-        if (gridElement && gridElement.contains(event.target)) {
-          return; // 그리드 영역 내에서는 스크롤 허용
+        const gridElement = document.querySelector('.controls');
+        if (gridElement && gridElement.contains(event.target) && !event.target.contains( document.querySelector('canvas'))) {
+          return; // 터치가 그리드 내부에서 발생하면 기본 스크롤 허용
         }
-        event.preventDefault(); // 그리드 외부에서는 스크롤 막음
+        event.preventDefault(); // 그 외의 경우 스크롤 막기
       };
-  
-      // 전체 화면의 스크롤을 막고 그리드 내부는 스크롤 허용
-      window.addEventListener('scroll', allowScrollOnGrid, { passive: false });
+    
+      // touchmove 및 scroll 이벤트에 대한 핸들러 추가
       window.addEventListener('touchmove', allowScrollOnGrid, { passive: false });
-  
+      window.addEventListener('scroll', allowScrollOnGrid, { passive: false });
+    
       return () => {
-        // 컴포넌트가 언마운트되면 이벤트 리스너를 제거
-        window.removeEventListener('scroll', allowScrollOnGrid);
         window.removeEventListener('touchmove', allowScrollOnGrid);
+        window.removeEventListener('scroll', allowScrollOnGrid);
       };
     }, []);
-
+    
   
   return (
   <div
     id="oversize"
     style={{     
       width: isFixedSize ? '390px' : '100vw',
-      height: isFixedSize ? '780px' : '--viewport-height', // 동적으로 계산된 높이 사용
+      height: isFixedSize ? '780px' : 'var(--viewport-height)', // 동적으로 계산된 높이 사용
       overflow: 'hidden',
     }}
     
@@ -1434,7 +1430,11 @@ const clearExpressionCanvas = useCallback(() => {
             <>
               {activeCategory &&
                 activeCategory.assets.map((asset, index) => (
-                  <div
+                  <div id="makemescrollhere" style={{
+                    overflowY: 'scroll !important',
+                    webkitOverflowScrolling: 'touch !important',
+                  }}>
+                                      <div
                     className="pictures"
                     key={index}
                     style={{
@@ -1485,6 +1485,8 @@ const clearExpressionCanvas = useCallback(() => {
                       }}
                     />
                   </div>
+                  </div>
+
                 ))}
             </>
           )}
