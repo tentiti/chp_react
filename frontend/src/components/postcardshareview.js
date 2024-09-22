@@ -79,7 +79,7 @@ const PostcardShareView = () => {
     if (gifElement) {
       // Temporarily set the GIF src to an empty string to force reload
       gifElement.src = '';
-      alert('음악과 함께 춤추기를 시작합니다.');
+      // alert('음악과 함께 춤추기를 시작합니다.');
   
       // // Add a slight delay before updating the GIF source
       // setTimeout(() => {

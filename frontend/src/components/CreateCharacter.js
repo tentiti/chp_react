@@ -107,7 +107,7 @@ const handleAssetSelection = (category, index) => {
     { name: 'HEAD', assets: ['head1.png', 'head2.png', 'head3.png', 'head4.png', 'head5.png', 'head6.png', 'head7.png', 'head8.png', 'head9.png', 'head10.png', 'head11.png', 'head12.png'], useColor: true }, // 12개
     { name: 'TOP', assets: ['top1.png', 'top2.png', 'top3.png', 'top4.png', 'top5.png', 'top6.png', 'top7.png', 'top8.png', 'top9.png', 'top10.png', 'top11.png', 'top12.png', 'top13.png', 'top14.png', 'top15.png', 'top16.png', 'top17.png', 'top18.png', 'top19.png', 'top20.png', 'top21.png', 'top22.png', 'top23.png', 'top24.png'], useColor: false }, // 24개
     { name: 'BOTTOM', assets: ['bottom1.png', 'bottom2.png', 'bottom3.png', 'bottom4.png', 'bottom5.png', 'bottom6.png', 'bottom7.png', 'bottom8.png', 'bottom9.png', 'bottom10.png', 'bottom11.png', 'bottom12.png', 'bottom13.png', 'bottom14.png', 'bottom15.png', 'bottom16.png', 'bottom17.png', 'bottom18.png', 'bottom19.png', 'bottom20.png', 'bottom21.png', 'bottom22.png'], useColor: false }, // 22개
-    { name: 'SHOES', assets: ['shoes1.png', 'shoes2.png', 'shoes3.png', 'shoes4.png', 'shoes5.png', 'shoes6.png', 'shoes7.png', 'shoes8.png'], useColor: false }, // 8개
+    { name: 'SHOES', assets: ['shoes1.png', 'shoes2.png', 'shoes3.png', 'shoes4.png', 'shoes5.png', 'shoes6.png', 'shoes7.png', 'shoes8.png','shoes9.png','shoes10.png','shoes11.png','shoes12.png'], useColor: false }, // 8개
     { name: 'ACCESSORY', assets: ['accessory1.png', 'accessory2.png', 'accessory3.png', 'accessory4.png', 'accessory5.png', 'accessory6.png', 'accessory7.png', 'accessory8.png', 'accessory9.png', 'accessory10.png', 'accessory11.png', 'accessory12.png', 'accessory13.png', 'accessory14.png', 'accessory15.png', 'accessory16.png', 'accessory17.png', 'accessory18.png'], useColor: false }, // 18개
     { name: 'EXPRESSION', assets: [], useColor: false },
   ];
@@ -133,7 +133,7 @@ const handleAssetSelection = (category, index) => {
       const canvas = expressionCanvasRef.current;
       if (canvas) {
         const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#FFFFFF'; // 흰색으로 설정
+        ctx.fillStyle = '#rgb(244, 241, 241)'; // 흰색으로 설정
         ctx.fillRect(0, 0, canvas.width, canvas.height); // 캔버스 전체를 흰색으로 채움
       }
     }
@@ -173,6 +173,8 @@ const handleAssetSelection = (category, index) => {
   const expressionCanvasRef = useRef(null); // 표정을 그리는 캔버스  
 
   const clearCanvasWithColor = (color = 'transparent') => {
+    const canvasContainer = document.querySelector('#facedrawingContainer');
+    canvasContainer.style.backgroundColor = color; // 배경색을 색상으로 설정
     const canvas = expressionCanvasRef.current;
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height); // 캔버스를 완전히 초기화
@@ -186,6 +188,21 @@ const handleAssetSelection = (category, index) => {
   const loadModel = useCallback((modelPath, categoryName, useColor = false, onLoad) => {
     const loader = new GLTFLoader();
 
+    let storedExpressionTexture = null;
+
+    // HEAD 카테고리일 때, 기존 텍스처를 빼온다
+    if (categoryName === 'HEAD') {
+      modelsRef.current.forEach(({ model }) => {
+        model.traverse((child) => {
+          if (child.name === 'head_1') {
+            if (child.material.map) {
+              storedExpressionTexture = child.material.map; // 기존 텍스처 저장
+            }
+          }
+        });
+      });
+    }
+
     // 원피스가 선택되었는지 여부 확인
       if (categoryName === 'TOP' && modelPath.includes('dress')) {
       setIsDressSelected(true);  // 원피스 선택 시 하의 비활성화
@@ -196,6 +213,8 @@ const handleAssetSelection = (category, index) => {
     modelsRef.current = modelsRef.current.filter((item) => {
       if (item.categoryName === categoryName) {
         sceneRef.current.remove(item.model);
+
+        
         return false;
       }
       return true;
@@ -206,6 +225,18 @@ const handleAssetSelection = (category, index) => {
       (gltf) => {
         const model = gltf.scene;
         sceneRef.current.add(model);
+
+        if (categoryName === 'HEAD' && storedExpressionTexture) {
+          model.traverse((child) => {
+            if (child.name === 'head_1') {
+              const mesh = child;
+              if (mesh) {
+                mesh.material.map = storedExpressionTexture; // 저장한 텍스처를 다시 적용
+                mesh.material.needsUpdate = true;
+              }
+            }
+          });
+        }
 
         const mixer = new THREE.AnimationMixer(model);
         let action = null;
@@ -744,8 +775,9 @@ const uploadGif = async (gifBlob) => {
               emissive: new THREE.Color(0xFFFFFF),  // 발광 색상
               emissiveIntensity: 1.0,  // 발광 강도
               opacity: 1.0,  // 불투명하게 설정
-              depthWrite: false,  // 깊이 쓰기 비활성화
-              depthTest: true,  // 깊이 테스트 활성화
+              depthWrite: false,  // 깊이 쓰기 비
+              depthTest: true,  // 깊이 테스트 활
+              transparent: true,  // 투명도 활성화
             });
   
             mesh.material.needsUpdate = true;
@@ -841,7 +873,7 @@ const clearExpressionCanvas = useCallback(() => {
         if (selectedCategory === 'HEAD') {
           controlsHeight = 450; // HEAD 상태일 때
         } else if (selectedCategory === 'EXPRESSION') {
-          controlsHeight = 360; // EXPRESSION 상태일 때
+          controlsHeight = 460; // EXPRESSION 상태일 때
         }
   
         // 전체 화면에서 controls 높이를 제외한 남은 부분을 canvas 영역으로 설정
@@ -867,6 +899,9 @@ const clearExpressionCanvas = useCallback(() => {
         // 카메라 비율 업데이트
         cameraRef.current.aspect = parentWidth / parentHeight;
         cameraRef.current.updateProjectionMatrix();
+
+        const controls = document.querySelector('.controls');
+        controls.style.height = `${controlsHeight}px`;
       }
     };
   
@@ -893,16 +928,63 @@ const clearExpressionCanvas = useCallback(() => {
       };
     }
   }, [isInvitationVisible]);
+
+    // iOS에서 스크롤 문제 해결을 위해 뷰포트 높이를 동적으로 설정하는 함수
+    const setViewportHeight = () => {
+      const height = window.innerHeight; // 실제 높이 값을 가져옴
+      document.documentElement.style.setProperty('--viewport-height', `${height}px`);
+    };
+  
+    useEffect(() => {
+      // 초기 로드 시 뷰포트 높이 설정
+      setViewportHeight();
+  
+      // 창 크기 변경 시 뷰포트 높이 다시 설정
+      window.addEventListener('resize', setViewportHeight);
+  
+      // 컴포넌트 언마운트 시 이벤트 리스너 제거
+      return () => {
+        window.removeEventListener('resize', setViewportHeight);
+      };
+    }, []);
+
+    useEffect(() => {
+      const preventScroll = (event) => {
+        event.preventDefault(); // 기본적인 스크롤 이벤트를 막음
+      };
+  
+      const allowScrollOnGrid = (event) => {
+        const gridElement = document.querySelector('.scrollable-grid');
+        if (gridElement && gridElement.contains(event.target)) {
+          return; // 그리드 영역 내에서는 스크롤 허용
+        }
+        event.preventDefault(); // 그리드 외부에서는 스크롤 막음
+      };
+  
+      // 전체 화면의 스크롤을 막고 그리드 내부는 스크롤 허용
+      window.addEventListener('scroll', allowScrollOnGrid, { passive: false });
+      window.addEventListener('touchmove', allowScrollOnGrid, { passive: false });
+  
+      return () => {
+        // 컴포넌트가 언마운트되면 이벤트 리스너를 제거
+        window.removeEventListener('scroll', allowScrollOnGrid);
+        window.removeEventListener('touchmove', allowScrollOnGrid);
+      };
+    }, []);
+
   
   return (
   <div
     id="oversize"
-    style={{
-      width: "100%",
-      height: "100%",
-      overflow: "hidden",
+    style={{     
+      width: isFixedSize ? '390px' : '100vw',
+      height: isFixedSize ? '780px' : '--viewport-height', // 동적으로 계산된 높이 사용
+      overflow: 'hidden',
     }}
+    
   >
+
+    
 
   {/* Invitation이 보일 때 */}
   {isInvitationVisible && (
@@ -922,8 +1004,9 @@ const clearExpressionCanvas = useCallback(() => {
       backgroundImage: `url('/static/stockimages/background_paper.png')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
-      height: "100vh",
-      width: "100vw",
+      height:'100%',
+      width: "100%",
+      overflow: "hidden",
       // minHeight: '780px'
     }}
     id="whatareYou"
@@ -990,6 +1073,7 @@ const clearExpressionCanvas = useCallback(() => {
       style={{
         position: "relative",
         top: "58px",
+        height: "calc(100% - 58px)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -1295,12 +1379,13 @@ const clearExpressionCanvas = useCallback(() => {
 
               {/* 얼굴그리기 */}
               <div
+                id="facedrawingContainer"
                 style={{
                   position: "relative",
                   width: "100%", // 너비를 고정된 크기로 설정
                   aspectRatio: "800 / 586", // 가로 세로 비율을 이미지에 맞춤
                   overflow: "hidden", // 초과된 부분을 숨기기
-                  background: "red",
+                  background: "rgb(244, 241, 241)", // 배경을 투명하게 설정
                 }}
               >
                 {/* 배경 이미지 */}
@@ -1325,13 +1410,14 @@ const clearExpressionCanvas = useCallback(() => {
                   height={400} // 실제 캔버스의 고정된 해상도
                   style={{
                     position: "absolute",
-                    top: "-250px", // 250px 상단을 숨김
+                    // top: "-250px", // 250px 상단을 숨김
                     left: "0",
-                    width: "900px", // 고정된 너비
-                    height: "900px", // 고정된 높이
+                    width: "400px", // 고정된 너비
+                    height: "400px", // 고정된 높이
                     background: "transparent", // 배경을 투명하게 설정
-                    transform: "translate(-30px, -20px)", // X축으로 -500px 이동하여 오른쪽을 보이게 함
+                    transform: "translate(80px, -30px)", // X축으로 -500px 이동하여 오른쪽을 보이게 함
                     zIndex: 2, // 캔버스가 이미지 위에 렌더링되도록 설정
+                    overflow: "hidden",
                   }}
                   // 마우스 이벤트
                   onMouseDown={startExpressionDrawing}

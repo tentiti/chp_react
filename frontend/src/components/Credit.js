@@ -86,11 +86,11 @@ const Credit = () => {
       }
     });
 
-    sceneRef.current.traverse((child) => {
-      if (child.material && child.material.map) {
-        child.material.map.needsUpdate = true;
-      }
-    });
+    // sceneRef.current.traverse((child) => {
+    //   if (child.material && child.material.map) {
+    //     child.material.map.needsUpdate = true;
+    //   }
+    // });
 
     clock.start();
   };
@@ -110,9 +110,9 @@ const Credit = () => {
     }
 
     // alert('audioContextRef.current');
-    audioRef.current.play().catch((err) => {
-      console.error('Audio playback failed:', err);
-    });
+    // audioRef.current.play().catch((err) => {
+    //   console.error('Audio playback failed:', err);
+    // });
   
     const destination = audioContextRef.current.createMediaStreamDestination();
     audioSourceRef.current.connect(destination);
@@ -176,7 +176,7 @@ const Credit = () => {
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = blobUrl;
-      a.download = `${postcard?.name}의 춤사위`;
+      a.download = `${postcard?.name}의 춤사위.mp4`;
       document.body.appendChild(a);
       a.click();
     }
@@ -189,6 +189,10 @@ const Credit = () => {
       const file = new File([blob], `${postcard?.name}의 춤사위.mp4`, { type: 'video/mp4' });
 
       if (navigator.canShare({ files: [file] })) {
+        // alert(
+        //   '해시태그와 언급이 복사되었습니다. 함께 업로드 해주세요!\n아이폰이 아닐 경우 곧바로 공유가 어려울 수 있습니다. 필수 해시태그는 복사되었으니 함께 직접 업로드 해주세요.'
+        // );
+
         try {
           await navigator.share({
             title: 'Postcard Video',
@@ -230,7 +234,7 @@ const Credit = () => {
       const width = 720;
       const height = 1280;
 
-      rendererRef.current = new THREE.WebGLRenderer({ canvas: canvasRef.current, alpha: true, antialias: true });
+      rendererRef.current = new THREE.WebGLRenderer({ canvas: canvasRef.current, alpha: true, antialias: false,  powerPreference: "high-performance"  });
       rendererRef.current.setSize(width, height);
       rendererRef.current.setClearColor(0x000000, 0);
 
@@ -246,11 +250,11 @@ const Credit = () => {
       cameraRef.current.position.set(0, 0, 5);
       cameraRef.current.lookAt(0, 0, 0);
 
-      sceneRef.current.traverse((child) => {
-        if (child.material && child.material.map) {
-          child.material.map.needsUpdate = true;
-        }
-      });
+      // sceneRef.current.traverse((child) => {
+      //   if (child.material && child.material.map) {
+      //     child.material.map.needsUpdate = true;
+      //   }
+      // });
 
       const loader = new THREE.TextureLoader();
       loader.load(`/static/stockimages/postcardfinal_${postcard?.number}.png`, (bgTexture) => {
@@ -266,7 +270,7 @@ const Credit = () => {
         bgMesh.material.depthWrite = false;
         bgMesh.renderOrder = -1; // 낮은 값일수록 먼저 렌더링됨
 
-        bgMesh.position.z = -100;
+        bgMesh.position.z = -1;
         sceneRef.current.add(bgMesh);
       });
 
@@ -344,9 +348,9 @@ const Credit = () => {
 
         // scene 내의 모든 애니메이션 업데이트
         sceneRef.current.traverse((object) => {
-          if (object.material && object.material.map) {
-            object.material.map.needsUpdate = true;  // 텍스처 갱신 강제
-          }
+          // if (object.material && object.material.map) {
+          //   object.material.map.needsUpdate = true;  // 텍스처 갱신 강제
+          // }
           if (object.userData && object.userData.animationMixer) {
             object.userData.animationMixer.update(delta);
           }
@@ -577,4 +581,4 @@ const Credit = () => {
   );
 };
 
-export default Credit;
+export default  React.memo(Credit);
