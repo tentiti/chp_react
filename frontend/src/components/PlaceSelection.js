@@ -176,7 +176,6 @@ const PlaceSelection = () => {
                 height: 'calc(100% - 138px)',
                 overflowY: 'auto',
                 backgroundColor: '#F8F6F1', 
-                padding: '0 20px',  
                 boxSizing: 'border-box',
             }}>
 
@@ -186,6 +185,7 @@ const PlaceSelection = () => {
                 flexDirection: 'column',
                 // justifyContent: 'center',
                 alignItems: 'center',
+                padding: '0 20px',  
                 top: '0',
             }}>
 
@@ -232,7 +232,7 @@ const PlaceSelection = () => {
                         display: 'flex',
                         flexDirection: 'row',
                         justifyContent: 'space-between',
-                        top: '30%',
+                        top: (isDesktop || isTablet) ? '150px' : 'calc(47.5dvh - 205px)',
                         left: '0',
                         width: '100%',
                         padding: '0 30px',
@@ -299,13 +299,13 @@ const PlaceSelection = () => {
 
                     <div style={{ 
                         position: 'relative',
-                        marginTop: '15px',
+                        marginTop: '5px',
                         color: '#9C9C9C', 
                         fontSize: '8px', 
                         display: 'block',
                         width: '100%',
                         textAlign: 'right',
-                        right: '20px',
+                        right: '10px',
                     }}>
                         * 해당 배경은 김화순 작가의 작품을 오마주하여 제작하였습니다.
                     </div>
@@ -361,9 +361,9 @@ const PlaceSelection = () => {
                         style={{ 
                             position: 'relative',
                             // margin: '10px 0',
-                            width: '100vw',
+                            width: '100%',
                             height: 'auto',
-                            maxHeight: 'calc(100vh - 80px)',
+                            maxHeight: 'calc(100dvh - 205px)',
                             objectFit: 'contain',
                         }} 
                     />

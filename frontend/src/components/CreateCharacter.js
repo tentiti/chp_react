@@ -266,6 +266,8 @@ const handleAssetSelection = (category, index) => {
           action.paused = true;
         }
 
+        console.log({ model, mixer, action, categoryName });
+
         modelsRef.current.push({ model, mixer, action, categoryName });
         // updateCameraView();
 
@@ -453,7 +455,7 @@ const handleAssetSelection = (category, index) => {
       });
   
       const fps = 300;  // GIF를 24fps로 설정
-      const totalFrames = 450;
+      const totalFrames = 45;
       // const totalFrames = 12;
       let frameCount = 0;
   
@@ -489,12 +491,16 @@ const handleAssetSelection = (category, index) => {
   const startRecording = async (setVideoFile) => {
     setIsRecording(true); // 녹화 시작
 
-  // updateSceneData(sceneRef.current, cameraRef.current, rendererRef.current);
+    const allMixers = modelsRef.current.map(item => item.mixer);
+
+    console.log('All mixers:', allMixers);
+
+
   updateSceneData({
     scene: sceneRef.current, 
     camera: cameraRef.current, 
     renderer: rendererRef.current,
-    mixer: modelsRef.current[0]?.mixer  // 모델에 있는 mixer 중 하나를 넘김
+    mixer: modelsRef.current[0],  // 모델에 있는 mixer 중 하나를 넘김
   });
 
   //녹화 카메라  

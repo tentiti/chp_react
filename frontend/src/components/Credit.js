@@ -47,7 +47,7 @@ const Credit = () => {
     // scene 내부의 모든 객체를 순회
     console.log(sceneRef.current);
     sceneRef.current.children.forEach((object) => {
-      console.log(object);
+      // console.log(object);
       if (object.mixer) {
         alert('Found an object with a mixer');
       }
@@ -65,7 +65,7 @@ const Credit = () => {
   
 
   useEffect(() => {
-    if (sceneData.mixer) {
+    if (sceneData.mixer[0]) {
       resetAndPlayAnimations();
     }
   }, [sceneData.mixer, resetAndPlayAnimations]);
@@ -108,6 +108,9 @@ const Credit = () => {
       },
     });
 
+
+    // audioRef.current.play();
+
     resetAndPlayAnimations();  // 애니메이션을 리셋하고 재생
 
     recorder.startRecording();
@@ -116,7 +119,7 @@ const Credit = () => {
     setTimeout(() => {
       // alert('Attempting to stop recording');
       stopRecording();
-    }, 1750);  // 3.75초 후 녹화 종료 시도
+    }, 5750);  // 3.75초 후 녹화 종료 시도
   };
   
   const stopRecording = () => {
@@ -134,7 +137,6 @@ const Credit = () => {
       setIsRecordingDone(true); // 녹화 완료 상태 설정
     });
 
-    audioRef.current.play();
     // resetAndPlayAnimations();
   };
   
@@ -307,8 +309,11 @@ const Credit = () => {
       const animate = () => {
         requestAnimationFrame(animate);
         const delta = clock.getDelta();
-        if (sceneData.mixer) {
-          sceneData.mixer.update(delta);  // SceneContext에서 가져온 mixer를 사용하여 애니메이션 업데이트
+
+        const firstMixer = sceneData.mixer[0];  // 첫 번째 믹서를 선택
+
+        if (firstMixer) {
+          firstMixer.update(delta);  // SceneContext에서 가져온 mixer를 사용하여 애니메이션 업데이트
         }
         rendererRef.current.render(sceneRef.current, cameraRef.current);
       };
@@ -373,15 +378,15 @@ const Credit = () => {
     };
   }, [textMeshes, blobUrl]);
 
-  useEffect(() => {
-    if (postcard) {
-      // Prepare audio and check if it's ready to play
-      audioRef.current.load();
-      audioRef.current.oncanplaythrough = () => {
-        setIsReadyToRecord(true);
-      };
-    }
-  }, [postcard]);
+  // useEffect(() => {
+  //   if (postcard) {
+  //     // Prepare audio and check if it's ready to play
+  //     audioRef.current.load();
+  //     audioRef.current.oncanplaythrough = () => {
+  //       setIsReadyToRecord(true);
+  //     };
+  //   }
+  // }, [postcard]);
 
   useEffect(() => {
     if (isReadyToRecord) {
@@ -420,6 +425,14 @@ const Credit = () => {
     height: '100%',
     transform: `scale(${containerRef.current ? containerRef.current.clientWidth / 720 : 1}, ${containerRef.current ? containerRef.current.clientHeight / 1280 : 1})`,
     transformOrigin: 'top left',
+  };
+
+  const recordReady = () => {
+    audioRef.current.load();
+    audioRef.current.oncanplaythrough = () => {
+      setIsReadyToRecord(true);
+    };
+    audioRef.current.play();
   };
 
   return (
@@ -508,16 +521,19 @@ const Credit = () => {
           boxSizing: 'border-box',
         }}
       >
+        <button className="upbutton" onClick={recordReady}>
+          녹화하기
+        </button>
         <button className="upbutton" onClick={downloadVideo} disabled={!blobUrl}>
           {!isRecordingDone ? '공유 영상 준비 중...' : '영상 저장하기'}
         </button>
         <button className="upbutton" onClick={shareVideo} disabled={!blobUrl}>
           {!isRecordingDone ? '공유 영상 준비 중...' : '영상 공유하기'}
         </button>
-
-        <button onClick={resetAndPlayAnimations}>
+        <button className="upbutton" onClick={resetAndPlayAnimations}>
           애니메이션 재시작
         </button>
+
 
 
       </div>
