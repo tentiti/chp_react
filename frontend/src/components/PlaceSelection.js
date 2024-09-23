@@ -14,9 +14,9 @@ const backgrounds = [
 ];
 
 const modelPositions = [
-    { x: 32, y: 131, width: 220, height: 220 },
-    { x: 145, y: 83, width: 220, height: 220 },
-    { x: 200, y: 40, width: 220, height: 220 },
+    { x: 32, y: 131, width: 215, height: 220 },
+    { x: 145, y: 83, width: 215, height: 220 },
+    { x: 200, y: 40, width: 215, height: 220 },
 ];
 
 const descriptions = [

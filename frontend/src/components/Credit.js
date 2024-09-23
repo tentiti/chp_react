@@ -240,16 +240,16 @@ const Credit = () => {
       // sceneRef.current = new THREE.Scene();
       sceneRef.current = sceneData.scene;
 
-      // // 장면에서 모든 모델을 찾습니다
-      // const models = sceneRef.current.children.filter(child => child.type === "Group" || child.type === "Mesh");
+      // 장면에서 모든 모델을 찾습니다
+      const models = sceneRef.current.children.filter(child => child.type === "Group" || child.type === "Mesh");
   
-      // // 첫 번째 모델을 제외한 나머지를 모두 제거합니다
-      // for (let i = 0; i < models.length; i++) {
-      //   sceneRef.current.remove(models[i]);
-      // }
+      // 첫 번째 모델을 제외한 나머지를 모두 추가합니다
+      for (let i = 0; i < models.length; i++) {
+        sceneRef.current.add(models[i]);
+      }
     
 
-      sceneRef.current.add(sceneData.mixer);  // SceneContext에서 가져온 모델 추가
+      // sceneRef.current.add(sceneData.mixer);  // SceneContext에서 가져온 모델 추가
   
 
       const width = 1080;

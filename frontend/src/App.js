@@ -9,18 +9,17 @@ import PostcardView from './components/PostcardView';
 import PostcardShareView from './components/PostcardShareView';
 import Credit from './components/Credit';
 import { VideoProvider } from './components/VideoContext';
-import { SceneProvider } from './components/SceneContext';
+import { SceneProvider } from './components/SceneContext'; // SceneProvider import
 
 import './App.css';
 
 function App() {
-  const [displayMode, setDisplayMode] = useState('loading');
-  const [scale, setScale] = useState(1);
-  const [showInstaInfo, setShowInstaInfo] = useState(false);
-  const [showKakaoInfo, setShowKakaoInfo] = useState(false);
-
-  const REFERENCE_WIDTH = 390;
-  const REFERENCE_HEIGHT = 780;
+  const [isFixedSize, setIsFixedSize] = useState(false);
+  const [showSizeInfo, setShowSizeInfo] = useState(false);
+  const [isResponsiveScale, setIsResponsiveScale] = useState(false);
+  const [showInstaInfo, setShowInstaInfo] = useState(false); // 추가된 상태
+  const [showKakaoInfo, setShowKakaoInfo] = useState(false); // 추가된 상태 
+  const [isSizeChecked, setIsSizeChecked] = useState(false);
 
   const getDeviceType = () => {
     const userAgent = navigator.userAgent.toLowerCase();
@@ -30,46 +29,42 @@ function App() {
   };
 
   const checkInstagramBrowser = () => {
-    return navigator.userAgent.includes("Instagram");
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    return userAgent.includes("Instagram");
   };
 
   const checkKakaoBrowser = () => {
-    return navigator.userAgent.includes("Kakao");
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    return userAgent.includes("Kakao");
   };
 
-  const checkWindowSize = useCallback(() => {
+  const checkWindowSize = useCallback(() => {  // useCallback to memoize the function
     const width = window.innerWidth;
     const height = window.innerHeight;
     const deviceType = getDeviceType();
 
     console.log(`Width: ${width}, Height: ${height}, Device Type: ${deviceType}`);
 
-    if (deviceType === 'mobile') {
-      setDisplayMode('mobile');
-      setScale(1);
-    } else if (width < 500 || height < 500) {
-      setDisplayMode('sizeInfo');
-    } else if (width >= 700 && height >= 900) {
-      setDisplayMode('fixed');
-      setScale(1.1538); // 450/390 = 1.1538
-    } else {
-      setDisplayMode('responsive');
-      const widthScale = width / REFERENCE_WIDTH;
-      const heightScale = height / REFERENCE_HEIGHT;
-      setScale(Math.min(widthScale, heightScale, 1.1538)); // Max scale is 1.1538
-    }
+    // 축소안내
+    setShowSizeInfo((deviceType === 'tablet' || deviceType === 'desktop') && (width < 500 || height < 500));
 
-    setShowInstaInfo(checkInstagramBrowser());
-    setShowKakaoInfo(checkKakaoBrowser());
-  }, []);
+    // 고정사이즈
+    setIsFixedSize((deviceType === 'tablet' || deviceType === 'desktop') && (width >= 700 && height >= 900));
+    
+
+    setIsResponsiveScale((deviceType === 'tablet' || deviceType === 'desktop') && (width >= 500 && height >= 500));
+    setShowInstaInfo(checkInstagramBrowser()); // 인스타그램 브라우저 감지 후 상태 업데이트
+    setShowKakaoInfo(checkKakaoBrowser()); // 카카오 브라우저 감지 후 상태 업데이트
+    setIsSizeChecked(true);
+  }, []);  // No dependencies for now
 
   useEffect(() => {
     checkWindowSize();
     window.addEventListener('resize', checkWindowSize);
     return () => window.removeEventListener('resize', checkWindowSize);
-  }, [checkWindowSize]);
+  }, [checkWindowSize]);  // Dependency added
 
-  if (displayMode === 'loading') {
+  if (!isSizeChecked) {
     return (
       <div className="loading-screen">
         <div className="loading-spinner"></div>
@@ -78,43 +73,39 @@ function App() {
   }
 
   return (
-    <div className={`app-container ${displayMode}`} style={{ '--scale': scale }}>
-      {displayMode === 'sizeInfo' && (
+    <div className={isFixedSize ? 'fixed-size-container' : ''}>
+      {showSizeInfo ? (
         <div className="size-info-container">
           <img src="/static/stockimages/sizeinfo.png" alt="Size Information" className="size-info-image" />
         </div>
-      )}
-      {showInstaInfo && (
+      ) : showInstaInfo ? ( // 인스타그램 안내 정보 추가
         <div className="size-info-container">
           <img src="/static/stockimages/instainfo.png" alt="Instagram Browser Information" className="size-info-image" />
         </div>
-      )}
-      {showKakaoInfo && (
+      ) : showKakaoInfo ? ( // 카카오 안내 정보 추가
         <div className="size-info-container">
           <img src="/static/stockimages/kakaoinfo.png" alt="Kakao Browser Information" className="size-info-image" />
-        </div>
-      )}
-      {(displayMode === 'fixed' || displayMode === 'responsive' || displayMode === 'mobile') && (
-        <div className="content">
-          <SceneProvider>
-            <VideoProvider>
-              <Router>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/Home" element={<Home />} />
-                  <Route path="/undefined" element={<Home />} />
-                  <Route path="/invitation" element={<Invitation />} />
-                  <Route path="/credit/:id" element={<PostcardView />} />
-                  <Route path="/CreateCharacter" element={<CreateCharacter />} />
-                  <Route path="/place-selection" element={<PlaceSelection />} />
-                  <Route path="/postcardcreation" element={<PostcardCreation />} />
-                  <Route path="/postcardview/:id" element={<Credit />} />
-                  <Route path="/postcardshareview/:id" element={<PostcardShareView />} />
-                </Routes>
-              </Router>
-            </VideoProvider>
-          </SceneProvider>
-        </div>
+        </div> 
+      ) : (
+        
+        <SceneProvider>
+          <VideoProvider>
+            <Router>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/Home" element={<Home />} />
+                <Route path="/undefined" element={<Home />} />
+                <Route path="/invitation" element={<Invitation />} />
+                <Route path="/credit/:id" element={<PostcardView />} />
+                <Route path="/CreateCharacter" element={<CreateCharacter isFixedSize={isFixedSize} />} />
+                <Route path="/place-selection" element={<PlaceSelection />} />
+                <Route path="/postcardcreation" element={<PostcardCreation />} />
+                <Route path="/postcardview/:id" element={<Credit />} />
+                <Route path="/postcardshareview/:id" element={<PostcardShareView />} />
+              </Routes>
+            </Router>
+          </VideoProvider>
+        </SceneProvider>
       )}
     </div>
   );
