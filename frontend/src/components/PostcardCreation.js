@@ -11,7 +11,13 @@ const modelPositions = [
   { x: 145, y: 83, width: 220, height: 220 },
   { x: 200, y: 40, width: 220, height: 220 },
 ];
-//동적인 글자크기
+
+const backgroundImages = [
+  '/static/stockimages/trans_bg1.png',
+  '/static/stockimages/trans_bg2.png',
+  '/static/stockimages/trans_bg3.png',
+];
+
 
 
 const PostcardCreation = () => {
@@ -38,6 +44,14 @@ const PostcardCreation = () => {
       window.removeEventListener('resize', updateFontSize); // Clean up on unmount
     };
   }, []);
+
+    // Preload background images
+    useEffect(() => {
+      backgroundImages.forEach((src) => {
+        const img = new Image();
+        img.src = src;
+      });
+    }, []);
 
   const location = useLocation();
   const navigate = useNavigate();
