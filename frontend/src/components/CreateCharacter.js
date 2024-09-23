@@ -204,11 +204,22 @@ const handleAssetSelection = (category, index) => {
         });
       });
     }
+
+    
     
 
-    // 원피스가 선택되었는지 여부 확인
-      if (categoryName === 'TOP' && modelPath.includes('dress')) {
-      setIsDressSelected(true);  // 원피스 선택 시 하의 비활성화
+    // 원피스가 선택되었는지 여부 확인 및 하의 비활성화 및 제거
+    if (categoryName === 'TOP' && ['19', '20', '21', '22', '23', '24'].some(num => modelPath.includes(num))) {
+      setIsDressSelected(true);  // 원피스 또는 지정된 숫자가 포함된 경우 하의 비활성화
+
+      // 기존 하의 모델을 찾아서 삭제
+      modelsRef.current = modelsRef.current.filter((item) => {
+        if (item.categoryName === 'BOTTOM') {
+          sceneRef.current.remove(item.model);  // 하의 모델을 씬에서 제거
+          return false;  // 해당 모델을 modelsRef에서 제거
+        }
+        return true;
+      });
     } else if (categoryName === 'TOP') {
       setIsDressSelected(false); // 다른 상의를 선택하면 하의 활성화
     }
@@ -229,6 +240,20 @@ const handleAssetSelection = (category, index) => {
         const model = gltf.scene;
         sceneRef.current.add(model);
 
+        if (categoryName === 'Base') {
+          gltf.scene.traverse((child) => {
+            if (child.isMesh) {
+              child.renderOrder = 1000;
+            }
+          });
+        } else {
+          gltf.scene.traverse((child) => {
+            if (child.isMesh) {
+              child.renderOrder = 100;
+            }
+          });
+        }
+
         model.traverse((child) => {
           if (child.isMesh && child.name === 'HEAD') {
             child.material.depthTest = false;  // 깊이 테스트 비활성화
@@ -237,10 +262,11 @@ const handleAssetSelection = (category, index) => {
           }
         });
 
-        if (categoryName === 'HEAD'){
-          model.position.set(0, 0.1, 0.5); // 필요시 위치 조정
-          // model.scale.set(1.03, 1.03, 1.03); // 필요시 크기 조정
-        }
+        // if (categoryName === 'HEAD'){
+        //   const scale = 1.06;
+        //   model.position.set(0, -0.3, 0); // 필요시 위치 조정
+        //   model.scale.set(scale, scale, scale); // 필요시 크기 조정
+        // }
 
         if (categoryName === 'HEAD' && storedExpressionTexture) {
           model.traverse((child) => {
@@ -249,6 +275,8 @@ const handleAssetSelection = (category, index) => {
               if (mesh) {
                 mesh.material.map = storedExpressionTexture; // 저장한 텍스처를 다시 적용
                 mesh.material.needsUpdate = true;
+                mesh.material.polygonOffset = true;
+                mesh.material.polygonOffsetFactor = -0.1;
               }
             }
           });
@@ -271,7 +299,7 @@ const handleAssetSelection = (category, index) => {
 
         mixersRef.current.push(mixer); 
 
-        console.log({ model, mixer, action, categoryName });
+        // console.log({ model, mixer, action, categoryName });
 
         modelsRef.current.push({ model, mixer, action, categoryName });
         // updateCameraView();
@@ -321,7 +349,6 @@ const handleAssetSelection = (category, index) => {
     const initThreeJS = () => {
       sceneRef.current = new THREE.Scene();
       sceneRef.current.background = null;
-      cameraRef.current = new THREE.PerspectiveCamera(10, 1, 0.1, 1000);
       
       rendererRef.current = new THREE.WebGLRenderer({ 
         antialias: true, 
@@ -333,10 +360,23 @@ const handleAssetSelection = (category, index) => {
       rendererRef.currentoutputColorSpace = THREE.SRGBColorSpace;
 
       const canvasParent = canvasRef.current.parentNode;
+      // cameraRef.current = new THREE.PerspectiveCamera(10, 1, 0.1, 1000);
+
+      // 캔버스 크기에 따라 orthographic 카메라 설정
+      const aspect = canvasParent.innerWidth / canvasParent.innerHeight;
+      const frustumSize = 5; // 카메라 시야 크기, 필요에 따라 조정
+
+      cameraRef.current = new THREE.OrthographicCamera(
+        (frustumSize ) / -2, // left
+        (frustumSize ) / 2,  // right
+        frustumSize / 2,             // top
+        frustumSize / -2,            // bottom
+        0.1,                         // near
+        1000                         // far
+      );
 
       rendererRef.current.setSize(canvasParent.clientWidth, canvasParent.clientHeight * 0.42); // 창 크기에 맞춰 초기화
-      cameraRef.current.aspect = window.innerWidth / window.innerHeight;
-      cameraRef.current.updateProjectionMatrix();
+      
       rendererRef.current.setClearColor(0x000000, 0);
 
       hiddenRendererRef.current = new THREE.WebGLRenderer({ 
@@ -459,58 +499,81 @@ const handleAssetSelection = (category, index) => {
         transparent: 'rgba(0,0,0,0)',
       });
   
-      const fps = 24;  // GIF를 24fps로 설정
-      const totalFrames = 450;  // 450프레임짜리 영상
+      const originalFps = 24;  // 원래 애니메이션 재생 속도
+      const totalFrames = 450; // 450프레임 녹화
+      const frameDuration = 1 / originalFps;  // 24fps 기준 프레임당 시간
       let frameCount = 0;
-      let lastTime = 0;  // 마지막 프레임 시간 저장
-      
+  
+      // 애니메이션을 2배 빠르게 재생
       resetAndStartAnimation();
-      
+      modelsRef.current.forEach(({ mixer }) => {
+        mixer.timeScale = 1;  // 애니메이션 속도를 2배로
+      });
+  
+      // 첫 번째 프레임을 PNG로 저장 (선택 사항)
+      hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
+      const pngBlob = canvas.toDataURL('image/png');
+      addVideoFile(pngBlob);  // VideoContext에 첫 프레임 저장
+  
+      // GIF 렌더링이 끝난 후 처리
+      // gif.on('finished', async (blob) => {
+      //   let gifUploadUrl = await uploadGif(blob);
+      //   resolve(gifUploadUrl);  // 업로드 후 URL 반환
+      // });
+  
       gif.on('finished', async (blob) => {
+        console.log('gif created');
+        // 서버에 GIF 업로드
         let gifUploadUrl = await uploadGif(blob);
-        resolve(gifUploadUrl);  // 업로드 후 URL 반환
+        
+        // Blob 데이터를 사용해 GIF 파일을 로컬에 다운로드
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = 'animation.gif'; // 파일명 지정
+        document.body.appendChild(a);
+        a.click(); // 다운로드 트리거
+        document.body.removeChild(a); // 링크 제거
+        URL.revokeObjectURL(downloadUrl); // 메모리 해제
+      
+        // 업로드 후 URL 반환
+        resolve(gifUploadUrl);
       });
       
-      const captureFrame = (time) => {
-        if (frameCount < totalFrames) {
-          const elapsed = (time - lastTime) / 1000;  // 밀리초를 초로 변환
-          const frameTime = 1 / fps;  // 24fps 기준으로 한 프레임당 시간
-          
-          if (elapsed >= frameTime) {
-            const delta = elapsed;  // 경과된 시간을 delta로 사용
-            modelsRef.current.forEach(({ mixer }) => mixer.update(delta));
-      
-            hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(hiddenCanvasRef.current, 0, 0);
-      
-            gif.addFrame(ctx, { copy: true, delay: 1000 / fps });  // 24fps로 프레임 추가
-            frameCount++;
-            lastTime = time;  // 마지막 시간을 현재 시간으로 업데이트
-          }
-      
-          requestAnimationFrame(captureFrame);  // 다음 프레임 요청
-        } else {
-          gif.render();  // GIF 렌더링 시작
-        }
-      };
-      
-      captureFrame();
+      // 빠르게 렌더링 및 캡처하는 루프
+      let delta = 0;
+      while (frameCount < totalFrames) {
+        // 애니메이션 프레임 업데이트 (2배 빠른 속도)
+        modelsRef.current.forEach(({ mixer }) => mixer.update(frameDuration));
+  
+        // 캔버스에 그리기
+        hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(hiddenCanvasRef.current, 0, 0);
+  
+        // GIF에 프레임 추가 (24fps로 보이도록 딜레이 설정)
+        gif.addFrame(ctx, { copy: true, delay: 1000 / originalFps });
+  
+        frameCount++;
+        delta += frameDuration;
+      }
+  
+      // GIF 렌더링 시작
+      gif.render();
     });
   };
+  
   
 
   const startRecording = async (setVideoFile) => {
     setIsRecording(true); // 녹화 시작
-
-
-
-  updateSceneData({
-    scene: sceneRef.current, 
-    camera: cameraRef.current, 
-    renderer: rendererRef.current,
-    mixer: modelsRef,
-  });
+    //모델링 정보 넘기기
+    updateSceneData({
+      scene: sceneRef.current, 
+      camera: cameraRef.current, 
+      renderer: rendererRef.current,
+      mixer: modelsRef,
+    });
 
   //녹화 카메라  
   cameraRef.current = new THREE.OrthographicCamera(
@@ -527,7 +590,7 @@ const handleAssetSelection = (category, index) => {
 
   
   // 100ms 지연을 위해 Promise와 setTimeout을 사용
-  await new Promise((resolve) => setTimeout(resolve, 10)); // 100ms 대기
+  await new Promise((resolve) => setTimeout(resolve, 100)); // 100ms 대기
 
   cameraRef.current.position.set(0, 1, 50);  // 기본 카메라 위치로 되돌리기
   cameraRef.current.lookAt(new THREE.Vector3(0, 3.2, 0));
@@ -873,24 +936,26 @@ const clearExpressionCanvas = useCallback(() => {
 
   useEffect(() => {
     if (selectedCategory === 'EXPRESSION') {
-      // alert('표정 모드!');
-      // 표정 그리기 모드일 때 카메라 위치를 조정
-      cameraRef.current.position.set(0, 5.6, 14);  // 예시: 카메라를 더 가까이 이동
-      cameraRef.current.lookAt(new THREE.Vector3(0, 5.6, 0));  // 원하는 좌표로 카메라가 바라보게 설정
-      cameraRef.current.updateProjectionMatrix();
+      // 표정 그리기 모드일 때 카메라 위치와 줌을 조정
+      cameraRef.current.position.set(0, 5.7, 3);  // 카메라 위치
+      cameraRef.current.lookAt(new THREE.Vector3(0, 5.7, 3));  // 바라볼 좌표 설정
+      cameraRef.current.zoom = 2.7;  // 줌인 (값이 클수록 더 가까이 보임)
+      cameraRef.current.updateProjectionMatrix();  // 카메라 매트릭스 업데이트
     } else if (selectedCategory === 'HEAD') {
-       // 머리 고르기 모드일 때 카메라 위치를 조정
-       cameraRef.current.position.set(0, 7, 12);  // 예시: 카메라를 더 가까이 이동
-       cameraRef.current.lookAt(new THREE.Vector3(0, 5.8, 0));  // 원하는 좌표로 카메라가 바라보게 설정
-       cameraRef.current.updateProjectionMatrix();
-    } else {
-      // 다른 카테고리로 돌아갈 때 카메라 위치를 원래대로 되돌림
-      cameraRef.current.position.set(0, 9, 50);  // 기본 카메라 위치로 되돌리기
-      cameraRef.current.lookAt(new THREE.Vector3(0, 3, 0));
+      // 머리 고르기 모드일 때 카메라 위치와 줌을 조정
+      cameraRef.current.position.set(0, 5.6, 3);  // 카메라 위치
+      cameraRef.current.lookAt(new THREE.Vector3(0, 5.6, 3));  // 바라볼 좌표 설정
+      cameraRef.current.zoom = 2.2;  // 적당히 줌인
       cameraRef.current.updateProjectionMatrix();
-      
+    } else {
+      // 다른 카테고리로 돌아갈 때 카메라 위치와 줌을 원래대로 되돌림
+      cameraRef.current.position.set(0, 2.5, 3);  // 카메라 위치
+      cameraRef.current.lookAt(new THREE.Vector3(0, 2.5, 3));  // 바라볼 좌표 설정
+      cameraRef.current.zoom = 0.6;  // 기본 줌
+      cameraRef.current.updateProjectionMatrix();
     }
   }, [selectedCategory]);
+  
 
   useEffect(() => {
     const handleResize = () => {
@@ -1492,7 +1557,7 @@ const clearExpressionCanvas = useCallback(() => {
                             activeCategory.name.toLowerCase()
                           }_${index + 1}.glb`;
 
-                      console.log(modelPath);
+                      // console.log(modelPath);
                       loadModel(
                         modelPath,
                         activeCategory.name,

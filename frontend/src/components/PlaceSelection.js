@@ -5,6 +5,7 @@ import './CreateCharacter.css';
 import './placeselection.css';
 import { isTablet, isDesktop } from 'react-device-detect'; // 추가
 import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
+import { UseVideo } from './VideoContext';
 
 const backgrounds = [
     "/static/stockimages/trans_bg1.png",
@@ -40,6 +41,7 @@ const descriptions = [
 ];
 
 const PlaceSelection = () => {
+    const { videoFiles } = UseVideo();
 
     const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
 
@@ -84,7 +86,7 @@ const PlaceSelection = () => {
 
     const location = useLocation();
     const navigate = useNavigate();
-    const { gifUrl, realgifUrl, videoFiles } = location.state || {};
+    const { gifUrl, realgifUrl } = location.state || {};
     
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
@@ -210,6 +212,11 @@ const PlaceSelection = () => {
                     backgroundRepeat: 'no-repeat',
 
                 }}>
+                    {/* 새 이미지 */}
+
+                    {videoFiles.map((file, index) => (
+                        <img key={index} src={file} alt={`Frame ${index}`} />
+                    ))}
 
                     {gifUrl && (
                         <img
@@ -297,18 +304,7 @@ const PlaceSelection = () => {
                     <div id="workdate">{currentDescription.date}</div>
                     <div id="workexplanation">{currentDescription.text}</div>
 
-                    <div style={{ 
-                        position: 'relative',
-                        marginTop: '5px',
-                        color: '#9C9C9C', 
-                        fontSize: '8px', 
-                        display: 'block',
-                        width: '100%',
-                        textAlign: 'right',
-                        right: '10px',
-                    }}>
-                        * 해당 배경은 김화순 작가의 작품을 오마주하여 제작하였습니다.
-                    </div>
+                   
 
                 {/* Copyright text */}
                 
@@ -341,6 +337,20 @@ const PlaceSelection = () => {
                         zIndex: 1000,
                     }}
                 >
+                     <div style={{ 
+                        position: 'absolute',
+                        top: '-20px',
+                        color: '#9C9C9C', 
+                        fontSize: '8px', 
+                        display: 'block',
+                        width: '100%',
+                        textAlign: 'right',
+                        right: '30px',
+                        display: isScrolledToBottom ? 'none' : 'block',
+                        zIndex: 999
+                    }}>
+                        * 해당 배경은 김화순 작가의 작품을 오마주하여 제작하였습니다.
+                    </div>
                     <span>{isScrolledToBottom ? '장소 고르러 돌아가기' : '원본 작품 보러가기'}</span>
                     <br/>
                     <img 

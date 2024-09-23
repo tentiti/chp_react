@@ -13,10 +13,10 @@ export const SceneProvider = ({ children }) => {
   const updateSceneData = (newSceneData) => {
     setSceneData(newSceneData);
 
-    console.log('Scene:', newSceneData.scene);
-    console.log('Camera:',  newSceneData.camera);
-    console.log('Renderer:',  newSceneData.renderer);
-    console.log('Mixer:',  newSceneData.mixer);
+    // console.log('Scene:', newSceneData.scene);
+    // console.log('Camera:',  newSceneData.camera);
+    // console.log('Renderer:',  newSceneData.renderer);
+    // console.log('Mixer:',  newSceneData.mixer);
 
   };
 
