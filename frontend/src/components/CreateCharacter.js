@@ -451,24 +451,24 @@ const handleAssetSelection = (category, index) => {
     animate();
 
     return () => {
-      if (rendererRef.current) {
-        rendererRef.current.dispose();
-      }
-      if (hiddenRendererRef.current) {
-        hiddenRendererRef.current.dispose();
-      }
-      modelsRef.current.forEach(({ model }) => {
-        if (model) {
-          model.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
-              child.geometry.dispose();
-              if (child.material.isMaterial) {
-                child.material.dispose();
-              }
-            }
-          });
-        }
-      });
+      // if (rendererRef.current) {
+      //   rendererRef.current.dispose();
+      // }
+      // if (hiddenRendererRef.current) {
+      //   hiddenRendererRef.current.dispose();
+      // }
+      // modelsRef.current.forEach(({ model }) => {
+      //   if (model) {
+      //     model.traverse((child) => {
+      //       if (child instanceof THREE.Mesh) {
+      //         child.geometry.dispose();
+      //         if (child.material.isMaterial) {
+      //           child.material.dispose();
+      //         }
+      //       }
+      //     });
+      //   }
+      // });
     };
     
   }, [loadModel, updateCameraView]);

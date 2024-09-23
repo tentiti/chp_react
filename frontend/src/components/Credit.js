@@ -36,6 +36,9 @@ const Credit = () => {
   //타이밍 관련
   const [isReadyToRecord, setIsReadyToRecord] = useState(false);
 
+  const [isFrameVisible, setIsFrameVisible] = useState(true);
+
+
   // Clock 생성
   const clock = new THREE.Clock();
   const resetAndPlayAnimations = () => {
@@ -259,7 +262,7 @@ const Credit = () => {
       rendererRef.current.setSize(width, height);
       rendererRef.current.setClearColor(0x000000, 0);
 
-      const frustumSize = 40;
+      const frustumSize = 400;
       cameraRef.current = new THREE.OrthographicCamera(
         (frustumSize * 1080) / 1920 / -2,
         (frustumSize * 1080) / 1920 / 2,
@@ -268,7 +271,7 @@ const Credit = () => {
         0.1,
         1000
       );
-      cameraRef.current.position.set(0, 0, 5);
+      cameraRef.current.position.set(0, 0, -5);
       cameraRef.current.lookAt(0, 0, 0);
 
       //배경 넣기 전 옮기기
@@ -369,13 +372,11 @@ const Credit = () => {
       };
       
       // Add texts
-      const trash = addText('..', 0, 0, 9, true);
       const commentMesh = addText(postcard.comment, 0, -12.2, 94, true);
       const timestampMesh = addText(postcard.timestamp, 0, -14.2, 60);
       const nameMesh = addText(postcard.name, 5., -15.8, 80);
 
       setTextMeshes([commentMesh, timestampMesh, nameMesh]);
-
       const animate = () => {
         requestAnimationFrame(animate);
         const delta = clock.getDelta();
@@ -383,6 +384,7 @@ const Credit = () => {
         const firstMixer = sceneData.mixer[0];  // 첫 번째 믹서를 선택
 
         if (firstMixer) {
+          console.log('firstMixer', firstMixer);
           firstMixer.update(delta);  // SceneContext에서 가져온 mixer를 사용하여 애니메이션 업데이트
         }
         rendererRef.current.render(sceneRef.current, cameraRef.current);
@@ -626,15 +628,10 @@ const Credit = () => {
         <button className="upbutton" onClick={shareVideo} disabled={!blobUrl}>
           {!isRecordingDone ? '공유 영상 준비 중...' : '영상 공유하기'}
         </button>
-        {/* <button className="upbutton" onClick={resetAndPlayAnimations}>
-          애니메이션 재시작
-        </button> */}
-
-
 
       </div>
     </div>
   );
 };
 
-export default  React.memo(Credit);
+export default Credit;

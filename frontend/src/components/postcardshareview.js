@@ -291,6 +291,7 @@ const PostcardShareView = () => {
           position: 'absolute',
           width:'100%',
           bottom: '0.1%',
+          letterSpacing: '-0.025em',
         }}>
           <div>2024. 10. 12 - 10.29.</div>
           <div className="footerBorder">|</div>
