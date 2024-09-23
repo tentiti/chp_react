@@ -522,15 +522,15 @@ const handleAssetSelection = (category, index) => {
         // 서버에 GIF 업로드
         let gifUploadUrl = await uploadGif(blob);
         
-        // Blob 데이터를 사용해 GIF 파일을 로컬에 다운로드
-        const downloadUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = 'animation.gif'; // 파일명 지정
-        document.body.appendChild(a);
-        a.click(); // 다운로드 트리거
-        document.body.removeChild(a); // 링크 제거
-        URL.revokeObjectURL(downloadUrl); // 메모리 해제
+        // // Blob 데이터를 사용해 GIF 파일을 로컬에 다운로드
+        // const downloadUrl = URL.createObjectURL(blob);
+        // const a = document.createElement('a');
+        // a.href = downloadUrl;
+        // a.download = 'animation.gif'; // 파일명 지정
+        // document.body.appendChild(a);
+        // a.click(); // 다운로드 트리거
+        // document.body.removeChild(a); // 링크 제거
+        // URL.revokeObjectURL(downloadUrl); // 메모리 해제
       
         // 업로드 후 URL 반환
         resolve(gifUploadUrl);
@@ -554,7 +554,7 @@ const handleAssetSelection = (category, index) => {
                 // 첫 번째 프레임을 PNG로 저장 (선택 사항)
           hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
           const pngBlob = canvas.toDataURL('image/png');
-          console.log("First frame as PNG:", pngBlob);
+          // console.log("First frame as PNG:", pngBlob);
           addVideoFile(pngBlob);  // VideoContext에 첫 프레임 저장
         }
   
@@ -1173,10 +1173,20 @@ const clearExpressionCanvas = useCallback(() => {
         justifyContent: "start",
         overflow: "hidden",
         // backgroundColor: "salmon",
+
+        backgroundImage: `url('/static/stockimages/background_paper.png')`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      
         zIndex: "10",
       }}
     >
-      <canvas id="ourcanvas" ref={canvasRef} />
+      <canvas id="ourcanvas" ref={canvasRef} style={{
+        backgroundImage: `url('/static/stockimages/background_paper.png')`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        
+      }}/>
       <canvas ref={hiddenCanvasRef} style={{ display: "none" }} />
 
       <div className="controls" style={{
@@ -1186,7 +1196,7 @@ const clearExpressionCanvas = useCallback(() => {
           <div className="category-selection">
             {CATEGORIES.map((category, index) => (
               <button
-                key={category.name}
+                key={category.name || index}
                 onClick={() => handleCategorySelection(category)} // Handles category selection on click
                 className={`color-button ${
                   selectedCategory === category.name ? "selected" : ""
@@ -1533,8 +1543,9 @@ const clearExpressionCanvas = useCallback(() => {
               {activeCategory &&
                 activeCategory.assets.map((asset, index) => (
                   <div id="makemescrollhere" style={{
+                    key: {index},
                     overflowY: 'scroll !important',
-                    webkitOverflowScrolling: 'touch !important',
+                    WebkitOverflowScrolling: 'touch !important',
                   }}>
                                       <div
                     className="pictures"

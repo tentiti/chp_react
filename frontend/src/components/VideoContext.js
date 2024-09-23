@@ -6,9 +6,9 @@ export const VideoProvider = ({ children }) => {
   const [videoFiles, setVideoFiles] = useState([]);
 
   const addVideoFile = (file) => {
-    console.log('Adding new video file:', file);  
+    // console.log('Adding new video file:', file);  
     setVideoFiles(prevFiles => [...prevFiles, file]);
-    console.log('new Video files:', videoFiles);
+    // console.log('new Video files:', videoFiles);
   };
 
   return (

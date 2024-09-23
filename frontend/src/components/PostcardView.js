@@ -1,348 +1,160 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import RecordRTC from 'recordrtc';
-import { UseVideo } from './VideoContext';
-import { isTablet, isDesktop } from 'react-device-detect';
-import Header from './Header';
-import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
-import Credit from './Credit'
-import { useScene } from './SceneContext'; // SceneContext 사용
+import Credit from './Credit';
+import { useScene } from './SceneContext';
+import './PostcardView.css';
+
 
 const PostcardView = () => {
-  //초대
-  const [isInvitationVisible, setIsInvitationVisible] = useState(false); // Invitation의 가시성을 관리하는 상태
-
-  //크레딧
-  const [isCreditVisible, setIsCreditVisible] = useState(false);
-  
-  // Invitation을 보이게 하는 함수 (메뉴 클릭 시 호출됨)
-  const handleMenuClick = () => {
-    // setIsInvitationVisible(true);
-    setIsCreditVisible(true);
-    // setIsFloatingVisible(false); // Invitation을 보이면 플로팅 버튼을 숨김
-  };
-
-  // Invitation을 숨기고 원래 화면으로 돌아가는 함수 (뒤로가기 클릭 시 호출됨)
-  const handleBackClick = () => {
-    // setIsInvitationVisible(false);
-    setIsCreditVisible(false);
-    // setIsFloatingVisible(true); // Invitation을 숨기고 플로팅 버튼을 다시 보이게 함
-  };
-
-  const { videoFiles } = UseVideo(); // Blob URL 가져오기 (배열로 여러 개의 비디오 파일)
-  const { id } = useParams();
-  const [postcard, setPostcard] = useState(null);
-  const [blobUrl, setBlobUrl] = useState(null); // State for storing the blob URL
-  const [isRecording, setIsRecording] = useState(true); // 상태 추가 (녹화 중 여부)
+  const audioContextRef = useRef(null);
+  const audioSourceRef = useRef(null);
+  const audioRef = useRef(null);
   const canvasRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
   const recorderRef = useRef(null);
-  const videoTextureRef = useRef(null); // Ref for video texture
+  const containerRef = useRef(null);
 
-  const [recordedBlob, setRecordedBlob] = useState(null);
-  const [isVideoReady, setIsVideoReady] = useState(false);
-  const audioRef = useRef(null);
+  const [blobUrl, setBlobUrl] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isRecordingDone, setIsRecordingDone] = useState(false);
+  const [textMeshes, setTextMeshes] = useState([]);
 
-  const updateCanvasSize = () => {
-    const width = window.innerWidth; // 100vw
-    const height = (width / 9) * 16; // 16:9 aspect ratio
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const [postcard, setPostcard] = useState(null);
+  const { sceneData } = useScene();
+
+  const [isInvitationVisible, setIsInvitationVisible] = useState(false);
+  const handleMenuClick = () => setIsInvitationVisible(true);
+  const handleBackClick = () => setIsInvitationVisible(false);
+
+  //타이밍 관련
+  const [isReadyToRecord, setIsReadyToRecord] = useState(false);
+
+  const [isFrameVisible, setIsFrameVisible] = useState(true);
+
+
+  // Clock 생성
+  const clock = new THREE.Clock();
+  const resetAndPlayAnimations = () => {
+    const models = sceneData.mixer.current;  // modelsRef.current를 가져옴
   
-    if (isTablet || isDesktop) {
-      const a = 390;
-      const b = 693;
-      return { width: a, height: b }; // Use valid keys 'width' and 'height'
-    } 
-    return { width, height };
-  };
-
-  const [showImage, setShowImage] = useState(false);
-
-  const handleCloseImage = () => {
-    setShowImage(false);
-  };
-
-  useEffect(() => {
-    const fetchPostcard = async () => {
-      try {
-        const response = await axios.get(`/api/postcard/${id}`, { cache: 'no-cache' });
-        if (response.status === 200) {
-          setPostcard(response.data);
-        } else {
-          console.error('Error fetching postcard:', response.status);
-        }
-      } catch (error) {
-        console.error('Network error:', error);
-      }
-    };
-
-    fetchPostcard();
-  }, [id]);
-
-  useEffect(() => {
-    if (!postcard || !videoFiles || videoFiles.length === 0) return;
-
-    const initThreeJS = async () => {
-      const { width, height } = updateCanvasSize();
-
-      sceneRef.current = new THREE.Scene();
-      cameraRef.current = new THREE.OrthographicCamera(
-        width / -2, width / 2, height / 2, height / -2, 0.1, 1000
-      );
-      cameraRef.current.position.z = 1;
-
-      rendererRef.current = new THREE.WebGLRenderer({ canvas: canvasRef.current, antialias: true });
-      rendererRef.current.setSize(width, height);  // Set to dynamic size
-      rendererRef.current.setPixelRatio(window.devicePixelRatio);  // Maintain quality across devices
-      rendererRef.current.setClearColor(0xffffff);
-
-      // Background
-      const loader = new THREE.TextureLoader();
-      const bgTexture = await loader.loadAsync(`/static/stockimages/postcardfinal_${postcard.number}.png`);
-      bgTexture.colorSpace = THREE.SRGBColorSpace;
-      bgTexture.minFilter = THREE.LinearFilter;
-      bgTexture.magFilter = THREE.LinearFilter;
-      const bgGeometry = new THREE.PlaneGeometry(width, height);
-      const bgMaterial = new THREE.MeshBasicMaterial({ map: bgTexture });
-      const bgMesh = new THREE.Mesh(bgGeometry, bgMaterial);
-
-      // Scale down the background mesh
-      // bgMesh.scale.set(0.8, 0.8, 1); // Adjust these values as needed
-      sceneRef.current.add(bgMesh);
-
-      if (videoFiles[postcard.number - 1]) {
-        const videoUrl = URL.createObjectURL(videoFiles[postcard.number - 1]);
-        const video = document.createElement('video');
-        video.src = videoUrl;
-        video.crossOrigin = 'anonymous';
-        video.loop = true;
-        video.muted = true;
-        video.playsInline = true;
-        video.autoplay = true;
-        // const speed = 0.32;
-        const speed = 1;
-        video.playbackRate = speed;
-
-        // 비디오가 반복될 때마다 playbackRate를 다시 설정
-        video.addEventListener('ended', () => {
-          video.playbackRate = speed;
-        });
-
-        // 비디오를 재생할 때도 playbackRate를 유지
-        video.addEventListener('play', () => {
-          video.playbackRate = speed;
-        });
-
-        video.addEventListener('canplay', () => {
-          videoTextureRef.current = new THREE.VideoTexture(video);
-          videoTextureRef.current.colorSpace = THREE.SRGBColorSpace;
-          videoTextureRef.current.minFilter = THREE.LinearFilter;
-          videoTextureRef.current.magFilter = THREE.LinearFilter;
-          videoTextureRef.current.format = THREE.RGBAFormat;
-
-          const videoAspectRatio = video.videoWidth / video.videoHeight;
-          const videoWidth = width * 0.8; // Scale down video width
-          const videoHeight = videoWidth / videoAspectRatio;
-
-          const videoGeometry = new THREE.PlaneGeometry(videoWidth, videoHeight);
-          const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTextureRef.current });
-          const videoMesh = new THREE.Mesh(videoGeometry, videoMaterial);
-
-          videoMesh.position.set(0, 20, 0.1);
-
-          // Scale down the video mesh
-          // videoMesh.scale.set(0.8, 0.8, 1); // Adjust these values as needed
-          sceneRef.current.add(videoMesh);
-
-          video.play();
-          setIsVideoReady(true);
-        });
-      }
-
-      const addText = (text, x, y, size = 50) => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-      
-        canvas.width = 2048;
-        canvas.height = 2048;
-        const fontSize = size * 3;
-        ctx.font = `bold ${fontSize}px Cafe24Simplehae, sans-serif`;
-        ctx.fillStyle = 'rgba(65, 40, 35, 1)';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'top';
-      
-        const maxLineLength = 38;
-        const lines = [];
-        for (let i = 0; i < text.length; i += maxLineLength) {
-          lines.push(text.slice(i, i + maxLineLength));
-        }
-      
-        const lineHeight = fontSize * 2.8;
-        
-        // 전체 텍스트의 높이를 계산
-        const totalTextHeight = lines.length * lineHeight;
-      
-        // 텍스트 시작점을 조정하여 첫 줄이 고정된 Y 위치에 오도록 함
-        lines.forEach((line, index) => {
-          const adjustedYPos = canvas.height / 2 - totalTextHeight / 2 + index * lineHeight - 30;
-          ctx.fillText(line, canvas.width / 2, adjustedYPos);
-        });
-      
-        const xPos = (x / 393) * width;
-        let yPos = (y / 700) * height * 1.2;
-        if (text.length > 38) {
-          yPos -= 19;
-        } 
-      
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.minFilter = THREE.LinearFilter;
-        texture.magFilter = THREE.LinearFilter;
-        texture.format = THREE.RGBAFormat;
-      
-        const aspectRatio = canvas.width / canvas.height;
-        const geometry = new THREE.PlaneGeometry(600 * aspectRatio, 600);
-        const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
-        const mesh = new THREE.Mesh(geometry, material);
-      
-        mesh.position.set(xPos, yPos, 0.2);
-        sceneRef.current.add(mesh);
-      };
-      
-
-      addText(postcard?.comment ? `${postcard.comment}` : '메세지 가져오기 오류', 0, -165, 12);
-      addText(postcard?.timestamp ? `${postcard.timestamp}` : '시간 정보 가져오기 오류', 0, -210, 8);
-      addText(postcard?.name ? `${postcard.name}` : '이름 가져오기 오류', 106, -236, 12);
-    };
-
-    initThreeJS();
-
-    const animate = () => {
-      requestAnimationFrame(animate);
-      if (videoTextureRef.current) {
-        videoTextureRef.current.needsUpdate = true;
-      }
-
-      rendererRef.current.render(sceneRef.current, cameraRef.current);
-    };
-    animate();
-
-    window.addEventListener('resize', () => {
-      const { width, height } = updateCanvasSize();
-
-      cameraRef.current.left = width / -2;
-      cameraRef.current.right = width / 2;
-      cameraRef.current.top = height / 2;
-      cameraRef.current.bottom = height / -2;
-      cameraRef.current.updateProjectionMatrix();
-
-      rendererRef.current.setSize(width, height);
-      canvasRef.current.style.width = `${width}px`;
-      canvasRef.current.style.height = `${height}px`;
-    });
-  }, [postcard, videoFiles]);
-
-
-  useEffect(() => {
-    if (isVideoReady) {
-      setTimeout(() => startRecording(), 500);
-    }
-  }, [isVideoReady]);
-
-  const startRecording = () => {
-    if (!audioRef.current || !audioRef.current.readyState) {
-      console.error('Audio element is not initialized or not ready');
+    if (!models || models.length === 0) {
+      console.error("No models found");
       return;
     }
+  
+    models.forEach((modelData, index) => {
+      console.log(`Processing model ${index}:`, modelData);
+  
+      const { mixer, action } = modelData;
+  
+      if (mixer && action) {
+        action.reset();  // 애니메이션을 처음으로 리셋
+        action.play();   // 애니메이션을 재시작
+      } else {
+        console.warn(`No mixer or action found for model ${index}`);
+      }
+    });
+  };
+  
+  
 
-    const canvasStream = canvasRef.current.captureStream(24);
-    const audioContext = new (window.AudioContext)();
-    const audioSource = audioContext.createMediaElementSource(audioRef.current);
-    const destination = audioContext.createMediaStreamDestination();
+  useEffect(() => {
+    if (sceneData.mixer[0]) {
+      resetAndPlayAnimations();
+    }
+  }, [sceneData.mixer, resetAndPlayAnimations]);
 
-    audioSource.connect(destination);
-    audioSource.connect(audioContext.destination);
+  const startRecording = () => {
+    if (isRecording || !isReadyToRecord) return;  // 이미 녹화 중인 경우
+  
+    // alert('startRecording');
+    setIsRecording(true); // 녹화 상태 설정
+  
+    // if (!audioRef.current || audioRef.current.readyState !== 4) return;
+  
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      audioSourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current);
+    }
 
+    const destination = audioContextRef.current.createMediaStreamDestination();
+    audioSourceRef.current.connect(destination);
+    audioSourceRef.current.connect(audioContextRef.current.destination);
+  
+    const canvasElement = rendererRef.current.domElement;
+    if (!canvasElement.captureStream) {
+      console.warn('captureStream is not supported in this browser.');
+      return;
+    }
+  
+    const canvasStream = canvasElement.captureStream(24);
     const combinedStream = new MediaStream([...canvasStream.getTracks(), ...destination.stream.getTracks()]);
-
+  
     const recorder = new RecordRTC(combinedStream, {
       type: 'video',
       mimeType: 'video/mp4',
-      bitsPerSecond: 8000000,
+      bitsPerSecond: 1000000,
+      video: {
+        codec: 'H264',  
+        width: 1920, // 해상도 설정 가능
+        height: 1080,
+        frameRate: 30 // iPhone에서 호환되는 프레임 레이트
+      },
     });
+
+
+    audioRef.current.play();
+
+    resetAndPlayAnimations();  // 애니메이션을 리셋하고 재생
 
     recorder.startRecording();
-
-    // 비디오 설정
-  const video = document.querySelector('video'); // 비디오 엘리먼트 참조
-  if (video) {
-    const playbackSpeed = 0.32; // 재생 속도 설정 (0.5배속)
-    
-    // 비디오 설정: 처음부터, 반복, 재생 속도 설정
-    video.currentTime = 0; // 비디오를 처음부터 재생
-    video.loop = true;     // 반복 재생
-    video.playbackRate = playbackSpeed; // 재생 속도 설정
-
-    // 재생 시 재생 속도를 유지하기 위한 이벤트 리스너 추가
-    video.addEventListener('play', () => {
-      video.playbackRate = playbackSpeed;
-    });
-
-    // 비디오 반복 시에도 재생 속도를 유지하기 위한 이벤트 리스너 추가
-    video.addEventListener('ended', () => {
-      video.playbackRate = playbackSpeed;
-      video.currentTime = 0; // 반복 시 처음부터 재생
-      video.play(); // 재생 시작
-    });
-
-    // 비디오 재생 시작
-    video.play().catch((err) => {
-      console.error('Video playback failed:', err);
-    });
-  }
-
-  if (audioRef.current) {
-    // 오디오 재생
-    audioRef.current.play().catch((err) => {
-      console.error('Audio playback failed:', err);
-    });
-  }
-
-
     recorderRef.current = recorder;
-
-    setTimeout(() => stopRecording(), 18750);
+  
+    setTimeout(() => {
+      // alert('Attempting to stop recording');
+      stopRecording();
+    }, 18750);  // 3.75초 후 녹화 종료 시도
   };
-
+  
   const stopRecording = () => {
-    if (recorderRef.current) {
-      recorderRef.current.stopRecording(() => {
-        const blob = recorderRef.current.getBlob();
-        const url = URL.createObjectURL(blob);
-        setBlobUrl(url);
-        setRecordedBlob(blob);
-        setIsRecording(false);
-
-        if (audioRef.current) {
-          audioRef.current.pause();
-          audioRef.current.currentTime = 0;
-        }
-      });
+    if (!recorderRef.current) {
+      console.warn('Recorder reference is not set');
+      return;
     }
+  
+    // Stop recording and create a blob in the desired format
+    recorderRef.current.stopRecording(() => {
+      const blob = recorderRef.current.getBlob();
+      const mp4Blob = new Blob([blob], { type: 'video/mp4' }); // Explicitly force it as mp4
+      const url = URL.createObjectURL(mp4Blob);
+      setBlobUrl(url);
+      setIsRecording(false); // 녹화 상태 해제
+      setIsRecordingDone(true); // 녹화 완료 상태 설정
+    });
   };
 
-  const downloadVideo = async () => {
-    if (navigator.clipboard) {
-      try {
-        await navigator.clipboard.writeText('hello world!');
-        console.log('Text copied to clipboard');
-      } catch (error) {
-        console.error('Failed to copy text:', error);
+    // 녹화 종료 후 애니메이션 반복 재생 설정
+    useEffect(() => {
+      if (isRecordingDone) {
+        resetAndPlayAnimations();  // 녹화가 끝난 즉시 애니메이션 재생
+  
+        const animationInterval = setInterval(() => {
+          resetAndPlayAnimations();  // 18.75초마다 애니메이션 재실행
+        }, 18750);
+  
+        return () => clearInterval(animationInterval);  // 컴포넌트 언마운트 시 인터벌 정리
       }
-    }
+    }, [isRecordingDone]);
+  
 
+  const downloadVideo = () => {
     if (blobUrl) {
       const a = document.createElement('a');
       a.style.display = 'none';
@@ -353,6 +165,7 @@ const PostcardView = () => {
     }
   };
 
+  // Function to share video using Web Share API
   const shareVideo = async () => {
     if (navigator.clipboard) {
       try {
@@ -363,13 +176,15 @@ const PostcardView = () => {
       }
     }
 
-    if (navigator.canShare && recordedBlob) {
-      const file = new File([recordedBlob], `${postcard?.name}의 춤사위.mp4`, { type: 'video/mp4' });
+    if (navigator.canShare && blobUrl) {
+      const response = await fetch(blobUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `${postcard?.name}의 춤사위.mp4`, { type: 'video/mp4' }); // Explicitly force .mp4
 
       if (navigator.canShare({ files: [file] })) {
         try {
           await navigator.share({
-            title: 'Postcard Video',
+            title: `${postcard?.name}의 춤사위.mp4`,
             text: 'Check out this postcard video!',
             files: [file],
           });
@@ -385,43 +200,354 @@ const PostcardView = () => {
     }
   };
 
-  const navigate = useNavigate();
-  // const handleMenuClick = () => {
-  //   setShowImage(true);
-  // };
-  const goToCreditPage = () => {
-    navigate(`/credit/${postcard.id}`);  // 버튼 클릭 시 /credit 경로로 이동
+  useEffect(() => {
+    const fetchPostcard = async () => {
+      try {
+        const response = await axios.get(`/api/postcard/${id}`, { cache: 'no-cache' });
+        if (response.status === 200) {
+          setPostcard(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching postcard:', error);
+      }
+    };
+    fetchPostcard();
+  }, [id]);
+
+// 모델의 위치를 바꾸고 크기를 줄이는 함수
+  const moveAndScaleModels = (xOffset = 0, yOffset = 0, zOffset = 0, scaleFactor = 1) => {
+    if (!sceneRef.current) return;
+
+    // 씬에서 모든 모델(그룹 또는 메쉬)을 찾아 위치를 이동하고 크기를 조정합니다.
+    sceneRef.current.children.forEach((object) => {
+      if ((object.isMesh || object.isGroup) && !object.name.startsWith('text_')) {
+        // 위치 변경
+        object.position.x = xOffset;
+        object.position.y = yOffset;
+        object.position.z = zOffset;
+
+        // 크기 변경
+        object.scale.set(
+          object.scale.x = scaleFactor,
+          object.scale.y = scaleFactor,
+          object.scale.z = scaleFactor
+        );
+      }
+    });
   };
 
+  useEffect(() => {
+    const initThreeJS = async () => {
+      if (!sceneData.scene || !canvasRef.current || !postcard) return;
+
+      // sceneRef.current = new THREE.Scene();
+      sceneRef.current = sceneData.scene;
+
+      // 장면에서 모든 모델을 찾습니다
+      const models = sceneRef.current.children.filter(child => child.type === "Group" || child.type === "Mesh");
+  
+      // 첫 번째 모델을 제외한 나머지를 모두 추가합니다
+      for (let i = 0; i < models.length; i++) {
+        sceneRef.current.add(models[i]);
+      }
+    
+
+      // sceneRef.current.add(sceneData.mixer);  // SceneContext에서 가져온 모델 추가
+  
+
+      const width = 1080;
+      const height = 1920;
+
+      rendererRef.current = new THREE.WebGLRenderer({ canvas: canvasRef.current, alpha: true, antialias: false,  powerPreference: "high-performance"  });
+      rendererRef.current.setSize(width, height);
+      rendererRef.current.setClearColor(0x000000, 0);
+
+      const frustumSize = 400;
+      cameraRef.current = new THREE.OrthographicCamera(
+        (frustumSize * 1080) / 1920 / -2,
+        (frustumSize * 1080) / 1920 / 2,
+        frustumSize / 2,
+        frustumSize / -2,
+        0.1,
+        1000
+      );
+      cameraRef.current.position.set(0, 0, -5);
+      cameraRef.current.lookAt(0, 0, 0);
+
+      //배경 넣기 전 옮기기
+      const modelPositionConfigs = {
+        1: { xOffset: -2, yOffset: -2.5, zOffset: 0, scaleFactor: 0.95 },  // postcard number 1
+        2: { xOffset: 1.5, yOffset: -0.2, zOffset: 0, scaleFactor: 0.95 },  // postcard number 2
+        3: { xOffset: 2.5, yOffset: 1.5, zOffset: 0, scaleFactor: 0.95 },  // postcard number 3
+        // Add more postcard numbers if needed
+      }; 
+      const { xOffset, yOffset, zOffset, scaleFactor } = modelPositionConfigs[postcard?.number] || {
+        xOffset: 0,
+        yOffset: 0,
+        zOffset: 0,
+        scaleFactor: 0.95,
+      }; // postcard number가 없을 경우 기본값 사용
+  
+      moveAndScaleModels(xOffset, yOffset, zOffset, scaleFactor); // 모델의 위치 이동 및 크기 조정
+  
+      // 배경 넣기 (배경 z 위치는 고정)
+      //배경 넣기
+      const loader = new THREE.TextureLoader();
+      loader.load(`/static/stockimages/postcardfinal_${postcard?.number}.png`, (bgTexture) => {
+        bgTexture.colorSpace = THREE.SRGBColorSpace;
+        bgTexture.anisotropy = rendererRef.current.capabilities.getMaxAnisotropy();
+        bgTexture.minFilter = THREE.LinearFilter;
+        bgTexture.magFilter = THREE.LinearFilter;
+
+
+        const bgMaterial = new THREE.MeshBasicMaterial({ map: bgTexture });
+        const bgMesh = new THREE.Mesh(new THREE.PlaneGeometry(frustumSize * (720 / 1280), frustumSize), bgMaterial);
+        bgMesh.material.depthTest = false;
+        bgMesh.material.depthWrite = false;
+        bgMesh.renderOrder = -1; // 낮은 값일수록 먼저 렌더링됨
+        bgMesh.name="text_bg"
+        bgMesh.position.z = -1;
+        sceneRef.current.add(bgMesh);
+      });
+
+      const addText = (text, x, y, size = 50, breakLine=false) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = 8192;
+        canvas.height = 4096;
+      
+        const fontSize = size * 3;
+        ctx.font = `bold ${fontSize}px Cafe24Simplehae`;
+        ctx.fillStyle = 'rgba(65, 40, 35, 1)'; // 밝은 노란색으로 변경
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+      
+        const maxLineLength = 38; // 줄 길이를 줄여 더 많은 줄 바꿈 유도
+        const words = text.split(' ');
+        const lines = [];
+        let currentLine = '';
+      
+        words.forEach(word => {
+          if ((currentLine + word).length <= maxLineLength) {
+            currentLine += (currentLine ? ' ' : '') + word;
+          } else {
+            lines.push(currentLine);
+            currentLine = word;
+          }
+        });
+        lines.push(currentLine); // 마지막 줄 추가
+      
+        const lineHeight = fontSize * 2.2;
+        const totalTextHeight = lines.length * lineHeight;
+        const centerY = canvas.height / 2;
+      
+        // ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+      
+        lines.forEach((line, index) => {
+          const yPos = centerY - (totalTextHeight / 2) + index * (lineHeight-1);
+          ctx.fillText(line, canvas.width / 2, yPos);
+        });
+      
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.format = THREE.RGBAFormat;
+      
+        const aspectRatio = canvas.width / canvas.height;
+        const geometry = new THREE.PlaneGeometry(10 * aspectRatio, 10); // 크기를 더 작게 조정
+        const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide });
+        const mesh = new THREE.Mesh(geometry, material);
+
+        mesh.name = `text_${text}`;
+        mesh.position.set(x, y, 1);
+        sceneRef.current.add(mesh);
+
+        console.log(text);
+        
+        return mesh;
+      };
+      
+      // Add texts
+      const commentMesh = addText(postcard.comment, 0, -12.2, 94, true);
+      const timestampMesh = addText(postcard.timestamp, 0, -14.2, 60);
+      const nameMesh = addText(postcard.name, 5., -15.8, 80);
+
+      setTextMeshes([commentMesh, timestampMesh, nameMesh]);
+      const animate = () => {
+        requestAnimationFrame(animate);
+        const delta = clock.getDelta();
+
+        const firstMixer = sceneData.mixer[0];  // 첫 번째 믹서를 선택
+
+        if (firstMixer) {
+          console.log('firstMixer', firstMixer);
+          firstMixer.update(delta);  // SceneContext에서 가져온 mixer를 사용하여 애니메이션 업데이트
+        }
+        rendererRef.current.render(sceneRef.current, cameraRef.current);
+      };
+
+      animate();
+
+    };
+
+    initThreeJS();
+
+    return () => {
+      // Clean up text meshes
+      textMeshes.forEach(mesh => {
+        if (mesh && mesh.geometry) mesh.geometry.dispose();
+        if (mesh && mesh.material) mesh.material.dispose();
+        if (mesh && mesh.parent) mesh.parent.remove(mesh);
+      });
+  
+      // Three.js 관련 리소스 해제
+      if (sceneRef.current) {
+        sceneRef.current.traverse((object) => {
+          if (object.geometry) object.geometry.dispose();
+          if (object.material) {
+            if (object.material.map) object.material.map.dispose();
+            object.material.dispose();
+          }
+        });
+      }
+  
+      if (rendererRef.current) {
+        rendererRef.current.dispose();  // WebGL 컨텍스트 해제
+      }
+  
+      if (audioContextRef.current) {
+        audioContextRef.current.close();  // AudioContext 해제
+      }
+  
+      // RecordRTC 해제
+      if (recorderRef.current) {
+        recorderRef.current.destroy();
+        recorderRef.current = null;
+      }
+  
+      // Blob URL 해제
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
+  
+      // 씬 데이터, 카메라, 렌더러 및 오디오 관련 객체 초기화
+      sceneRef.current = null;
+      cameraRef.current = null;
+      rendererRef.current = null;
+      audioContextRef.current = null;
+    };
+  }, [sceneData, postcard]);
+
+  
+
+  useEffect(() => {
+    if (postcard) {
+      // setTimeout(startRecording, 1000); //1초간 녹화
+    }
+  }, [postcard]);
+
+  useEffect(() => {
+    const handleUnload = () => {
+      textMeshes.forEach((mesh) => {
+        if (mesh) {
+          if (mesh.geometry) mesh.geometry.dispose();
+          if (mesh.material && mesh.material.map) mesh.material.map.dispose();
+          if (mesh.material) mesh.material.dispose();
+          if (mesh.parent) mesh.parent.remove(mesh);
+        }
+      });
+  
+      if (rendererRef.current) {
+        rendererRef.current.dispose();  // WebGL 컨텍스트 해제
+      }
+  
+      if (sceneRef.current) {
+        sceneRef.current.clear();  // Scene을 명시적으로 해제
+      }
+  
+      if (audioContextRef.current) {
+        audioContextRef.current.close();  // AudioContext 해제
+      }
+  
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);  // Blob URL 해제
+      }
+    };
+  
+    window.addEventListener('beforeunload', handleUnload);
+  
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      handleUnload();  // 컴포넌트 언마운트 시에도 동일하게 해제 처리
+    };
+  }, [textMeshes, blobUrl]);
+
+  useEffect(() => {
+    if (isReadyToRecord) {
+      startRecording();
+    }
+  }, [isReadyToRecord]);
+
+  useEffect(() => {
+    if (isRecordingDone) {
+      const animationInterval = setInterval(() => {
+        resetAndPlayAnimations();
+      }, 8750); //8.75초 이따 개선해야함
+
+      return () => clearInterval(animationInterval);
+    }
+  }, [isRecordingDone, resetAndPlayAnimations]);
+
+  if (!postcard) return <div>Loading...</div>;
+
+  const containerStyle = {
+    position: 'absolute',
+    top: '58px',
+    left: 0,
+    position: 'relative',
+    width: '100%',
+    aspectRatio: '9 / 16',
+    maxHeight: 'calc(100vh - 178px)',
+    overflow: 'hidden',
+  };
+
+  const canvasStyle = {
+    position: 'fixed',
+    top: '18px',
+    left: 0,
+    width: '100%',
+    height: '100%',
+    transform: `scale(${containerRef.current ? containerRef.current.clientWidth / 1080 : 1}, ${containerRef.current ? containerRef.current.clientHeight / 1920 : 1})`,
+    transformOrigin: 'top left',
+  };
+
+  const recordReady = () => {
+    audioRef.current.load();
+    audioRef.current.oncanplaythrough = () => {
+      setIsReadyToRecord(true);
+    };
+    // audioRef.current.play();
+  };
 
   return (
     <div style={{ 
-      position: 'fixed',
       backgroundImage: `url('/static/stockimages/background_paper.png')`, 
-      width: '100%', 
-      height: 'auto', 
-      backgroundSize: 'cover',
+      width: '100vw', 
+      height: '100vh', 
       zIndex: '900',
-      overflow: 'hidden',
+      overflow: 'hidden' 
       }}>
-      {isInvitationVisible && (
-        <div className={`invitation-container ${isInvitationVisible ? 'visible' : ''}`}>
-          <Invitation onBack={handleBackClick} /> {/* Invitation 컴포넌트 및 뒤로가기 핸들러 */}
-        </div>
-      )}
+      {isInvitationVisible && <Credit onBack={handleBackClick} />}
 
-    {isCreditVisible && (
-        <div className={`invitation-container ${isCreditVisible ? 'visible' : ''}`}>
-          <Credit onBack={handleBackClick} /> {/* Invitation 컴포넌트 및 뒤로가기 핸들러 */}
-        </div>
-      )}
-     
-      <audio ref={audioRef} src="/static/test.mp3" loop></audio>
       <header
         style={{
           display: 'flex',
-          justifyContent: 'space-between', // 아이콘은 양쪽 끝으로, 텍스트는 가운데로
-          alignItems: 'center', // Vertically center all elements
+          justifyContent: 'space-between',
+          alignItems: 'center',
           width: '100%',
           backgroundColor: 'transparent',
           height: '58px',
@@ -432,12 +558,10 @@ const PostcardView = () => {
           left: '0',
         }}
       >
-        {/* Left Home Icon */}
         <div onClick={() => navigate('/home')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', paddingLeft: '20px' }}>
           <img src="/static/icons/home.png" alt="home" style={{ width: '24px', height: '24px' }} />
         </div>
 
-        {/* Center Text */}
         <div
           style={{
             textAlign: 'center',
@@ -452,30 +576,17 @@ const PostcardView = () => {
           {postcard?.name ? `'${postcard.name}'의 춤사위` : '춤사위'}
         </div>
 
-        {/* Right Menu Icon */}
         <div onClick={handleMenuClick} style={{ cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', paddingRight: '20px' }}>
           <img src="/static/icons/hamburger.png" alt="menu" id="menu-button" />
         </div>
       </header>
 
+      <audio ref={audioRef} src="/static/test.mp3" loop></audio>
 
-      <canvas
-        ref={canvasRef}
-        style={{
-          position: 'relative', // 상대적 위치로 설정하여 헤더 아래에 표시
-          top:'0px',
-          left: '0',
+      <div ref={containerRef} style={containerStyle}>
+        <canvas ref={canvasRef} style={canvasStyle} />
+      </div>
 
-          aspectRatio: '9 / 16',
-          // width: '70%',
-          height: 'calc(70vw * (16 / 9))',
-          maxHeight: 'calc(100vh - 178px)', // 화면 높이를 넘지 않도록 설정
-          overflow: 'hidden',
-          zIndex: '900', // 헤더보다 아래에 표시되도록 설정
-          transform: 'translateY(-5%)',
-        }}
-      />
-      {/* Promotion Image */}
       <img
         src="/static/stockimages/promotion.png"
         alt="Promotion"
@@ -488,7 +599,7 @@ const PostcardView = () => {
           zIndex: '1100',
         }}
       />
-
+      
       <div
         id="upbuttons"
         style={{
@@ -508,16 +619,16 @@ const PostcardView = () => {
           boxSizing: 'border-box',
         }}
       >
-      <button onClick={goToCreditPage}>
-        Go to Credit Page
-      </button>
-
+        <button className="upbutton" onClick={recordReady}>
+          녹화하기
+        </button>
         <button className="upbutton" onClick={downloadVideo} disabled={!blobUrl}>
-          {isRecording ? '공유 영상 준비 중...' : '영상 저장하기'}
+          {!isRecordingDone ? '공유 영상 준비 중...' : '영상 저장하기'}
         </button>
         <button className="upbutton" onClick={shareVideo} disabled={!blobUrl}>
-          {isRecording ? '공유 영상 준비 중...' : '영상 공유하기'}
+          {!isRecordingDone ? '공유 영상 준비 중...' : '영상 공유하기'}
         </button>
+
       </div>
     </div>
   );
