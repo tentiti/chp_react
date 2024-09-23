@@ -97,7 +97,7 @@ const Credit = () => {
     const recorder = new RecordRTC(combinedStream, {
       type: 'video',
       mimeType: 'video/mp4',
-      bitsPerSecond: 4000000,
+      bitsPerSecond: 1000000,
       video: {
         codec: 'H264',  
         width: 1920, // 해상도 설정 가능
