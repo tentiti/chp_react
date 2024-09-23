@@ -308,39 +308,37 @@ const PostcardView = () => {
 
       sceneRef.current = new THREE.Scene();
 
+      // 중복 제거를 위한 Set
+      const addedCategories = new Set();
 
-      // sceneRef.current.add(sceneData.mixer);  // SceneContext에서 가져온 모델 추가
-      // mixer에 있는 모델과 애니메이션을 처리하여 씬에 추가
       if (Array.isArray(sceneData.mixer.current) && sceneData.mixer.current.length > 0) {
-        const firstModelData = sceneData.mixer.current[0];  // 첫 번째 요소 가져오기
-        
-        const { model, mixer, action } = firstModelData;
-      
-        if (model instanceof THREE.Object3D) {
-          if (!model.name) {
-            model.name = `model_${THREE.MathUtils.generateUUID()}`;
-          }
-      
-          if (!sceneRef.current.getObjectByName(model.name)) {
-            alert("ㅇㅇㅇ", model.name);  // 확인용 alert
-            sceneRef.current.add(model);
-          }
-          
-          model.renderOrder = 3;  // 모델 렌더링 순서 설정
-        }
-      
-        if (mixer && action) {
-          alert('animation of');
-          action.reset(); // 애니메이션 리셋
-          action.play();  // 애니메이션 실행
-        }
-      }
-      else {
-        console.warn('sceneData.mixer is not an array:', sceneData.mixer);
-      }
-      
+        sceneData.mixer.current.forEach((modelData) => {
+          const { model, mixer, action, categoryName } = modelData;
 
-  
+          // categoryName이 중복되지 않은 경우에만 모델 추가
+          if (!addedCategories.has(categoryName)) {
+            if (model instanceof THREE.Object3D) {
+              if (!model.name) {
+                model.name = `model_${categoryName}`;
+              }
+
+              if (!sceneRef.current.getObjectByName(model.name)) {
+                sceneRef.current.add(model);
+              }
+            }
+
+            if (mixer && action) {
+              action.setEffectiveTimeScale(1);  // 기본 타임스케일 설정
+              action.reset();  // 애니메이션 리셋
+              action.play();   // 애니메이션 재생
+            }
+
+            addedCategories.add(categoryName);
+          }
+        });
+      } else {
+        console.warn('sceneData.mixer is not an array or it is empty');
+      }
 
       const width = 1080;
       const height = 1920;
@@ -348,8 +346,11 @@ const PostcardView = () => {
       rendererRef.current = new THREE.WebGLRenderer({ 
         canvas: canvasRef.current, 
         alpha: true, 
-        antialias: false,  
-        powerPreference: "high-performance"  });
+        antialias: true,  
+        powerPreference: "high-performance",
+        preserveDrawingBuffer: true,
+      });
+
       rendererRef.current.setSize(width, height);
       rendererRef.current.setClearColor(0x000000, 0);
       rendererRef.current.autoClear = false;
@@ -364,7 +365,7 @@ const PostcardView = () => {
         0.01,
         1000
       );
-      cameraRef.current.position.set(0, 0, 4);
+      cameraRef.current.position.set(0, 0, 10);
       cameraRef.current.lookAt(0, 0, 0);
       cameraRef.current.updateProjectionMatrix(); // 프로젝션 매트릭스
 
@@ -404,7 +405,7 @@ const PostcardView = () => {
         bgMesh.material.depthWrite = false;
         bgMesh.renderOrder = -1; // 낮은 값일수록 먼저 렌더링됨
         bgMesh.name="text_bg"
-        bgMesh.position.z = -2;
+        bgMesh.position.z = 9;
         console.log('bgMesh');
         sceneRef.current.add(bgMesh);
       });
