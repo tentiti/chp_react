@@ -953,9 +953,9 @@ const clearExpressionCanvas = useCallback(() => {
       cameraRef.current.updateProjectionMatrix();
     } else {
       // 다른 카테고리로 돌아갈 때 카메라 위치와 줌을 원래대로 되돌림
-      cameraRef.current.position.set(0, 3, 3);  // 카메라 위치
-      cameraRef.current.lookAt(new THREE.Vector3(0, 3, 3));  // 바라볼 좌표 설정
-      cameraRef.current.zoom = 0.6;  // 기본 줌
+      cameraRef.current.position.set(0, 2.3, 3);  // 카메라 위치
+      cameraRef.current.lookAt(new THREE.Vector3(0, 2.3, 3));  // 바라볼 좌표 설정
+      cameraRef.current.zoom = 0.5;  // 기본 줌
       cameraRef.current.updateProjectionMatrix();
     }
   }, [selectedCategory]);
@@ -1071,8 +1071,6 @@ const clearExpressionCanvas = useCallback(() => {
   <div
     id="oversize"
     style={{     
-      width: isFixedSize ? '390px' : '100vw',
-      height: isFixedSize ? '780px' : 'var(--viewport-height)', // 동적으로 계산된 높이 사용
       overflow: 'hidden',
     }}
     
@@ -1167,6 +1165,7 @@ const clearExpressionCanvas = useCallback(() => {
       style={{
         position: "relative",
         top: "58px",
+        width: "100%",
         height: "calc(100% - 58px)",
         display: "flex",
         flexDirection: "column",
@@ -1515,7 +1514,7 @@ const clearExpressionCanvas = useCallback(() => {
                     // overflow: "hidden",
                     // transform: "scale(2)",
                     left: "calc(50% - 220px)",
-                    top: "calc(50% - 270px)",
+                    top: "calc(50% - 240px)",
                     border: "10px solid red",
                   }}
                   // 마우스 이벤트
