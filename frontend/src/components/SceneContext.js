@@ -16,7 +16,7 @@ export const SceneProvider = ({ children }) => {
     // console.log('Scene:', newSceneData.scene);
     // console.log('Camera:',  newSceneData.camera);
     // console.log('Renderer:',  newSceneData.renderer);
-    // console.log('Mixer:',  newSceneData.mixer);
+    console.log('Mixer Added:',  newSceneData.mixer);
 
   };
 
