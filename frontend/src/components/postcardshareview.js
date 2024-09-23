@@ -15,8 +15,8 @@ const backgrounds = [
 
 const modelPositions = [
   { x: 16.75, y: 31.5, width: 36.75},
-  { x: 40.25, y: 27.4, width: 36.75},
-  { x: 45.25, y: 25, width: 36.75},
+  { x: 33.5, y: 26.5, width: 36.75},
+  { x: 42.25, y: 22, width: 36.75},
 ];
 
 const PostcardShareView = () => {
@@ -67,38 +67,35 @@ const PostcardShareView = () => {
   }, [id]);
 
   const handlePlayAudioAndRestartGIF = () => {
-    // Append a unique timestamp to force the browser to reload the GIF
-    const newGifSrc = `/api/uploads/${postcard.gif_name}?t=${new Date().getTime()}`;
+    // Generate a new unique timestamp
+    const timestamp = new Date().getTime();
     
-    // Restart GIF by updating the gifKey and GIF source with cache busting
-    setGifKey(prevKey => prevKey + 1);
-    
-    // Find the GIF element and change its src attribute with the new URL
-    const gifElement = document.querySelector(`#gifElement`);
+    // Find the GIF element
+    const gifElement = document.querySelector('#gifElement');
     
     if (gifElement) {
-      // Temporarily set the GIF src to an empty string to force reload
+      // Set the src to an empty string to stop the current animation
       gifElement.src = '';
-      // alert('음악과 함께 춤추기를 시작합니다.');
-  
-      // // Add a slight delay before updating the GIF source
-      // setTimeout(() => {
-      //   gifElement.src = newGifSrc;
-      // }, 100); // A small delay to ensure the browser processes the change
+      
+      // Force a reflow
+      void gifElement.offsetWidth;
+      
+      // Set the new src with the timestamp to force a reload
+      gifElement.src = `/api/uploads/${postcard.gif_name}?t=${timestamp}`;
     }
     
-    // Play the audio after resetting the GIF
+    // Play the audio
     if (audioRef.current) {
-      audioRef.current.currentTime = 0; // Reset the audio to the start
+      audioRef.current.currentTime = 0;
       audioRef.current.play().catch(err => {
         console.error("Audio playback failed:", err);
       });
     }
+    
+    // Update the state to trigger a re-render
+    setGifKey(prevKey => prevKey + 1);
   };
   
-  
-  
-
   if (!postcard) {
     return <div>Loading...</div>;
   }
@@ -191,9 +188,9 @@ const PostcardShareView = () => {
               overflow: 'hidden',
 
               zIndex: '900',
-              top: `calc(${modelPositions[postcard.number-1].y}% + 0px)`,
-              left: `calc(${modelPositions[postcard.number-1].x}% + 0px)`,
-              width: `calc(${modelPositions[postcard.number-1].width}% + 0px)`,
+              top: `calc(${modelPositions[postcard.number-1].y}% - 5%)`,
+              left: `calc(${modelPositions[postcard.number-1].x}% + 1%)`,
+              width: `calc(${modelPositions[postcard.number-1].width}% + 7%)`,
               height:'auto',
             }}
           />

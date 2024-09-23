@@ -14,9 +14,9 @@ const backgrounds = [
 ];
 
 const modelPositions = [
-    { x: 67, y: 65, width: 220, height: 220 },
-    { x: 170, y: 50, width: 200, height: 220 },
-    { x: 220, y:70, width: 180, height: 220 },
+    { x: 32, y: 131, width: 220, height: 220 },
+    { x: 145, y: 83, width: 220, height: 220 },
+    { x: 200, y: 40, width: 220, height: 220 },
 ];
 
 const descriptions = [
@@ -215,22 +215,19 @@ const PlaceSelection = () => {
                     {/* 새 이미지 */}
 
                     {videoFiles.map((file, index) => (
-                        <img key={index} src={file} alt={`Frame ${index}`} />
-                    ))}
-
-                    {gifUrl && (
                         <img
-                            src={`/api/uploads/${gifUrl}`}
+                            key={index}
+                            src={file}
                             alt="Generated Image"
                             style={{
                                 position: 'absolute',
                                 top: `${currentModelPosition.y / 400 * 80}%`,
                                 left: `${currentModelPosition.x / 500 * 100}%`,
-                                width: `${currentModelPosition.width / 400 * 120}%`,
+                                width: `${currentModelPosition.width / 400 * 108}%`,
                                 aspectRatio: '1 / 1',
                             }}
                         />
-                    )}
+                    ))}
 
                 </div>
 

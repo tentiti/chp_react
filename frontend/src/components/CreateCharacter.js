@@ -509,11 +509,7 @@ const handleAssetSelection = (category, index) => {
       modelsRef.current.forEach(({ mixer }) => {
         mixer.timeScale = 1;  // 애니메이션 속도를 2배로
       });
-  
-      // 첫 번째 프레임을 PNG로 저장 (선택 사항)
-      hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
-      const pngBlob = canvas.toDataURL('image/png');
-      addVideoFile(pngBlob);  // VideoContext에 첫 프레임 저장
+
   
       // GIF 렌더링이 끝난 후 처리
       // gif.on('finished', async (blob) => {
@@ -553,6 +549,14 @@ const handleAssetSelection = (category, index) => {
   
         // GIF에 프레임 추가 (24fps로 보이도록 딜레이 설정)
         gif.addFrame(ctx, { copy: true, delay: 1000 / originalFps });
+
+        if (frameCount === 0) {
+                // 첫 번째 프레임을 PNG로 저장 (선택 사항)
+          hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
+          const pngBlob = canvas.toDataURL('image/png');
+          console.log("First frame as PNG:", pngBlob);
+          addVideoFile(pngBlob);  // VideoContext에 첫 프레임 저장
+        }
   
         frameCount++;
         delta += frameDuration;
@@ -949,8 +953,8 @@ const clearExpressionCanvas = useCallback(() => {
       cameraRef.current.updateProjectionMatrix();
     } else {
       // 다른 카테고리로 돌아갈 때 카메라 위치와 줌을 원래대로 되돌림
-      cameraRef.current.position.set(0, 2.5, 3);  // 카메라 위치
-      cameraRef.current.lookAt(new THREE.Vector3(0, 2.5, 3));  // 바라볼 좌표 설정
+      cameraRef.current.position.set(0, 3, 3);  // 카메라 위치
+      cameraRef.current.lookAt(new THREE.Vector3(0, 3, 3));  // 바라볼 좌표 설정
       cameraRef.current.zoom = 0.6;  // 기본 줌
       cameraRef.current.updateProjectionMatrix();
     }

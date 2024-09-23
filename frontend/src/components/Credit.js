@@ -181,7 +181,7 @@ const Credit = () => {
       if (navigator.canShare({ files: [file] })) {
         try {
           await navigator.share({
-            title: 'Postcard Video',
+            title: `${postcard?.name}의 춤사위.mp4`,
             text: 'Check out this postcard video!',
             files: [file],
           });
@@ -210,6 +210,28 @@ const Credit = () => {
     };
     fetchPostcard();
   }, [id]);
+
+// 모델의 위치를 바꾸고 크기를 줄이는 함수
+  const moveAndScaleModels = (xOffset = 0, yOffset = 0, zOffset = 0, scaleFactor = 1) => {
+    if (!sceneRef.current) return;
+
+    // 씬에서 모든 모델(그룹 또는 메쉬)을 찾아 위치를 이동하고 크기를 조정합니다.
+    sceneRef.current.children.forEach((object) => {
+      if ((object.isMesh || object.isGroup) && !object.name.startsWith('text_')) {
+        // 위치 변경
+        object.position.x = xOffset;
+        object.position.y = yOffset;
+        object.position.z = zOffset;
+
+        // 크기 변경
+        object.scale.set(
+          object.scale.x = scaleFactor,
+          object.scale.y = scaleFactor,
+          object.scale.z = scaleFactor
+        );
+      }
+    });
+  };
 
   useEffect(() => {
     const initThreeJS = async () => {
@@ -249,6 +271,23 @@ const Credit = () => {
       cameraRef.current.position.set(0, 0, 5);
       cameraRef.current.lookAt(0, 0, 0);
 
+      //배경 넣기 전 옮기기
+      const modelPositionConfigs = {
+        1: { xOffset: -2, yOffset: -2.5, zOffset: 0, scaleFactor: 0.95 },  // postcard number 1
+        2: { xOffset: 1.5, yOffset: -0.2, zOffset: 0, scaleFactor: 0.95 },  // postcard number 2
+        3: { xOffset: 2.5, yOffset: 1.5, zOffset: 0, scaleFactor: 0.95 },  // postcard number 3
+        // Add more postcard numbers if needed
+      }; 
+      const { xOffset, yOffset, zOffset, scaleFactor } = modelPositionConfigs[postcard?.number] || {
+        xOffset: 0,
+        yOffset: 0,
+        zOffset: 0,
+        scaleFactor: 0.95,
+      }; // postcard number가 없을 경우 기본값 사용
+  
+      moveAndScaleModels(xOffset, yOffset, zOffset, scaleFactor); // 모델의 위치 이동 및 크기 조정
+  
+      // 배경 넣기 (배경 z 위치는 고정)
       //배경 넣기
       const loader = new THREE.TextureLoader();
       loader.load(`/static/stockimages/postcardfinal_${postcard?.number}.png`, (bgTexture) => {
@@ -263,7 +302,7 @@ const Credit = () => {
         bgMesh.material.depthTest = false;
         bgMesh.material.depthWrite = false;
         bgMesh.renderOrder = -1; // 낮은 값일수록 먼저 렌더링됨
-
+        bgMesh.name="text_bg"
         bgMesh.position.z = -1;
         sceneRef.current.add(bgMesh);
       });
@@ -319,7 +358,8 @@ const Credit = () => {
         const geometry = new THREE.PlaneGeometry(10 * aspectRatio, 10); // 크기를 더 작게 조정
         const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide });
         const mesh = new THREE.Mesh(geometry, material);
-      
+
+        mesh.name = `text_${text}`;
         mesh.position.set(x, y, 1);
         sceneRef.current.add(mesh);
 
@@ -329,6 +369,7 @@ const Credit = () => {
       };
       
       // Add texts
+      const trash = addText('..', 0, 0, 9, true);
       const commentMesh = addText(postcard.comment, 0, -12.2, 94, true);
       const timestampMesh = addText(postcard.timestamp, 0, -14.2, 60);
       const nameMesh = addText(postcard.name, 5., -15.8, 80);
@@ -360,6 +401,42 @@ const Credit = () => {
         if (mesh && mesh.material) mesh.material.dispose();
         if (mesh && mesh.parent) mesh.parent.remove(mesh);
       });
+  
+      // Three.js 관련 리소스 해제
+      if (sceneRef.current) {
+        sceneRef.current.traverse((object) => {
+          if (object.geometry) object.geometry.dispose();
+          if (object.material) {
+            if (object.material.map) object.material.map.dispose();
+            object.material.dispose();
+          }
+        });
+      }
+  
+      if (rendererRef.current) {
+        rendererRef.current.dispose();  // WebGL 컨텍스트 해제
+      }
+  
+      if (audioContextRef.current) {
+        audioContextRef.current.close();  // AudioContext 해제
+      }
+  
+      // RecordRTC 해제
+      if (recorderRef.current) {
+        recorderRef.current.destroy();
+        recorderRef.current = null;
+      }
+  
+      // Blob URL 해제
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
+  
+      // 씬 데이터, 카메라, 렌더러 및 오디오 관련 객체 초기화
+      sceneRef.current = null;
+      cameraRef.current = null;
+      rendererRef.current = null;
+      audioContextRef.current = null;
     };
   }, [sceneData, postcard]);
 
@@ -373,7 +450,6 @@ const Credit = () => {
 
   useEffect(() => {
     const handleUnload = () => {
-
       textMeshes.forEach((mesh) => {
         if (mesh) {
           if (mesh.geometry) mesh.geometry.dispose();
@@ -384,19 +460,19 @@ const Credit = () => {
       });
   
       if (rendererRef.current) {
-        rendererRef.current.dispose();
+        rendererRef.current.dispose();  // WebGL 컨텍스트 해제
       }
   
       if (sceneRef.current) {
-        sceneRef.current.clear();
+        sceneRef.current.clear();  // Scene을 명시적으로 해제
       }
   
       if (audioContextRef.current) {
-        audioContextRef.current.close();
+        audioContextRef.current.close();  // AudioContext 해제
       }
   
       if (blobUrl) {
-        URL.revokeObjectURL(blobUrl);
+        URL.revokeObjectURL(blobUrl);  // Blob URL 해제
       }
     };
   
@@ -404,6 +480,7 @@ const Credit = () => {
   
     return () => {
       window.removeEventListener('beforeunload', handleUnload);
+      handleUnload();  // 컴포넌트 언마운트 시에도 동일하게 해제 처리
     };
   }, [textMeshes, blobUrl]);
 

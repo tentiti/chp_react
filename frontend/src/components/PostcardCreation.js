@@ -4,17 +4,18 @@ import axios from 'axios';
 import Header from './Header';
 import './CreateCharacter.css';
 import Invitation from './Invitation';
+import { UseVideo } from './VideoContext';
 
 const modelPositions = [
-  { x: 20.85, y: 28.20, width: 45.79, height: 35.71 },
-  { x: 52.33, y: 19.17, width: 45.79, height: 35.71 },
-  { x: 61.06, y: 12.22, width: 45.79, height: 35.71 },
+  { x: 32, y: 131, width: 220, height: 220 },
+  { x: 145, y: 83, width: 220, height: 220 },
+  { x: 200, y: 40, width: 220, height: 220 },
 ];
-
 //동적인 글자크기
 
 
 const PostcardCreation = () => {
+  const { videoFiles } = UseVideo();
 
   const postcardRef = useRef(null); // Ref for postcard container
   const [fontSize, setFontSize] = useState('12px'); // State for font size
@@ -40,7 +41,7 @@ const PostcardCreation = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
-  const { selectedBackground, gifUrl, realgifUrl, videoFiles } = location.state || {};
+  const { selectedBackground, gifUrl, realgifUrl } = location.state || {};
 
   const [name, setName] = useState('');
   const [comment, setComment] = useState('');
@@ -142,19 +143,24 @@ const PostcardCreation = () => {
                   backgroundImage: `url('/static/stockimages/trans_bg${selectedBackground}.png')`
                 }}
               />
-              {gifUrl && currentModelPosition && (
-                <img
-                  src={`/api/uploads/${gifUrl}`}
-                  alt="Selected GIF"
-                  className="gif-overlay"
-                  style={{
-                    left: `${currentModelPosition.x}%`,
-                    top: `${currentModelPosition.y}%`,
-                    width: `${currentModelPosition.width}%`,
-                    height: `${currentModelPosition.height}%`,
-                  }}
-                />
-              )}
+
+                                  {/* 새 이미지 */}
+
+                  {videoFiles.map((file, index) => (
+                  <img
+                      key={index}
+                      src={file}
+                      alt="Generated Image"
+                      style={{
+                          position: 'absolute',
+                          top: `${currentModelPosition.y / 400 * 80 + 2}%`,
+                          left: `${currentModelPosition.x / 500 * 100 + 1}%`,
+                          width: `${currentModelPosition.width / 400 * 108}%`,
+                          aspectRatio: '1 / 1',
+                      }}
+                  />
+              ))}
+
             </div>
           )}
 
