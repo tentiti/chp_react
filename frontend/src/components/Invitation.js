@@ -21,7 +21,7 @@ function Invitation({ onBack, showbutton=false }) {
         width: '100%',
         height: '100%',
         transition: 'right 0.7s ease',
-        backgroundColor: 'transparent !important',
+        backgroundColor: '#412823 !important',
         overflow: 'hidden',
         zIndex: '999999',
       }}
@@ -34,7 +34,8 @@ function Invitation({ onBack, showbutton=false }) {
           left: 0,
           width: '100%',
           height: '100%',
-
+          backgroundColor: 'red !important',
+          overflow: 'hidden',
           // borderTopLeftRadius: '20px',
           zIndex: '999999 !important',
           opacity: 1,
@@ -44,7 +45,6 @@ function Invitation({ onBack, showbutton=false }) {
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          borderTopLeftRadius: '20px',
         }}></img>
       </div>
 

@@ -360,10 +360,11 @@ const handleAssetSelection = (category, index) => {
       rendererRef.currentoutputColorSpace = THREE.SRGBColorSpace;
 
       const canvasParent = canvasRef.current.parentNode;
+      console.log(window.innerWidth, window.innerHeight);
       // cameraRef.current = new THREE.PerspectiveCamera(10, 1, 0.1, 1000);
 
       // 캔버스 크기에 따라 orthographic 카메라 설정
-      const aspect = canvasParent.innerWidth / canvasParent.innerHeight;
+      const aspect = (canvasParent.innerWidth) / (canvasParent.innerHeight);
       const frustumSize = 5; // 카메라 시야 크기, 필요에 따라 조정
 
       cameraRef.current = new THREE.OrthographicCamera(
@@ -964,7 +965,7 @@ const clearExpressionCanvas = useCallback(() => {
   useEffect(() => {
     const handleResize = () => {
       if (canvasRef.current) {
-        const canvasParent = canvasRef.current.parentNode;
+        const canvasParent = canvasRef.current.parentNode.parentNode.parentNode;
   
         // 상태에 따른 controls의 최소 높이 계산 (기본값을 낮춤)
         let controlsHeight = 390; // 기본 최소 높이로 수정
@@ -974,28 +975,18 @@ const clearExpressionCanvas = useCallback(() => {
           controlsHeight = 460; // EXPRESSION 상태일 때
         }
   
-        // 전체 화면에서 controls 높이를 제외한 남은 부분을 canvas 영역으로 설정
-        let parentWidth = canvasParent.clientWidth;
-        let parentHeight = window.innerHeight - controlsHeight;
 
-        if (isFixedSize) {
-          // PC일 경우 canvas 크기를 고정
-          parentWidth = 390;
-          parentHeight = 780 - controlsHeight;
-          canvasRef.current.style.position = 'fixed';
-          canvasRef.current.style.top = '58px';
-        
-        }
   
         // 렌더러 크기 설정
-        rendererRef.current.setSize(parentWidth, parentHeight);
+        rendererRef.current.setSize(window.innerWidth, window.innerHeight - controlsHeight);
   
         // 캔버스 크기 설정
-        canvasRef.current.style.width = `${parentWidth}px`;
-        canvasRef.current.style.height = `${parentHeight}px`;
-  
+        canvasRef.current.style.width = `${window.innerWidth}px`;
+        canvasRef.current.style.height = `${window.innerHeight - controlsHeight}px`;
+        canvasRef.current.style.top = '58px';
+        canvasRef.current.style.left = '0';
         // 카메라 비율 업데이트
-        cameraRef.current.aspect = parentWidth / parentHeight;
+        cameraRef.current.aspect = window.innerWidth / (window.innerHeight - controlsHeight);
         cameraRef.current.updateProjectionMatrix();
 
         const controls = document.querySelector('.controls');
@@ -1185,6 +1176,7 @@ const clearExpressionCanvas = useCallback(() => {
         backgroundImage: `url('/static/stockimages/background_paper.png')`,
         backgroundSize: "cover",
         backgroundPosition: "center",
+        width: "100%",
         
       }}/>
       <canvas ref={hiddenCanvasRef} style={{ display: "none" }} />

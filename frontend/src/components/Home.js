@@ -312,8 +312,8 @@ function Home() {
                 aspectRatio: '1/1',
               }}>
                 <img
-                  // src={`/api/uploads/${postcard.png_name}?t=${new Date().getTime()}`} 
-                  src={`/api/uploads/${postcard.png_name}`} 
+                  src={`/api/uploads/${postcard.png_name}?t=${new Date().getTime()}`} 
+                  // src={`/api/uploads/${postcard.png_name}`} 
                   alt={`grid ${postcard.id}`}
                   onError={(e) => handleImageError(e, postcard.id)} 
                   onClick={() => window.location.href = `/postcardshareview/${postcard.id}`} 

@@ -308,6 +308,37 @@ const PostcardView = () => {
 
       sceneRef.current = new THREE.Scene();
 
+      const ambientLight1 = new THREE.AmbientLight(0xffffff, 1.0);
+      sceneRef.current.add(ambientLight1);
+
+      const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1.0);
+      directionalLight2.position.set(2, 2, 2);
+      sceneRef.current.add(directionalLight2);
+
+      // cameraRef.current.position.z = 5;
+
+        // AmbientLight (전체적으로 부드러운 조명)
+      const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+      sceneRef.current.add(ambientLight);
+
+      // 여러 개의 PointLight (다양한 위치에서 강한 조명)
+      const pointLight1 = new THREE.PointLight(0xffffff, 1, 100);
+      pointLight1.position.set(10, 10, 10);
+      sceneRef.current.add(pointLight1);
+
+      const pointLight2 = new THREE.PointLight(0xffffff, 1, 100);
+      pointLight2.position.set(-10, 10, 10);
+      sceneRef.current.add(pointLight2);
+
+      const pointLight3 = new THREE.PointLight(0xffffff, 1, 100);
+      pointLight3.position.set(0, -10, 10);
+      sceneRef.current.add(pointLight3);
+
+      // DirectionalLight (태양처럼 넓게 퍼지는 조명)
+      const directionalLight3 = new THREE.DirectionalLight(0xffffff, 1.0);
+      directionalLight3.position.set(5, 10, 5);
+      sceneRef.current.add(directionalLight3);
+
       // 중복 제거를 위한 Set
       const addedCategories = new Set();
 
@@ -315,26 +346,35 @@ const PostcardView = () => {
         sceneData.mixer.current.forEach((modelData) => {
           const { model, mixer, action, categoryName } = modelData;
 
-          // categoryName이 중복되지 않은 경우에만 모델 추가
-          if (!addedCategories.has(categoryName)) {
-            if (model instanceof THREE.Object3D) {
-              if (!model.name) {
-                model.name = `model_${categoryName}`;
-              }
-
-              if (!sceneRef.current.getObjectByName(model.name)) {
-                sceneRef.current.add(model);
-              }
-            }
-
-            if (mixer && action) {
-              action.setEffectiveTimeScale(1);  // 기본 타임스케일 설정
-              action.reset();  // 애니메이션 리셋
-              action.play();   // 애니메이션 재생
-            }
-
-            addedCategories.add(categoryName);
+      // categoryName이 중복되지 않은 경우에만 모델 추가
+      if (!addedCategories.has(categoryName)) {
+        if (model instanceof THREE.Object3D) {
+          if (!model.name) {
+            model.name = `model_${categoryName}`;
           }
+
+          // 모델의 텍스처 설정
+          model.traverse((child) => {
+            if (child.isMesh) {
+              if (child.material.map) {
+                child.material.needsUpdate = true;
+              }
+            }
+          });
+
+          // 모델을 씬에 추가
+          sceneRef.current.add(model);
+          console.log(`Added model: ${model.name}`);
+        }
+
+        if (mixer && action) {
+          action.setEffectiveTimeScale(1);  // 기본 타임스케일 설정
+          action.reset();  // 애니메이션 리셋
+          action.play();   // 애니메이션 재생
+        }
+
+        addedCategories.add(categoryName);
+      }
         });
       } else {
         console.warn('sceneData.mixer is not an array or it is empty');
@@ -347,13 +387,15 @@ const PostcardView = () => {
         canvas: canvasRef.current, 
         alpha: true, 
         antialias: true,  
-        powerPreference: "high-performance",
+        // powerPreference: "high-performance",
         preserveDrawingBuffer: true,
       });
 
       rendererRef.current.setSize(width, height);
       rendererRef.current.setClearColor(0x000000, 0);
-      rendererRef.current.autoClear = false;
+      rendererRef.current.autoClear = true;
+      rendererRef.currentoutputColorSpace = THREE.SRGBColorSpace;
+
 
 
       const frustumSize = 40;
@@ -362,8 +404,8 @@ const PostcardView = () => {
         (frustumSize * 1080) / 1920 / 2,
         frustumSize / 2,
         frustumSize / -2,
-        0.01,
-        1000
+        0.1,
+        10
       );
       cameraRef.current.position.set(0, 0, 10);
       cameraRef.current.lookAt(0, 0, 0);
@@ -372,8 +414,8 @@ const PostcardView = () => {
       //배경 넣기 전 옮기기
       const modelPositionConfigs = {
         1: { xOffset: -2, yOffset: -2.5, zOffset: 1, scaleFactor: 0.95 },  // postcard number 1
-        2: { xOffset: 1.5, yOffset: -0.2, zOffset: 1, scaleFactor: 0.95 },  // postcard number 2
-        3: { xOffset: 2.5, yOffset: 1.5, zOffset: 1, scaleFactor: 0.95 },  // postcard number 3
+        2: { xOffset: 1.5, yOffset: -0.2, zOffset: 0, scaleFactor: 0.95 },  // postcard number 2
+        3: { xOffset: 2.5, yOffset: 1.5, zOffset: 0, scaleFactor: 0.95 },  // postcard number 3
         // Add more postcard numbers if needed
       }; 
       const { xOffset, yOffset, zOffset, scaleFactor } = modelPositionConfigs[postcard?.number] || {
@@ -403,9 +445,9 @@ const PostcardView = () => {
         const bgMesh = new THREE.Mesh(new THREE.PlaneGeometry(frustumSize * (720 / 1280), frustumSize), bgMaterial);
         bgMesh.material.depthTest = false;
         bgMesh.material.depthWrite = false;
-        bgMesh.renderOrder = -1; // 낮은 값일수록 먼저 렌더링됨
+        bgMesh.renderOrder = 30; // 낮은 값일수록 먼저 렌더링됨
         bgMesh.name="text_bg"
-        bgMesh.position.z = 9;
+        bgMesh.position.z = 100;
         console.log('bgMesh');
         sceneRef.current.add(bgMesh);
       });

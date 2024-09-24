@@ -49,9 +49,8 @@ function App() {
     setShowSizeInfo((deviceType === 'tablet' || deviceType === 'desktop') && (width < 500 || height < 500));
 
     // 고정사이즈
-    setIsFixedSize((deviceType === 'tablet' || deviceType === 'desktop') && (width >= 700 && height >= 900));
+    setIsFixedSize((deviceType === 'tablet' || deviceType === 'desktop') && (width >= 500 && height >= 500));
     
-
     setIsResponsiveScale((deviceType === 'tablet' || deviceType === 'desktop') && (width >= 500 && height >= 500));
     setShowInstaInfo(checkInstagramBrowser()); // 인스타그램 브라우저 감지 후 상태 업데이트
     setShowKakaoInfo(checkKakaoBrowser()); // 카카오 브라우저 감지 후 상태 업데이트
@@ -72,8 +71,13 @@ function App() {
     );
   }
 
+
   return (
-    <div className={isFixedSize ? 'fixed-size-container' : ''}>
+      <div className={isFixedSize ? 'fixed-size-container' : ''}
+      style={{
+        transform: isFixedSize && window.innerHeight >= 900 ? ` translate(-50%, -50%) scale(1.1538)` : isFixedSize?  ` translate(-50%, -50%) scale(${window.innerHeight/780})` : ''
+      }}>
+
       {showSizeInfo ? (
         <div className="size-info-container">
           <img src="/static/stockimages/sizeinfo.png" alt="Size Information" className="size-info-image" />
@@ -100,7 +104,7 @@ function App() {
                 <Route path="/CreateCharacter" element={<CreateCharacter isFixedSize={isFixedSize} />} />
                 <Route path="/place-selection" element={<PlaceSelection />} />
                 <Route path="/postcardcreation" element={<PostcardCreation />} />
-                <Route path="/credit/" element={<Credit />} />
+                <Route path="/credit/:id" element={<Credit />} />
                 <Route path="/postcardshareview/:id" element={<PostcardShareView />} />
               </Routes>
             </Router>
