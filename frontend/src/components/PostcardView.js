@@ -181,7 +181,7 @@ const PostcardView = () => {
     setTimeout(() => {
       // alert('Attempting to stop recording');
       stopRecording();
-    }, 3750);  // 3.75초 후 녹화 종료 시도
+    }, 18750);  // 3.75초 후 녹화 종료 시도
   };
   
   const stopRecording = () => {
@@ -405,17 +405,17 @@ const PostcardView = () => {
         frustumSize / 2,
         frustumSize / -2,
         0.1,
-        10
+        20
       );
-      cameraRef.current.position.set(0, 0, 10);
+      cameraRef.current.position.set(0, 0, 11);
       cameraRef.current.lookAt(0, 0, 0);
       cameraRef.current.updateProjectionMatrix(); // 프로젝션 매트릭스
 
       //배경 넣기 전 옮기기
       const modelPositionConfigs = {
         1: { xOffset: -2, yOffset: -2.5, zOffset: 1, scaleFactor: 0.95 },  // postcard number 1
-        2: { xOffset: 1.5, yOffset: -0.2, zOffset: 0, scaleFactor: 0.95 },  // postcard number 2
-        3: { xOffset: 2.5, yOffset: 1.5, zOffset: 0, scaleFactor: 0.95 },  // postcard number 3
+        2: { xOffset: 1.5, yOffset: -0.2, zOffset: 1, scaleFactor: 0.95 },  // postcard number 2
+        3: { xOffset: 2.5, yOffset: 1.5, zOffset: 1, scaleFactor: 0.95 },  // postcard number 3
         // Add more postcard numbers if needed
       }; 
       const { xOffset, yOffset, zOffset, scaleFactor } = modelPositionConfigs[postcard?.number] || {
@@ -447,7 +447,8 @@ const PostcardView = () => {
         bgMesh.material.depthWrite = false;
         bgMesh.renderOrder = 30; // 낮은 값일수록 먼저 렌더링됨
         bgMesh.name="text_bg"
-        bgMesh.position.z = 100;
+        bgMesh.categoryName="background"
+        bgMesh.position.z = 10;
         console.log('bgMesh');
         sceneRef.current.add(bgMesh);
       });
@@ -573,19 +574,22 @@ const PostcardView = () => {
 
   const animate = useCallback(() => {
     if (!sceneRef.current || !cameraRef.current || !rendererRef.current) return;
-    // console.log('animate');
+    
     requestAnimationFrame(animate);
-
-    const delta = clock.getDelta();
-
-    // console.log(sceneData.mixer.current);
-
+  
+    let delta = clock.getDelta();
+  
+    // 24fps 기준으로 delta 값을 조정
+    const fps = 24;
+    delta = delta * (fps / 60);  // 60fps에서 24fps로 조정
+  
     sceneData.mixer.current.forEach(mixer => {
       mixer.mixer.update(delta);
     });
-
+  
     rendererRef.current.render(sceneRef.current, cameraRef.current);
   }, [sceneData.mixer, clock]);
+  
 
   
 
@@ -641,7 +645,7 @@ const PostcardView = () => {
     if (isRecordingDone) {
       const animationInterval = setInterval(() => {
         resetAndPlayAnimations();
-      }, 8750); //8.75초 이따 개선해야함
+      }, 18750); //8.75초 이따 개선해야함
 
       return () => clearInterval(animationInterval);
     }

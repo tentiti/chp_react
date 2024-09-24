@@ -981,8 +981,8 @@ const clearExpressionCanvas = useCallback(() => {
         rendererRef.current.setSize(window.innerWidth, window.innerHeight - controlsHeight);
   
         // 캔버스 크기 설정
-        canvasRef.current.style.width = `${window.innerWidth}px`;
-        canvasRef.current.style.height = `${window.innerHeight - controlsHeight}px`;
+        canvasRef.current.style.width = `${Math.min(window.innerWidth, 390)}px`;
+        canvasRef.current.style.height = `${Math.min(window.innerHeight, 780) - controlsHeight}px`;
         canvasRef.current.style.top = '58px';
         canvasRef.current.style.left = '0';
         // 카메라 비율 업데이트
