@@ -245,6 +245,17 @@ const handleAssetSelection = (category, index) => {
       if (item.categoryName === categoryName) {
         sceneRef.current.remove(item.model);
 
+        item.model.traverse((child) => {
+          if (child.isMesh) {
+              // Dispose of geometries and materials
+              if (child.geometry) child.geometry.dispose();
+              if (child.material) {
+                  // If the material has a texture, dispose of it
+                  if (child.material.map) child.material.map.dispose();
+                  child.material.dispose();
+              }
+          }
+      });
         
         return false;
       }
