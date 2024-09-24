@@ -269,24 +269,6 @@ const resetAndPlayAnimations = () => {
       const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
       sceneRef.current.add(ambientLight);
 
-      // 여러 개의 PointLight (다양한 위치에서 강한 조명)
-      const pointLight1 = new THREE.PointLight(0xffffff, 1, 100);
-      pointLight1.position.set(10, 10, 10);
-      sceneRef.current.add(pointLight1);
-
-      const pointLight2 = new THREE.PointLight(0xffffff, 1, 100);
-      pointLight2.position.set(-10, 10, 10);
-      sceneRef.current.add(pointLight2);
-
-      const pointLight3 = new THREE.PointLight(0xffffff, 1, 100);
-      pointLight3.position.set(0, -10, 10);
-      sceneRef.current.add(pointLight3);
-
-      // DirectionalLight (태양처럼 넓게 퍼지는 조명)
-      const directionalLight3 = new THREE.DirectionalLight(0xffffff, 1.0);
-      directionalLight3.position.set(5, 10, 5);
-      sceneRef.current.add(directionalLight3);
-
       // 중복 제거를 위한 Set
       const addedCategories = new Set();
 
@@ -316,10 +298,8 @@ const resetAndPlayAnimations = () => {
         }
 
         if (mixer && action) {
-          // alert('mixer');
           action.reset();  // 애니메이션 리셋
           action.stop();
-          // action.play();   // 애니메이션 재생
         }
 
         addedCategories.add(categoryName);
@@ -336,7 +316,7 @@ const resetAndPlayAnimations = () => {
         canvas: canvasRef.current, 
         alpha: true, 
         antialias: true,  
-        // powerPreference: "high-performance",
+        powerPreference: "high-performance",
         preserveDrawingBuffer: true,
       });
 
@@ -344,8 +324,6 @@ const resetAndPlayAnimations = () => {
       rendererRef.current.setClearColor(0x000000, 0);
       rendererRef.current.autoClear = true;
       rendererRef.currentoutputColorSpace = THREE.SRGBColorSpace;
-
-
 
       const frustumSize = 40;
       cameraRef.current = new THREE.OrthographicCamera(
@@ -376,11 +354,6 @@ const resetAndPlayAnimations = () => {
   
       moveAndScaleModels(xOffset, yOffset, zOffset, scaleFactor); // 모델의 위치 이동 및 크기 조정
       
-      // console.log('추가객체', sceneRef.current.children); // 씬에 추가된 객체를 확인
-      // console.log(rendererRef.current.domElement); // DOM element가 제대로 설정되어 있는지 확인
-
-
-      // 배경 넣기 (배경 z 위치는 고정)
       //배경 넣기
       const loader = new THREE.TextureLoader();
       loader.load(`/static/stockimages/postcardfinal_${postcard?.number}.png`, (bgTexture) => {
@@ -406,11 +379,11 @@ const resetAndPlayAnimations = () => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
-        canvas.width = 8096;
-        canvas.height = 8096;
+        canvas.width = 8192;
+        canvas.height = 4096;
 
         const fontSize = size * 3;
-        ctx.font = `bold ${fontSize}px Cafe24Simplehae`;
+        ctx.font = `bold ${fontSize*1}px Cafe24Simplehae`;
         ctx.fillStyle = 'rgba(65, 40, 35, 1)'; // 밝은 노란색으로 변경
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -447,16 +420,20 @@ const resetAndPlayAnimations = () => {
       
         const aspectRatio = canvas.width / canvas.height;
         const geometry = new THREE.PlaneGeometry(10 * aspectRatio, 10); // 크기를 더 작게 조정
-        const material = new THREE.MeshBasicMaterial({ map: texture, transparent: false, side: THREE.DoubleSide });
+        const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide });
         const mesh = new THREE.Mesh(geometry, material);
 
         mesh.name = `text_${text}`;
         if (breakLine && text.length <= maxLineLength) {
           y += 0.8;
         }
-        mesh.position.set(x, y, 1);
-        mesh.renderOrder = 4; // 높은 값일수록 나중에 렌더링됨
+        mesh.position.set(x, y, 5);
+        mesh.renderOrder = 2; // 높은 값일수록 나중에 렌더링됨
         sceneRef.current.add(mesh);
+
+        sceneRef.current.add(mesh); // 씬에 추가
+        console.log("Added text mesh:", mesh); // 추가 여부 확인용 로그
+
 
         console.log(text);
         

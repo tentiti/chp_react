@@ -29,6 +29,7 @@ const backgroundImages = [
 
 
 const PostcardCreation = () => {
+  const { videoFiles } = UseVideo();
   useEffect(() => {
     // 배경 이미지 프리로딩
     const backgroundImages = ['/static/stockimages/trans_bg1.png', '/static/stockimages/trans_bg2.png', '/static/stockimages/trans_bg3.png'];
@@ -46,7 +47,6 @@ const PostcardCreation = () => {
     preloadImages(allAssetsToPreload);
   }, [videoFiles]);
   
-  const { videoFiles } = UseVideo();
 
   const postcardRef = useRef(null); // Ref for postcard container
   const [fontSize, setFontSize] = useState('12px'); // State for font size
