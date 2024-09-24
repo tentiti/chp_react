@@ -73,9 +73,9 @@ const CreateCharacter = ({isFixedSize}) => {
 
   const [isDressSelected, setIsDressSelected] = useState(false); // 원피스가 선택되었는지 여부
   const canvasRef = useRef(null);
-  const hiddenCanvasRef = useRef(null);
+  // const hiddenCanvasRef = useRef(null);
   const rendererRef = useRef(null);
-  const hiddenRendererRef = useRef(null);
+  // const hiddenRendererRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
   const clockRef = useRef(new THREE.Clock());
@@ -224,9 +224,6 @@ const handleAssetSelection = (category, index) => {
         });
       });
     }
-
-    
-    
 
     // 원피스가 선택되었는지 여부 확인 및 하의 비활성화 및 제거
     if (categoryName === 'TOP' && ['19', '20', '21', '22', '23', '24'].some(num => modelPath.includes(num))) {
@@ -400,19 +397,19 @@ const handleAssetSelection = (category, index) => {
       
       rendererRef.current.setClearColor(0x000000, 0);
 
-      hiddenRendererRef.current = new THREE.WebGLRenderer({ 
-        antialias: true, 
-        canvas: hiddenCanvasRef.current, 
-        alpha: true,
-        preserveDrawingBuffer: true 
-      });
-      hiddenRendererRef.current.setSize(400, 400);
+      // hiddenRendererRef.current = new THREE.WebGLRenderer({ 
+      //   antialias: true, 
+      //   canvas: hiddenCanvasRef.current, 
+      //   alpha: true,
+      //   preserveDrawingBuffer: true 
+      // });
+      // hiddenRendererRef.current.setSize(400, 400);
 
         // 카메라 업데이트 후 정사각형 비율로 맞추기
       cameraRef.current.aspect = 1; // 정사각형 비율 (aspect 1:1)
       cameraRef.current.updateProjectionMatrix();
 
-      hiddenRendererRef.current.setClearColor(0x000000, 0);
+      // hiddenRendererRef.current.setClearColor(0x000000, 0);
 
       const ambientLight1 = new THREE.AmbientLight(0xffffff, 1.0);
       sceneRef.current.add(ambientLight1);
@@ -462,11 +459,11 @@ const handleAssetSelection = (category, index) => {
         rendererRef.current.render(sceneRef.current, cameraRef.current);
       }
     
-      if (hiddenRendererRef.current && sceneRef.current && cameraRef.current) {
-        hiddenRendererRef.current.clear();
-        hiddenRendererRef.current.setClearColor(0xffffff, 0);
-        hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
-      }
+      // if (hiddenRendererRef.current && sceneRef.current && cameraRef.current) {
+      //   hiddenRendererRef.current.clear();
+      //   hiddenRendererRef.current.setClearColor(0xffffff, 0);
+      //   hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
+      // }
     };
 
     animate();
@@ -538,16 +535,6 @@ const handleAssetSelection = (category, index) => {
         console.log('gif created');
         // 서버에 GIF 업로드
         let gifUploadUrl = await uploadGif(blob);
-        
-        // // Blob 데이터를 사용해 GIF 파일을 로컬에 다운로드
-        // const downloadUrl = URL.createObjectURL(blob);
-        // const a = document.createElement('a');
-        // a.href = downloadUrl;
-        // a.download = 'animation.gif'; // 파일명 지정
-        // document.body.appendChild(a);
-        // a.click(); // 다운로드 트리거
-        // document.body.removeChild(a); // 링크 제거
-        // URL.revokeObjectURL(downloadUrl); // 메모리 해제
       
         // 업로드 후 URL 반환
         resolve(gifUploadUrl);
@@ -983,9 +970,9 @@ const clearExpressionCanvas = useCallback(() => {
       if (canvasRef.current) {
 
         // 상태에 따른 controls의 최소 높이 계산 (기본값을 낮춤)
-        let controlsHeight = 390; // 기본 최소 높이로 수정
+        let controlsHeight = 370; // 기본 최소 높이로 수정
         if (selectedCategory === 'HEAD') {
-          controlsHeight = 450; // HEAD 상태일 때
+          controlsHeight = 430; // HEAD 상태일 때
         } else if (selectedCategory === 'EXPRESSION') {
           controlsHeight = 460; // EXPRESSION 상태일 때
         }
@@ -1193,7 +1180,7 @@ const clearExpressionCanvas = useCallback(() => {
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}/>
-      <canvas ref={hiddenCanvasRef} style={{ display: "none" }} />
+      {/* <canvas ref={hiddenCanvasRef} style={{ display: "none" }} /> */}
 
       <div className="controls" style={{
         left: 0,
