@@ -401,7 +401,7 @@ const resetAndPlayAnimations = () => {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
       
-        const maxLineLength = 38; // 줄 길이를 줄여 더 많은 줄 바꿈 유도
+        const maxLineLength = 35; // 줄 길이를 줄여 더 많은 줄 바꿈 유도
         const words = text.split(' ');
         const lines = [];
         let currentLine = '';
@@ -437,6 +437,9 @@ const resetAndPlayAnimations = () => {
         const mesh = new THREE.Mesh(geometry, material);
 
         mesh.name = `text_${text}`;
+        if (breakLine && text.length <= maxLineLength) {
+          y += 0.8;
+        }
         mesh.position.set(x, y, 1);
         mesh.renderOrder = 1; // 높은 값일수록 나중에 렌더링됨
         sceneRef.current.add(mesh);
@@ -449,7 +452,7 @@ const resetAndPlayAnimations = () => {
       // Add texts
       const commentMesh = addText(postcard.comment, 0, -12.2, 94, true);
       const timestampMesh = addText(postcard.timestamp, 0, -14.2, 60);
-      const nameMesh = addText(postcard.name, 5., -15.8, 80);
+      const nameMesh = addText(postcard.name, 6, -15.8, 80);
 
       setTextMeshes([commentMesh, timestampMesh, nameMesh]);
 
@@ -705,14 +708,14 @@ const resetAndPlayAnimations = () => {
           boxSizing: 'border-box',
         }}
       >
-        <button className="upbutton" onClick={recordReady}>
-          녹화하기
+        <button className="upbutton" onClick={recordReady}  disabled={isRecordingDone}>
+          {isRecordingDone? '춤사위 준비 완료' : isRecording? '춤사위 준비 중..' : '춤사위 만들기'}
         </button>
         <button className="upbutton" onClick={downloadVideo} disabled={!blobUrl}>
-          {!isRecordingDone ? '공유 영상 준비 중...' : '영상 저장하기'}
+          {!isRecordingDone ? '춤사위를 만들어 주세요' : '춤사위 저장하기'}
         </button>
         <button className="upbutton" onClick={shareVideo} disabled={!blobUrl}>
-          {!isRecordingDone ? '공유 영상 준비 중...' : '영상 공유하기'}
+          {!isRecordingDone ? '춤사위를 만들어 주세요' : '춤사위 공유하기'}
         </button>
 
       </div>

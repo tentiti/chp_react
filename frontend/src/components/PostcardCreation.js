@@ -402,8 +402,8 @@ const PostcardCreation = () => {
           
           outline: none;
           font-family: 'Cafe24Simplehae', sans-serif;
-          font-size: calc(1rem * 0.6);
-          line-height: calc(1rem * 1.66);
+          font-size: calc(1rem * 0.8);
+          line-height: calc(1rem * 1.86);
           font-weight: bold;
           color: #412823;
           resize: none;
