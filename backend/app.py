@@ -96,7 +96,7 @@ def upload_file():
     if file_ext.lower() == ".gif":
         try:
             gif = Image.open(file_path)
-            preselected_frames = [10, 50, 100, 150, 200, 250, 300, 350, 400, 449]
+            preselected_frames = [ 13, 48, 67, 90, 115, 161, 186, 261, 331, 362, 381, 398, 422]
 
             # 배열에서 랜덤하게 하나의 프레임 선택
             random_frame = random.choice(preselected_frames)
