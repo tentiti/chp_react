@@ -487,18 +487,18 @@ const handleAssetSelection = (category, index) => {
 
   const startGifRecording = () => {
     return new Promise((resolve) => {
-      rendererRef.current.setSize(200, 200);
+      rendererRef.current.setSize(400, 400);
 
       const canvas = document.createElement('canvas');
-      canvas.width = 200;
-      canvas.height = 200;
+      canvas.width = 400;
+      canvas.height = 400;
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
   
       const gif = new GIF({
         workers: 2,
         quality: 10,
-        width: 200,
-        height: 200,
+        width: 400,
+        height: 400,
         transparent: 'rgba(0,0,0,0)',
       });
   

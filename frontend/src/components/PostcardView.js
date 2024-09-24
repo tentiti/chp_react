@@ -406,8 +406,8 @@ const resetAndPlayAnimations = () => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
-        canvas.width = 2048;
-        canvas.height = 1024;
+        canvas.width = 8096;
+        canvas.height = 8096;
 
         const fontSize = size * 3;
         ctx.font = `bold ${fontSize}px Cafe24Simplehae`;
@@ -455,8 +455,7 @@ const resetAndPlayAnimations = () => {
           y += 0.8;
         }
         mesh.position.set(x, y, 1);
-        mesh.renderOrder = 1; // 높은 값일수록 나중에 렌더링됨
-        mesh.scale.set(2, 2, 1);
+        mesh.renderOrder = 4; // 높은 값일수록 나중에 렌더링됨
         sceneRef.current.add(mesh);
 
         console.log(text);
@@ -469,7 +468,7 @@ const resetAndPlayAnimations = () => {
       const timestampMesh = addText(postcard.timestamp, 0, -14.2, 60);
       const nameMesh = addText(postcard.name, 6, -15.8, 80);
 
-      // setTextMeshes([commentMesh, timestampMesh, nameMesh]);
+      setTextMeshes([commentMesh, timestampMesh, nameMesh]);
 
 
       animate(); // Start the animation loop
