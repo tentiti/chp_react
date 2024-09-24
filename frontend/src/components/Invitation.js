@@ -34,7 +34,7 @@ function Invitation({ onBack, showbutton=false }) {
           left: 0,
           width: '100%',
           height: '100%',
-          backgroundColor: 'red !important',
+          backgroundColor: '#red !important',
           overflow: 'hidden',
           // borderTopLeftRadius: '20px',
           zIndex: '999999 !important',

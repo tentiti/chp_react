@@ -974,12 +974,10 @@ const clearExpressionCanvas = useCallback(() => {
           controlsHeight = 460; // EXPRESSION 상태일 때
         }
 
-        let newHeight = Math.min(window.innerHeight, 780) - controlsHeight;
-        
-        if (window.innerHeight <= 780) {
-           newHeight *= (window.innerHeight / 780);
-        }
-        // 렌더러 크기 설정
+        let newHeight =780-controlsHeight;
+
+        // alert(newHeight); 
+
         rendererRef.current.setSize(window.innerWidth, newHeight);
   
         // 캔버스 크기 설정
@@ -1178,8 +1176,6 @@ const clearExpressionCanvas = useCallback(() => {
         backgroundImage: `url('/static/stockimages/background_paper.png')`,
         backgroundSize: "cover",
         backgroundPosition: "center",
-        width: "100%",
-        
       }}/>
       <canvas ref={hiddenCanvasRef} style={{ display: "none" }} />
 

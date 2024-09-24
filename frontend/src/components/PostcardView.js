@@ -12,7 +12,7 @@ const PostcardView = () => {
   const audioContextRef = useRef(null);
   const audioSourceRef = useRef(null);
   const audioRef = useRef(null);
-  
+
 
   //오디오 관련 코드
   const [audioContext, setAudioContext] = useState(null);
@@ -60,74 +60,19 @@ const PostcardView = () => {
 
   // Clock 생성
   const clock = new THREE.Clock();
-  const resetAndPlayAnimations = () => {
-    const models = sceneData.mixer.current;  // modelsRef.current를 가져옴
-  
-    if (!models || models.length === 0) {
-      console.error("No models found");
-      return;
-    }
-  
-    models.forEach((modelData, index) => {
-      // console.log(`Processing model ${index}:`, modelData);
-  
-      const { mixer, action } = modelData;
-  
-      if (mixer && action) {
-        console.log(`Resetting and playing animation for model ${index}`);
-        action.reset();  // 애니메이션을 처음으로 리셋
-        action.play();   // 애니메이션을 재시작
-        mixer.timescale=0.8;
-        // action.setPlaybackRate(0.8);  // 재생 속도를 1로 설정
-      } else {
-        console.warn(`No mixer or action found for model ${index}`);
-      }
-    });
-  };
-  
 
-  useEffect(() => {
-    if (sceneData.mixer[0]) {
-      resetAndPlayAnimations();
-    }
-  }, [sceneData.mixer, resetAndPlayAnimations]);
+const resetAndPlayAnimations = () => {
+  sceneData.mixer.current.forEach((modelData) => {
+    const { model, mixer, action, categoryName } = modelData;
 
-  const playAnimations = () => {
-    const models = sceneData.mixer.current;
+    action.reset();  // 애니메이션 리셋
+    action.stop();
+    action.play();   // 애니메이션 재생
+  }); // 이 부분에서 괄호를 닫아야 합니다.
   
-    if (!models || models.length === 0) {
-      console.error("No models found");
-      return;
-    }
-  
-    models.forEach((modelData, index) => {
-      const { mixer, action } = modelData;
-  
-      if (mixer && action) {
-        console.log(`Playing animation for model ${index}`);
-        action.play(); // 애니메이션을 즉시 시작
-        mixer.timescale = 0.8;  // 타임 스케일을 1로 설정
-      } else {
-        console.warn(`No mixer or action found for model ${index}`);
-      }
-    });
-  };
-  
-  // 모델이 로드된 후, 즉시 애니메이션 실행
-  useEffect(() => {
-    // sceneData.mixer가 정의되었는지 확인
-    if (sceneData && sceneData.mixer && sceneData.mixer.length > 0) {
-      console.log("sceneData.mixer: ", sceneData.mixer);
-      
-      // mixer[0]이 정의되었는지 확인 후 playAnimations 호출
-      if (sceneData.mixer[0]) {
-        alert('playAnimations');
-        playAnimations(); // 모델 로딩 후 애니메이션 실행
-      }
-    } else {
-      console.log("sceneData.mixer is not ready yet.");
-    }
-  }, [sceneData.mixer]);
+  // alert('resetAndPlayAnimations');
+};
+
     
   
 
@@ -166,12 +111,12 @@ const PostcardView = () => {
       type: 'video',
       mimeType: 'video/mp4',
       bitsPerSecond: 8000000,
-      // video: {
-      //   codec: 'H264',  
-      //   width: 1920, // 해상도 설정 가능
-      //   height: 1080,
-      //   frameRate: 30 // iPhone에서 호환되는 프레임 레이트
-      // },
+      video: {
+        codec: 'H264',  
+        width: 1920, // 해상도 설정 가능
+        height: 1080,
+        frameRate: 30 // iPhone에서 호환되는 프레임 레이트
+      },
     });
 
 
@@ -202,19 +147,6 @@ const PostcardView = () => {
       setIsRecordingDone(true); // 녹화 완료 상태 설정
     });
   };
-
-    // 녹화 종료 후 애니메이션 반복 재생 설정
-    useEffect(() => {
-      if (isRecordingDone) {
-        resetAndPlayAnimations();  // 녹화가 끝난 즉시 애니메이션 재생
-  
-        const animationInterval = setInterval(() => {
-          resetAndPlayAnimations();  // 18.75초마다 애니메이션 재실행
-        }, 18750);
-  
-        return () => clearInterval(animationInterval);  // 컴포넌트 언마운트 시 인터벌 정리
-      }
-    }, [isRecordingDone]);
   
 
   const downloadVideo = () => {
@@ -370,9 +302,10 @@ const PostcardView = () => {
         }
 
         if (mixer && action) {
-          action.setEffectiveTimeScale(1);  // 기본 타임스케일 설정
+          // alert('mixer');
           action.reset();  // 애니메이션 리셋
-          action.play();   // 애니메이션 재생
+          action.stop();
+          // action.play();   // 애니메이션 재생
         }
 
         addedCategories.add(categoryName);
@@ -572,7 +505,8 @@ const PostcardView = () => {
       rendererRef.current = null;
       audioContextRef.current = null;
     };
-  },  [sceneData.scene, sceneData.mixer, postcard]);
+  },  [sceneData.scene, sceneData.mixer, postcard, canvasRef.current]);
+
 
   const animate = useCallback(() => {
     if (!sceneRef.current || !cameraRef.current || !rendererRef.current) return;
@@ -586,7 +520,7 @@ const PostcardView = () => {
     delta = delta * (fps / 60);  // 60fps에서 24fps로 조정
   
     sceneData.mixer.current.forEach(mixer => {
-      mixer.mixer.update(delta);
+      // mixer.mixer.update(0);
     });
   
     rendererRef.current.render(sceneRef.current, cameraRef.current);
