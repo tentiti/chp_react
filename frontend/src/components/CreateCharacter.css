@@ -296,14 +296,11 @@ button {
   top: 58px;
   left: 0px;
 
-  /* background-color: rgba(255, 255, 0, 0.5); */
-  /* border: 1px solid black; */
   box-sizing: border-box;
 
   background-image: "/static/stockimages/background_paper.png";
   background-size: cover;
   z-index: 1000;
-  overflow: hidden !important;
 }
 
 .controls {

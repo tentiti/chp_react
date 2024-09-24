@@ -973,17 +973,22 @@ const clearExpressionCanvas = useCallback(() => {
         } else if (selectedCategory === 'EXPRESSION') {
           controlsHeight = 460; // EXPRESSION 상태일 때
         }
-  
+
+        let newHeight = Math.min(window.innerHeight, 780) - controlsHeight;
+        
+        if (window.innerHeight <= 780) {
+           newHeight *= (window.innerHeight / 780);
+        }
         // 렌더러 크기 설정
-        rendererRef.current.setSize(window.innerWidth, window.innerHeight - controlsHeight);
+        rendererRef.current.setSize(window.innerWidth, newHeight);
   
         // 캔버스 크기 설정
         canvasRef.current.style.width = `${Math.min(window.innerWidth, 390)}px`;
-        canvasRef.current.style.height = `${Math.max(window.innerHeight, 780) - controlsHeight}px`;
+        canvasRef.current.style.height = `${newHeight}px`;
         canvasRef.current.style.top = '58px';
         canvasRef.current.style.left = '0';
         // 카메라 비율 업데이트
-        cameraRef.current.aspect = window.innerWidth / (window.innerHeight - controlsHeight);
+        cameraRef.current.aspect = window.innerWidth / newHeight;
         cameraRef.current.updateProjectionMatrix();
 
         const controls = document.querySelector('.controls');

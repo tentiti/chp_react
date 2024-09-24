@@ -9,7 +9,7 @@ import PostcardView from './components/PostcardView';
 import PostcardShareView from './components/PostcardShareView';
 import Credit from './components/Credit';
 import { VideoProvider } from './components/VideoContext';
-import { SceneProvider } from './components/SceneContext'; // SceneProvider import
+import { SceneProvider } from './components/SceneContext'; 
 
 import './App.css';
 
@@ -17,9 +17,10 @@ function App() {
   const [isFixedSize, setIsFixedSize] = useState(false);
   const [showSizeInfo, setShowSizeInfo] = useState(false);
   const [isResponsiveScale, setIsResponsiveScale] = useState(false);
-  const [showInstaInfo, setShowInstaInfo] = useState(false); // 추가된 상태
-  const [showKakaoInfo, setShowKakaoInfo] = useState(false); // 추가된 상태 
+  const [showInstaInfo, setShowInstaInfo] = useState(false);
+  const [showKakaoInfo, setShowKakaoInfo] = useState(false); 
   const [isSizeChecked, setIsSizeChecked] = useState(false);
+  const [scaleStyle, setScaleStyle] = useState({}); // 스케일링 상태 추가
 
   const getDeviceType = () => {
     const userAgent = navigator.userAgent.toLowerCase();
@@ -38,30 +39,41 @@ function App() {
     return userAgent.includes("Kakao");
   };
 
-  const checkWindowSize = useCallback(() => {  // useCallback to memoize the function
+  const checkWindowSize = useCallback(() => {
     const width = window.innerWidth;
     const height = window.innerHeight;
     const deviceType = getDeviceType();
 
     console.log(`Width: ${width}, Height: ${height}, Device Type: ${deviceType}`);
 
-    // 축소안내
     setShowSizeInfo((deviceType === 'tablet' || deviceType === 'desktop') && (width < 500 || height < 500));
-
-    // 고정사이즈
     setIsFixedSize((deviceType === 'tablet' || deviceType === 'desktop') && (width >= 500 && height >= 500));
-    
     setIsResponsiveScale((deviceType === 'tablet' || deviceType === 'desktop') && (width >= 500 && height >= 500));
-    setShowInstaInfo(checkInstagramBrowser()); // 인스타그램 브라우저 감지 후 상태 업데이트
-    setShowKakaoInfo(checkKakaoBrowser()); // 카카오 브라우저 감지 후 상태 업데이트
+    setShowInstaInfo(checkInstagramBrowser());
+    setShowKakaoInfo(checkKakaoBrowser());
     setIsSizeChecked(true);
-  }, []);  // No dependencies for now
+
+    // 스케일링 적용 상태 업데이트
+    if (deviceType === 'tablet' || deviceType === 'desktop') {
+      if (height >= 900) {
+        setScaleStyle({
+          transform: 'translate(-50%, -50%) scale(1.1538)',
+        });
+      } else {
+        setScaleStyle({
+          transform: `translate(-50%, -50%) scale(${height / 780})`,
+        });
+      }
+    } else {
+      setScaleStyle({});
+    }
+  }, []);
 
   useEffect(() => {
     checkWindowSize();
     window.addEventListener('resize', checkWindowSize);
     return () => window.removeEventListener('resize', checkWindowSize);
-  }, [checkWindowSize]);  // Dependency added
+  }, [checkWindowSize]);
 
   if (!isSizeChecked) {
     return (
@@ -71,27 +83,24 @@ function App() {
     );
   }
 
-
   return (
-      <div className={isFixedSize ? 'fixed-size-container' : ''}
-      style={{
-        transform: isFixedSize && window.innerHeight >= 900 ? ` translate(-50%, -50%) scale(1.1538)` : isFixedSize?  ` translate(-50%, -50%) scale(${window.innerHeight/780})` : ''
-      }}>
-
+    <div 
+      className={isFixedSize ? 'fixed-size-container' : ''}
+      style={scaleStyle} // 스타일 상태로 적용
+    >
       {showSizeInfo ? (
         <div className="size-info-container">
           <img src="/static/stockimages/sizeinfo.png" alt="Size Information" className="size-info-image" />
         </div>
-      ) : showInstaInfo ? ( // 인스타그램 안내 정보 추가
+      ) : showInstaInfo ? (
         <div className="size-info-container">
           <img src="/static/stockimages/instainfo.png" alt="Instagram Browser Information" className="size-info-image" />
         </div>
-      ) : showKakaoInfo ? ( // 카카오 안내 정보 추가
+      ) : showKakaoInfo ? (
         <div className="size-info-container">
           <img src="/static/stockimages/kakaoinfo.png" alt="Kakao Browser Information" className="size-info-image" />
         </div> 
       ) : (
-        
         <SceneProvider>
           <VideoProvider>
             <Router>
