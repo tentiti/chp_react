@@ -965,8 +965,7 @@ const clearExpressionCanvas = useCallback(() => {
   useEffect(() => {
     const handleResize = () => {
       if (canvasRef.current) {
-        const canvasParent = canvasRef.current.parentNode.parentNode.parentNode;
-  
+
         // 상태에 따른 controls의 최소 높이 계산 (기본값을 낮춤)
         let controlsHeight = 390; // 기본 최소 높이로 수정
         if (selectedCategory === 'HEAD') {
@@ -975,14 +974,12 @@ const clearExpressionCanvas = useCallback(() => {
           controlsHeight = 460; // EXPRESSION 상태일 때
         }
   
-
-  
         // 렌더러 크기 설정
         rendererRef.current.setSize(window.innerWidth, window.innerHeight - controlsHeight);
   
         // 캔버스 크기 설정
         canvasRef.current.style.width = `${Math.min(window.innerWidth, 390)}px`;
-        canvasRef.current.style.height = `${Math.min(window.innerHeight, 780) - controlsHeight}px`;
+        canvasRef.current.style.height = `${Math.max(window.innerHeight, 780) - controlsHeight}px`;
         canvasRef.current.style.top = '58px';
         canvasRef.current.style.left = '0';
         // 카메라 비율 업데이트

@@ -77,6 +77,8 @@ const PostcardView = () => {
         console.log(`Resetting and playing animation for model ${index}`);
         action.reset();  // 애니메이션을 처음으로 리셋
         action.play();   // 애니메이션을 재시작
+        mixer.timescale=0.8;
+        // action.setPlaybackRate(0.8);  // 재생 속도를 1로 설정
       } else {
         console.warn(`No mixer or action found for model ${index}`);
       }
