@@ -569,6 +569,7 @@ const handleAssetSelection = (category, index) => {
   };
   
   
+  
 
   const startRecording = async (setVideoFile) => {
     setIsRecording(true); // 녹화 시작
