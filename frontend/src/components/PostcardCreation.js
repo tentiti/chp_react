@@ -6,6 +6,14 @@ import './CreateCharacter.css';
 import Invitation from './Invitation';
 import { UseVideo } from './VideoContext';
 
+// 이미지 프리로딩 함수
+function preloadImages(imageArray) {
+  imageArray.forEach((imageSrc) => {
+    const img = new Image();
+    img.src = imageSrc;
+  });
+}
+
 const modelPositions = [
   { x: 32, y: 131, width: 220, height: 220 },
   { x: 145, y: 83, width: 220, height: 220 },
@@ -21,6 +29,23 @@ const backgroundImages = [
 
 
 const PostcardCreation = () => {
+  useEffect(() => {
+    // 배경 이미지 프리로딩
+    const backgroundImages = ['/static/stockimages/trans_bg1.png', '/static/stockimages/trans_bg2.png', '/static/stockimages/trans_bg3.png'];
+  
+    // 포스트카드 이미지 프리로딩
+    const postcardImages = ['/static/stockimages/postcard.png', '/static/stockimages/postcard_underlined.png'];
+  
+    // 비디오 파일도 미리 로드
+    const videoFilesToPreload = videoFiles || []; // videoFiles가 있을 경우에만 처리
+  
+    // 모든 이미지 및 비디오 합치기
+    const allAssetsToPreload = [...backgroundImages, ...postcardImages, ...videoFilesToPreload];
+  
+    // 이미지 프리로딩
+    preloadImages(allAssetsToPreload);
+  }, [videoFiles]);
+  
   const { videoFiles } = UseVideo();
 
   const postcardRef = useRef(null); // Ref for postcard container

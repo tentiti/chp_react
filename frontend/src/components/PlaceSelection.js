@@ -2,11 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from './Header';
 import './CreateCharacter.css';
-import './placeselection.css';
+import './PlaceSelection.css';
 import { isTablet, isDesktop } from 'react-device-detect'; // 추가
 import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
 import { UseVideo } from './VideoContext';
 
+function preloadImages(imageArray) {
+    imageArray.forEach((imageSrc) => {
+      const img = new Image();
+      img.src = imageSrc;
+    });
+  }
+
+  
 const backgrounds = [
     "/static/stockimages/trans_bg1.png",
     "/static/stockimages/trans_bg2.png",
@@ -41,6 +49,24 @@ const descriptions = [
 ];
 
 const PlaceSelection = () => {
+    useEffect(() => {
+        // 배경 이미지 프리로딩
+        const backgroundImages = backgrounds.map((background) => background);
+      
+        // 작품 설명 이미지 프리로딩
+        const descriptionImages = descriptions.map((description) => description.image);
+      
+        // 아이콘 이미지 프리로딩
+        const iconImages = ["/static/icons/down.png"];
+      
+        // 모든 이미지 합치기
+        const allImages = [...backgroundImages, ...descriptionImages, ...iconImages];
+      
+        // 이미지 프리로딩
+        preloadImages(allImages);
+      }, []);
+
+      
     const { videoFiles } = UseVideo();
 
     const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });

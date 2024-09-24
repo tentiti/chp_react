@@ -10,8 +10,28 @@ import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
 import { isTablet, isDesktop } from 'react-device-detect';
 import { useScene } from './SceneContext'; // SceneContext 사용
 
+function preloadImages(imageArray) {
+  imageArray.forEach((imageSrc) => {
+    const img = new Image();
+    img.src = imageSrc;
+  });
+}
 
 const CreateCharacter = ({isFixedSize}) => {
+
+  useEffect(() => {
+    // 프리로딩할 이미지 리스트 구성
+    const allImages = CATEGORIES.flatMap((category) =>
+      category.assets.map((asset) => `/static/stockimages/${asset}`)
+    );
+
+    // 프리로딩할 overlay 이미지 추가
+    allImages.push('../static/stockimages/maker_invitation.png');
+
+    // 이미지 프리로딩
+    preloadImages(allImages);
+  }, []);
+
 
   const { updateSceneData } = useScene(); // SceneContext의 업데이트 함수 사용
 

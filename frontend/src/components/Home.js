@@ -317,6 +317,7 @@ function Home() {
                   alt={`grid ${postcard.id}`}
                   onError={(e) => handleImageError(e, postcard.id)} 
                   onClick={() => window.location.href = `/postcardshareview/${postcard.id}`} 
+                  loading="lazy"  // lazy loading 적용
                 />
               </div>
             ))}
