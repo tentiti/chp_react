@@ -20,6 +20,7 @@ function App() {
   const [showInstaInfo, setShowInstaInfo] = useState(false); // 추가된 상태
   const [showKakaoInfo, setShowKakaoInfo] = useState(false); // 추가된 상태 
   const [isSizeChecked, setIsSizeChecked] = useState(false);
+  const [windowHeight, setWindowHeight] = useState(window.innerHeight);  // 실시간 창 높이 상태 관리
 
   const getDeviceType = () => {
     const userAgent = navigator.userAgent.toLowerCase();
@@ -28,34 +29,28 @@ function App() {
     return 'desktop';
   };
 
-  const checkInstagramBrowser = () => {
+  const checkBrowser = () => {
     const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    return userAgent.includes("Instagram");
+    return {
+      isInstagram: userAgent.includes("Instagram"),
+      isKakao: userAgent.includes("Kakao")
+    };
   };
 
-  const checkKakaoBrowser = () => {
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    return userAgent.includes("Kakao");
-  };
-
-  const checkWindowSize = useCallback(() => {  // useCallback to memoize the function
+  const checkWindowSize = useCallback(() => {
     const width = window.innerWidth;
     const height = window.innerHeight;
     const deviceType = getDeviceType();
+    const { isInstagram, isKakao } = checkBrowser();  // 한 번만 호출
 
-    console.log(`Width: ${width}, Height: ${height}, Device Type: ${deviceType}`);
-
-    // 축소안내
+    setWindowHeight(height);  // 창 높이 상태 업데이트
     setShowSizeInfo((deviceType === 'tablet' || deviceType === 'desktop') && (width < 500 || height < 500));
-
-    // 고정사이즈
     setIsFixedSize((deviceType === 'tablet' || deviceType === 'desktop') && (width >= 500 && height >= 500));
-    
     setIsResponsiveScale((deviceType === 'tablet' || deviceType === 'desktop') && (width >= 500 && height >= 500));
-    setShowInstaInfo(checkInstagramBrowser()); // 인스타그램 브라우저 감지 후 상태 업데이트
-    setShowKakaoInfo(checkKakaoBrowser()); // 카카오 브라우저 감지 후 상태 업데이트
+    setShowInstaInfo(isInstagram);
+    setShowKakaoInfo(isKakao);
     setIsSizeChecked(true);
-  }, []);  // No dependencies for now
+  }, [getDeviceType, checkBrowser]);
 
   useEffect(() => {
     checkWindowSize();
@@ -71,11 +66,22 @@ function App() {
     );
   }
 
+  // 실시간 창 크기 변화에 따른 transform 계산
+  const getTransformStyle = () => {
+    if (isFixedSize) {
+      if (windowHeight >= 900) {
+        return `translate(-50%, -50%) scale(1.1538)`;
+      } else {
+        return `translate(-50%, -50%) scale(${windowHeight / 780})`;
+      }
+    }
+    return '';
+  };
 
   return (
-      <div className={isFixedSize ? 'fixed-size-container' : ''}
+    <div className={isFixedSize ? 'fixed-size-container' : ''}
       style={{
-        transform: isFixedSize && window.innerHeight >= 900 ? ` translate(-50%, -50%) scale(1.1538)` : isFixedSize?  ` translate(-50%, -50%) scale(${window.innerHeight/780})` : ''
+        transform: getTransformStyle(),  // 실시간으로 업데이트된 transform 스타일 적용
       }}>
 
       {showSizeInfo ? (

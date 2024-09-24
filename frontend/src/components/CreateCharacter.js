@@ -487,16 +487,18 @@ const handleAssetSelection = (category, index) => {
 
   const startGifRecording = () => {
     return new Promise((resolve) => {
+      rendererRef.current.setSize(200, 200);
+
       const canvas = document.createElement('canvas');
-      canvas.width = 400;
-      canvas.height = 400;
+      canvas.width = 200;
+      canvas.height = 200;
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
   
       const gif = new GIF({
         workers: 2,
         quality: 10,
-        width: 400,
-        height: 400,
+        width: 200,
+        height: 200,
         transparent: 'rgba(0,0,0,0)',
       });
   
@@ -511,12 +513,6 @@ const handleAssetSelection = (category, index) => {
         mixer.timeScale = 1;  // 애니메이션 속도를 2배로
       });
 
-  
-      // GIF 렌더링이 끝난 후 처리
-      // gif.on('finished', async (blob) => {
-      //   let gifUploadUrl = await uploadGif(blob);
-      //   resolve(gifUploadUrl);  // 업로드 후 URL 반환
-      // });
   
       gif.on('finished', async (blob) => {
         console.log('gif created');
@@ -544,16 +540,16 @@ const handleAssetSelection = (category, index) => {
         modelsRef.current.forEach(({ mixer }) => mixer.update(frameDuration));
   
         // 캔버스에 그리기
-        hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
+        rendererRef.current.render(sceneRef.current, cameraRef.current);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(hiddenCanvasRef.current, 0, 0);
+        ctx.drawImage(canvasRef.current, 0, 0);
   
         // GIF에 프레임 추가 (24fps로 보이도록 딜레이 설정)
         gif.addFrame(ctx, { copy: true, delay: 1000 / originalFps });
 
         if (frameCount === 0) {
                 // 첫 번째 프레임을 PNG로 저장 (선택 사항)
-          hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
+          rendererRef.current.render(sceneRef.current, cameraRef.current);
           const pngBlob = canvas.toDataURL('image/png');
           // console.log("First frame as PNG:", pngBlob);
           addVideoFile(pngBlob);  // VideoContext에 첫 프레임 저장
@@ -567,7 +563,6 @@ const handleAssetSelection = (category, index) => {
       gif.render();
     });
   };
-  
   
   
 

@@ -18,6 +18,9 @@ const PostcardView = () => {
   const [audioContext, setAudioContext] = useState(null);
   const [audioSource, setAudioSource] = useState(null);
 
+  //share 오류
+  const [hasShared, setHasShared] = useState(false);
+
   useEffect(() => {
     // Initialize AudioContext
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -113,8 +116,8 @@ const resetAndPlayAnimations = () => {
       bitsPerSecond: 8000000,
       video: {
         codec: 'H264',  
-        width: 1920, // 해상도 설정 가능
-        height: 1080,
+        width: 1280, // 해상도 설정 가능
+        height: 720,
         frameRate: 30 // iPhone에서 호환되는 프레임 레이트
       },
     });
@@ -160,38 +163,48 @@ const resetAndPlayAnimations = () => {
     }
   };
 
-  // Function to share video using Web Share API
   const shareVideo = async () => {
-    if (navigator.clipboard) {
-      try {
-        await navigator.clipboard.writeText('hello world!');
+    if (hasShared || !blobUrl) return;
+    setHasShared(true);
+  
+    try {
+      // 클립보드 복사 시도
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText('Check out this postcard video!');
         console.log('Text copied to clipboard');
-      } catch (error) {
-        console.error('Failed to copy text:', error);
       }
-    }
-
-    if (navigator.canShare && blobUrl) {
-      const response = await fetch(blobUrl);
-      const blob = await response.blob();
-      const file = new File([blob], `${postcard?.name}의 춤사위.mp4`, { type: 'video/mp4' }); // Explicitly force .mp4
-
-      if (navigator.canShare({ files: [file] })) {
-        try {
+  
+      if (navigator.canShare && blobUrl) {
+        const response = await fetch(blobUrl);
+        const blob = await response.blob();
+        
+        // 파일 이름에서 특수 문자 제거
+        const safeFileName = `${postcard?.name || 'postcard'}_dance.mp4`;
+        
+        const file = new File([blob], safeFileName, { 
+          type: 'video/mp4',
+          lastModified: new Date().getTime()
+        });
+  
+        if (navigator.canShare({ files: [file] })) {
           await navigator.share({
-            title: `${postcard?.name}의 춤사위.mp4`,
+            title: `${postcard?.name || 'Postcard'}'s Dance`,
             text: 'Check out this postcard video!',
             files: [file],
           });
           console.log('Video shared successfully');
-        } catch (error) {
-          console.error('Error sharing video:', error);
+        } else {
+          throw new Error('Sharing not supported on this device');
         }
       } else {
-        console.warn('Sharing not supported on this device');
+        throw new Error('Sharing not supported or no video recorded');
       }
-    } else {
-      console.warn('Sharing not supported or no video recorded');
+    } catch (error) {
+      console.error('Error sharing video:', error.message);
+      // 사용자에게 오류 메시지 표시
+      alert(`Failed to share video: ${error.message}`);
+    } finally {
+      setHasShared(false);
     }
   };
 
@@ -238,7 +251,8 @@ const resetAndPlayAnimations = () => {
       console.log('canvasRef.current:', canvasRef.current); // canvasRef.current를 확인
       console.log('modelsRef.current:', sceneData.mixer); // canvasRef.current를 확인
 
-      if (!sceneData.scene || !canvasRef.current || !postcard) return;
+      if (!sceneData.mixer || !postcard) return <div>필요한 정보 로딩중...</div>;  // 로딩 중일 때 화면 표시
+
 
       sceneRef.current = new THREE.Scene();
 
@@ -315,8 +329,8 @@ const resetAndPlayAnimations = () => {
         console.warn('sceneData.mixer is not an array or it is empty');
       }
 
-      const width = 1080;
-      const height = 1920;
+      const width = 720;
+      const height = 1280;
 
       rendererRef.current = new THREE.WebGLRenderer({ 
         canvas: canvasRef.current, 
@@ -335,8 +349,8 @@ const resetAndPlayAnimations = () => {
 
       const frustumSize = 40;
       cameraRef.current = new THREE.OrthographicCamera(
-        (frustumSize * 1080) / 1920 / -2,
-        (frustumSize * 1080) / 1920 / 2,
+        (frustumSize * 720) / 1280 / -2,
+        (frustumSize * 720) / 1280 / 2,
         frustumSize / 2,
         frustumSize / -2,
         0.1,
@@ -392,9 +406,9 @@ const resetAndPlayAnimations = () => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
-        canvas.width = 8192;
-        canvas.height = 4096;
-      
+        canvas.width = 2048;
+        canvas.height = 1024;
+
         const fontSize = size * 3;
         ctx.font = `bold ${fontSize}px Cafe24Simplehae`;
         ctx.fillStyle = 'rgba(65, 40, 35, 1)'; // 밝은 노란색으로 변경
@@ -433,7 +447,7 @@ const resetAndPlayAnimations = () => {
       
         const aspectRatio = canvas.width / canvas.height;
         const geometry = new THREE.PlaneGeometry(10 * aspectRatio, 10); // 크기를 더 작게 조정
-        const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide });
+        const material = new THREE.MeshBasicMaterial({ map: texture, transparent: false, side: THREE.DoubleSide });
         const mesh = new THREE.Mesh(geometry, material);
 
         mesh.name = `text_${text}`;
@@ -442,6 +456,7 @@ const resetAndPlayAnimations = () => {
         }
         mesh.position.set(x, y, 1);
         mesh.renderOrder = 1; // 높은 값일수록 나중에 렌더링됨
+        mesh.scale.set(2, 2, 1);
         sceneRef.current.add(mesh);
 
         console.log(text);
@@ -449,12 +464,12 @@ const resetAndPlayAnimations = () => {
         return mesh;
       };
       
-      // Add texts
+      // // Add texts
       const commentMesh = addText(postcard.comment, 0, -12.2, 94, true);
       const timestampMesh = addText(postcard.timestamp, 0, -14.2, 60);
       const nameMesh = addText(postcard.name, 6, -15.8, 80);
 
-      setTextMeshes([commentMesh, timestampMesh, nameMesh]);
+      // setTextMeshes([commentMesh, timestampMesh, nameMesh]);
 
 
       animate(); // Start the animation loop
@@ -462,7 +477,11 @@ const resetAndPlayAnimations = () => {
 
     };
 
-    initThreeJS();
+    // sceneData가 로드되었는지 확인 후 initThreeJS 호출
+    if (sceneData && sceneData.mixer && Array.isArray(sceneData.mixer.current)) {
+      // alert('3d loaded');
+      initThreeJS();
+    }
 
     return () => {
       // Clean up text meshes
@@ -529,50 +548,11 @@ const resetAndPlayAnimations = () => {
     rendererRef.current.render(sceneRef.current, cameraRef.current);
   }, [sceneData.mixer, clock]);
   
-
-  
-
   useEffect(() => {
     if (postcard) {
       // setTimeout(startRecording, 1000); //1초간 녹화
     }
   }, [postcard]);
-
-  // useEffect(() => {
-  //   const handleUnload = () => {
-  //     textMeshes.forEach((mesh) => {
-  //       if (mesh) {
-  //         if (mesh.geometry) mesh.geometry.dispose();
-  //         if (mesh.material && mesh.material.map) mesh.material.map.dispose();
-  //         if (mesh.material) mesh.material.dispose();
-  //         if (mesh.parent) mesh.parent.remove(mesh);
-  //       }
-  //     });
-  
-  //     if (rendererRef.current) {
-  //       rendererRef.current.dispose();  // WebGL 컨텍스트 해제
-  //     }
-  
-  //     if (sceneRef.current) {
-  //       sceneRef.current.clear();  // Scene을 명시적으로 해제
-  //     }
-  
-  //     if (audioContextRef.current) {
-  //       audioContextRef.current.close();  // AudioContext 해제
-  //     }
-  
-  //     if (blobUrl) {
-  //       URL.revokeObjectURL(blobUrl);  // Blob URL 해제
-  //     }
-  //   };
-  
-  //   window.addEventListener('beforeunload', handleUnload);
-  
-  //   return () => {
-  //     window.removeEventListener('beforeunload', handleUnload);
-  //     handleUnload();  // 컴포넌트 언마운트 시에도 동일하게 해제 처리
-  //   };
-  // }, [textMeshes, blobUrl]);
 
   useEffect(() => {
     if (isReadyToRecord) {
@@ -582,6 +562,7 @@ const resetAndPlayAnimations = () => {
 
   useEffect(() => {
     if (isRecordingDone) {
+      resetAndPlayAnimations();
       const animationInterval = setInterval(() => {
         resetAndPlayAnimations();
       }, 18750); //8.75초 이따 개선해야함
@@ -609,7 +590,7 @@ const resetAndPlayAnimations = () => {
     left: 0,
     width: '100%',
     height: '100%',
-    transform: `scale(${containerRef.current ? containerRef.current.clientWidth / 1080 : 1}, ${containerRef.current ? containerRef.current.clientHeight / 1920 : 1})`,
+    transform: `scale(${containerRef.current ? containerRef.current.clientWidth / 720 : 1}, ${containerRef.current ? containerRef.current.clientHeight / 1280 : 1})`,
     transformOrigin: 'top left',
     // zIndex: '10000',
   };
