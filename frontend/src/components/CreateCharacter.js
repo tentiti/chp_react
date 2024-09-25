@@ -988,19 +988,18 @@ const clearExpressionCanvas = useCallback(() => {
           controlsHeight = 460; // EXPRESSION 상태일 때
         }
 
-        let newHeight =780-controlsHeight;
+        let newHeight = isFixedSize? 780-controlsHeight : window.innerHeight - controlsHeight;
 
-        // alert(newHeight); 
 
         rendererRef.current.setSize(window.innerWidth, newHeight);
   
         // 캔버스 크기 설정
-        canvasRef.current.style.width = `${Math.min(window.innerWidth, 390)}px`;
+        canvasRef.current.style.width = isFixedSize? '390px' : window.innerWidth;
         canvasRef.current.style.height = `${newHeight}px`;
         canvasRef.current.style.top = '58px';
         canvasRef.current.style.left = '0';
         // 카메라 비율 업데이트
-        cameraRef.current.aspect = window.innerWidth / newHeight;
+        cameraRef.current.aspect =  isFixedSize? '390px' : window.innerWidth / newHeight;
         cameraRef.current.updateProjectionMatrix();
 
         const controls = document.querySelector('.controls');
