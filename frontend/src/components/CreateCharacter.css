@@ -40,11 +40,16 @@ body {
   flex-direction: column;
   position: relative;
   overflow-x: hidden;
-  background-image: "/static/stockimages/background_paper.png";
+  background-image: "/static/stockimages/background_paper.png !important !important";
   background-size: cover;
 
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+body ::after{
+  background-image: "/static/stockimages/background_paper.png !important !important";
+  background-size: cover;
 }
 
 body::-webkit-scrollbar {
@@ -286,6 +291,8 @@ button {
 
   background-image: "/static/stockimages/background_paper.png";
   background-size: cover;
+
+  width: 100%;
 }
 
 /* Canvas should fill all available space but maintain aspect ratio */
@@ -338,9 +345,15 @@ button {
   gap: 10px;
   padding: 10px;
   width: 100%;
+  aspect-ratio: 2 / 1;
   height: auto;
   box-sizing: border-box;
   overflow-y: auto; /* 스크롤이 가능하게 설정 */
+}
+
+.asset-grid ::after {
+  width: 100%;
+  height: calc(50% + 10px); /* 50% 높이에 10px 추가 */
 }
 
 .asset-grid .pictures {
