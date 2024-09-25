@@ -12,6 +12,8 @@ const PostcardView = () => {
   const audioContextRef = useRef(null);
   const audioSourceRef = useRef(null);
   const audioRef = useRef(null);
+  const [isFallbackVisible, setIsFallbackVisible] = useState(false);  // Track fallback visibility
+
 
 
   //오디오 관련 코드
@@ -20,6 +22,8 @@ const PostcardView = () => {
 
   //share 오류
   const [hasShared, setHasShared] = useState(false);
+  
+
 
   useEffect(() => {
     // Initialize AudioContext
@@ -207,6 +211,18 @@ const resetAndPlayAnimations = () => {
       setHasShared(false);
     }
   };
+
+  useEffect(() => {
+    // Show fallback if recording hasn't started after 5 seconds
+    const fallbackTimer = setTimeout(() => {
+      if (!isRecording) {
+        // alert('Fallback UI shown');
+        setIsFallbackVisible(true);  // Show fallback UI
+      }
+    }, 5000);  // 5 seconds delay
+
+    return () => clearTimeout(fallbackTimer);  // Clear the timeout on component unmount
+  }, [isRecording]);
 
   useEffect(() => {
     const fetchPostcard = async () => {
@@ -566,7 +582,10 @@ const resetAndPlayAnimations = () => {
     left: 0,
     width: '100%',
     height: '100%',
-    transform: `scale(${containerRef.current ? containerRef.current.clientWidth / 720 : 1}, ${containerRef.current ? containerRef.current.clientHeight / 1280 : 1})`,
+    transform: `scale(${
+      containerRef.current ? 
+      Math.min(containerRef.current.clientWidth / 720, containerRef.current.clientHeight / 1280) : 1
+    })`,
     transformOrigin: 'top left',
     // zIndex: '10000',
   };
@@ -578,6 +597,8 @@ const resetAndPlayAnimations = () => {
     };
     // audioRef.current.play();
   };
+
+  
 
   return (
     <div style={{ 
@@ -632,6 +653,27 @@ const resetAndPlayAnimations = () => {
       <div ref={containerRef} style={containerStyle}>
         <canvas ref={canvasRef} style={canvasStyle} />
       </div>
+
+     {/* Fallback "safety" UI */}
+      {(isFallbackVisible && !isReadyToRecord) && (
+        <div id="safety" style={{ 
+          zIndex: '3000', 
+          display: 'block', 
+          position: 'fixed', 
+          bottom: '100px', 
+          width: '90%', 
+          left: '5%',
+          padding: '20px',
+          textAlign: 'center',
+          backgroundColor: '#f8f6f1', 
+          border: '1px solid #e6e1dc',
+          boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.25)',
+          padding: '10px', 
+          boxSizing: 'border-box'}}>
+          혹시 춤사위가 보이지 않나요? <br/>
+          <a href={`/postcardshareview/${id}`}>수동 녹화하러 가기</a>
+        </div>
+      )}
 
       <img
         src="/static/stockimages/promotion.png"
