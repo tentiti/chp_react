@@ -96,19 +96,33 @@ def upload_file():
     if file_ext.lower() == ".gif":
         try:
             gif = Image.open(file_path)
-            preselected_frames = [ 13, 48, 67, 90, 115, 161, 186, 261, 331, 362, 381, 398, 422]
+            preselected_frames = [
+                13,
+                48,
+                67,
+                90,
+                115,
+                161,
+                186,
+                261,
+                331,
+                362,
+                381,
+                398,
+                422,
+            ]
 
             # 배열에서 랜덤하게 하나의 프레임 선택
             random_frame = random.choice(preselected_frames)
             gif.seek(random_frame)  # 랜덤 프레임으로 이동
-            
-            print('chose frame:', random_frame)
 
-            still_filename = str(uuid.uuid4()) + ".png"
+            print("chose frame:", random_frame)
+
+            still_filename = str(uuid.uuid4()) + ".webp"
             still_file_path = os.path.join(app.config["UPLOAD_FOLDER"], still_filename)
 
             # 첫 프레임을 PNG로 저장
-            gif.save(still_file_path, "PNG")
+            gif.save(still_file_path, "WEBP")
         except Exception as e:
             return jsonify({"error": f"Failed to process GIF: {str(e)}"}), 500
     else:

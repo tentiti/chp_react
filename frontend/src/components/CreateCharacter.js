@@ -9,6 +9,7 @@ import { UseVideo } from './VideoContext.js'; // Context에서 가져옴
 import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
 import { isTablet, isDesktop } from 'react-device-detect';
 import { useScene } from './SceneContext'; // SceneContext 사용
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
 function preloadImages(imageArray) {
   imageArray.forEach((imageSrc) => {
@@ -210,6 +211,10 @@ const handleAssetSelection = (category, index) => {
 
   const loadModel = useCallback((modelPath, categoryName, useColor = false, onLoad) => {
     const loader = new GLTFLoader();
+
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('/draco/'); // 이 경로는 Draco 디코더의 경로입니다. 올바른 경로로 설정하세요.
+    loader.setDRACOLoader(dracoLoader); // GLTFLoader에 DRACOLoader 추가
 
     let storedExpressionTexture = null;
 
