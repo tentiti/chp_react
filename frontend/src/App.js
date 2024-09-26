@@ -106,7 +106,7 @@ function App() {
                 <Route path="/Home" element={<Home />} />
                 <Route path="/undefined" element={<Home />} />
                 <Route path="/invitation" element={<Invitation />} />
-                <Route path="/postcardview/:id" element={<PostcardView />} />
+                <Route path="/postcardview/:id" element={<PostcardView isFixedSize={isFixedSize}/>} />
                 <Route path="/CreateCharacter" element={<CreateCharacter isFixedSize={isFixedSize} />} />
                 <Route path="/place-selection" element={<PlaceSelection />} />
                 <Route path="/postcardcreation" element={<PostcardCreation />} />

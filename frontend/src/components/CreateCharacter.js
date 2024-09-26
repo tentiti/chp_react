@@ -22,7 +22,7 @@ const CreateCharacter = ({isFixedSize}) => {
   useEffect(() => {
     // 프리로딩할 이미지 리스트 구성
     const allImages = CATEGORIES.flatMap((category) =>
-      category.assets.map((asset) => `/static/stockimages/${asset}`)
+      category.assets.map((asset) => `/static/assetImages/${asset}`)
     );
 
     // 프리로딩할 overlay 이미지 추가
@@ -124,13 +124,14 @@ const handleAssetSelection = (category, index) => {
   };
 
   const CATEGORIES = [
-    { name: 'HEAD', assets: ['head1.png', 'head2.png', 'head3.png', 'head4.png', 'head5.png', 'head6.png', 'head7.png', 'head8.png', 'head9.png', 'head10.png', 'head11.png', 'head12.png'], useColor: true }, // 12개
-    { name: 'TOP', assets: ['top1.png', 'top2.png', 'top3.png', 'top4.png', 'top5.png', 'top6.png', 'top7.png', 'top8.png', 'top9.png', 'top10.png', 'top11.png', 'top12.png', 'top13.png', 'top14.png', 'top15.png', 'top16.png', 'top17.png', 'top18.png', 'top19.png', 'top20.png', 'top21.png', 'top22.png', 'top23.png', 'top24.png'], useColor: false }, // 24개
-    { name: 'BOTTOM', assets: ['bottom1.png', 'bottom2.png', 'bottom3.png', 'bottom4.png', 'bottom5.png', 'bottom6.png', 'bottom7.png', 'bottom8.png', 'bottom9.png', 'bottom10.png', 'bottom11.png', 'bottom12.png', 'bottom13.png', 'bottom14.png', 'bottom15.png', 'bottom16.png', 'bottom17.png', 'bottom18.png', 'bottom19.png', 'bottom20.png', 'bottom21.png', 'bottom22.png'], useColor: false }, // 22개
-    { name: 'SHOES', assets: ['shoes1.png', 'shoes2.png', 'shoes3.png', 'shoes4.png', 'shoes5.png', 'shoes6.png', 'shoes7.png', 'shoes8.png','shoes9.png','shoes10.png','shoes11.png','shoes12.png'], useColor: false }, // 8개
-    { name: 'ACCESSORY', assets: ['accessory1.png', 'accessory2.png', 'accessory3.png', 'accessory4.png', 'accessory5.png', 'accessory6.png', 'accessory7.png', 'accessory8.png', 'accessory9.png', 'accessory10.png', 'accessory11.png', 'accessory12.png', 'accessory13.png', 'accessory14.png', 'accessory15.png', 'accessory16.png', 'accessory17.png', 'accessory18.png'], useColor: false }, // 18개
+    { name: 'HEAD', assets: ['head_1.png', 'head_2.png', 'head_3.png', 'head_4.png', 'head_5.png', 'head_6.png', 'head_7.png', 'head_8.png', 'head_9.png', 'head_10.png', 'head_11.png', 'head_12.png'], useColor: true }, // 12개
+    { name: 'TOP', assets: ['top_1.png', 'top_2.png', 'top_3.png', 'top_4.png', 'top_5.png', 'top_6.png', 'top_7.png', 'top_8.png', 'top_9.png', 'top_10.png', 'top_11.png', 'top_12.png', 'top_13.png', 'top_14.png', 'top_15.png', 'top_16.png', 'top_17.png', 'top_18.png', 'top_19.png', 'top_20.png', 'top_21.png', 'top_22.png', 'top_23.png', 'top_24.png'], useColor: false }, // 24개
+    { name: 'BOTTOM', assets: ['bottom_1.png', 'bottom_2.png', 'bottom_3.png', 'bottom_4.png', 'bottom_5.png', 'bottom_6.png', 'bottom_7.png', 'bottom_8.png', 'bottom_9.png', 'bottom_10.png', 'bottom_11.png', 'bottom_12.png', 'bottom_13.png', 'bottom_14.png', 'bottom_15.png', 'bottom_16.png', 'bottom_17.png', 'bottom_18.png', 'bottom_19.png', 'bottom_20.png', 'bottom_21.png', 'bottom_22.png'], useColor: false }, // 22개
+    { name: 'SHOES', assets: ['shoes_1.png', 'shoes_2.png', 'shoes_3.png', 'shoes_4.png', 'shoes_5.png', 'shoes_6.png', 'shoes_7.png', 'shoes_8.png', 'shoes_9.png', 'shoes_10.png', 'shoes_11.png', 'shoes_12.png'], useColor: false }, // 8개
+    { name: 'ACCESSORY', assets: ['accessory_1.png', 'accessory_2.png', 'accessory_3.png', 'accessory_4.png', 'accessory_5.png', 'accessory_6.png', 'accessory_7.png', 'accessory_8.png', 'accessory_9.png', 'accessory_10.png', 'accessory_11.png', 'accessory_12.png', 'accessory_13.png', 'accessory_14.png', 'accessory_15.png', 'accessory_16.png', 'accessory_17.png', 'accessory_18.png'], useColor: false }, // 18개
     { name: 'EXPRESSION', assets: [], useColor: false },
   ];
+  
 
   const COLORS = [
     { name: 'Red', bigCircle: '#E88181', smallCircle: '#F5A0A0' },
@@ -233,6 +234,15 @@ const handleAssetSelection = (category, index) => {
       modelsRef.current = modelsRef.current.filter((item) => {
         if (item.categoryName === 'BOTTOM') {
           sceneRef.current.remove(item.model);  // 하의 모델을 씬에서 제거
+          item.model.traverse((child) => {
+            if (child.isMesh) {
+              if (child.geometry) child.geometry.dispose();
+              if (child.material) {
+                if (child.material.map) child.material.map.dispose(); // 텍스처 해제
+                child.material.dispose(); // 머티리얼 해제
+              }
+            }
+          });
           return false;  // 해당 모델을 modelsRef에서 제거
         }
         return true;
@@ -244,7 +254,6 @@ const handleAssetSelection = (category, index) => {
     modelsRef.current = modelsRef.current.filter((item) => {
       if (item.categoryName === categoryName) {
         sceneRef.current.remove(item.model);
-
         item.model.traverse((child) => {
           if (child.isMesh) {
               // Dispose of geometries and materials
@@ -404,17 +413,9 @@ const handleAssetSelection = (category, index) => {
         1000                         // far
       );
 
-      rendererRef.current.setSize(canvasParent.clientWidth, canvasParent.clientHeight * 0.42); // 창 크기에 맞춰 초기화
+      rendererRef.current.setSize(canvasParent.clientWidth/2, canvasParent.clientHeight * 0.42); // 창 크기에 맞춰 초기화
       
       rendererRef.current.setClearColor(0x000000, 0);
-
-      // hiddenRendererRef.current = new THREE.WebGLRenderer({ 
-      //   antialias: true, 
-      //   canvas: hiddenCanvasRef.current, 
-      //   alpha: true,
-      //   preserveDrawingBuffer: true 
-      // });
-      // hiddenRendererRef.current.setSize(400, 400);
 
         // 카메라 업데이트 후 정사각형 비율로 맞추기
       cameraRef.current.aspect = 1; // 정사각형 비율 (aspect 1:1)
@@ -470,19 +471,14 @@ const handleAssetSelection = (category, index) => {
         rendererRef.current.render(sceneRef.current, cameraRef.current);
       }
     
-      // if (hiddenRendererRef.current && sceneRef.current && cameraRef.current) {
-      //   hiddenRendererRef.current.clear();
-      //   hiddenRendererRef.current.setClearColor(0xffffff, 0);
-      //   hiddenRendererRef.current.render(sceneRef.current, cameraRef.current);
-      // }
     };
 
     animate();
 
     return () => {
-      // if (rendererRef.current) {
-      //   rendererRef.current.dispose();
-      // }
+      if (rendererRef.current) {
+        rendererRef.current.dispose();
+      }
       // if (hiddenRendererRef.current) {
       //   hiddenRendererRef.current.dispose();
       // }
@@ -588,9 +584,6 @@ const handleAssetSelection = (category, index) => {
     setIsRecording(true); // 녹화 시작
     //모델링 정보 넘기기
     updateSceneData({
-      scene: sceneRef.current, 
-      camera: cameraRef.current, 
-      renderer: rendererRef.current,
       mixer: modelsRef,
     });
 
@@ -1135,7 +1128,7 @@ const clearExpressionCanvas = useCallback(() => {
 
   {/* 녹화 중일 때 보여줄 "녹화중입니다" 이미지 */}
   {isRecording && (
-    <div id="splash-screen" className="splash-screen">
+    <div id="splash-screen" className="splash-screen" style={{backgroundColor:'#F8F6F1'}}>
       <img
         src="/static/stockimages/making.png"
         alt="Splash"
