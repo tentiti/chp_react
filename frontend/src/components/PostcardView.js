@@ -350,7 +350,7 @@ const PostcardView = ({isFixedSize}) => {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
       
-        const maxLineLength = 35; 
+        const maxLineLength = 38; 
         const words = text.split(' ');
         const lines = [];
         let currentLine = '';
