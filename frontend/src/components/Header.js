@@ -7,7 +7,7 @@ const Header = ({ title, needthird = true, onMenuClick }) => {
         {/* 왼쪽의 백 버튼 */}
         <div style = {{width: '10%', height:'40%'}}>
           <img
-            src="/static/icons/back_double.png"
+            src="/static/icons/back_double.webp"
             alt="back"
             id="back-button"
             onClick={() => window.history.back()}
@@ -29,7 +29,7 @@ const Header = ({ title, needthird = true, onMenuClick }) => {
               style={{ background: 'none', border: 'none', cursor: 'pointer' }}
               onClick={onMenuClick}
             >
-              <img src="/static/icons/hamburger.png" alt="menu" id="menu-button" />
+              <img src="/static/icons/hamburger.webp" alt="menu" id="menu-button" />
             </button>
           )}
         </div>

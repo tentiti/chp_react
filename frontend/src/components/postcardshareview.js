@@ -7,10 +7,10 @@ import { isTablet, isDesktop } from 'react-device-detect';
 import './PostcardView.css';
 
 const backgrounds = [
-  "/static/stockimages/bg1.png",
-  "/static/stockimages/bg1.png",
-  "/static/stockimages/bg2.png",
-  "/static/stockimages/bg3.png",
+  "/static/stockimages/bg1.webp",
+  "/static/stockimages/bg1.webp",
+  "/static/stockimages/bg2.webp",
+  "/static/stockimages/bg3.webp",
 ];
 
 const modelPositions = [
@@ -109,7 +109,7 @@ const PostcardShareView = () => {
       position: 'absolute',
       top: '0',
       left: '0',
-      backgroundImage: `url('/static/stockimages/background_paper.png')`,
+      backgroundImage: `url('/static/stockimages/background_paper.webp')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       width: isFixedSize ? '390px' : '100dvw', // 고정 크기 또는 가로 100%
@@ -171,7 +171,7 @@ const PostcardShareView = () => {
         justifyContent: 'flex-start',
         zIndex: '900',
         overflow: 'hidden',
-        backgroundImage: `url(/static/stockimages/share_postcardfinal_${postcard.number}.png)`,
+        backgroundImage: `url(/static/stockimages/share_postcardfinal_${postcard.number}.webp)`,
         backgroundSize: 'contain',  // 배경 이미지가 컨테이너를 덮도록 설정
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center Top',  // 이미지가 가운데에 위치하게 설정

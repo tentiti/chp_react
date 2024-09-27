@@ -15,9 +15,9 @@ function Home() {
   const floatingButtonRef = useRef(null);
 
   const bannerImages = [
-    '/static/stockimages/mainbanner1.png',
-    '/static/stockimages/mainbanner2.png',
-    '/static/stockimages/mainbanner3.png'
+    '/static/stockimages/mainbanner1.webp',
+    '/static/stockimages/mainbanner2.webp',
+    '/static/stockimages/mainbanner3.webp'
   ];
 
   //플로팅 사진 미리 반영// 배너 이미지와 플로팅 버튼 이미지 미리 로드
@@ -31,14 +31,14 @@ function Home() {
 
     preloadImages([
       ...bannerImages,
-      '/static/images/buttonImages/button1.png',
-      '/static/images/buttonImages/button2.png',
-      '/static/images/buttonImages/button3.png',
-      '/static/images/buttonImages/button4.png',
-      '/static/images/buttonImages/button5.png',
-      '/static/images/buttonImages/button6.png',
-      '/static/images/buttonImages/button7.png',
-      '/static/images/buttonImages/button8.png'
+      '/static/images/buttonImages/button1.webp',
+      '/static/images/buttonImages/button2.webp',
+      '/static/images/buttonImages/button3.webp',
+      '/static/images/buttonImages/button4.webp',
+      '/static/images/buttonImages/button5.webp',
+      '/static/images/buttonImages/button6.webp',
+      '/static/images/buttonImages/button7.webp',
+      '/static/images/buttonImages/button8.webp'
     ]);
 
     const fetchPostcards = async () => {
@@ -102,14 +102,14 @@ function Home() {
       const collisionCooldown = 2000; // Reduced cooldown time
   
       const buttonImages = [
-        '/static/images/buttonImages/button1.png',
-        '/static/images/buttonImages/button2.png',
-        '/static/images/buttonImages/button3.png',
-        '/static/images/buttonImages/button4.png',
-        '/static/images/buttonImages/button5.png',
-        '/static/images/buttonImages/button6.png',
-        '/static/images/buttonImages/button7.png',
-        '/static/images/buttonImages/button8.png'
+        '/static/images/buttonImages/button1.webp',
+        '/static/images/buttonImages/button2.webp',
+        '/static/images/buttonImages/button3.webp',
+        '/static/images/buttonImages/button4.webp',
+        '/static/images/buttonImages/button5.webp',
+        '/static/images/buttonImages/button6.webp',
+        '/static/images/buttonImages/button7.webp',
+        '/static/images/buttonImages/button8.webp'
       ];
   
       let lastCollisionTime = 0;
@@ -289,7 +289,7 @@ function Home() {
                 alignItems:"center",
                 // marginLeft: 'auto'
               }}>
-                <img src="/static/icons/hamburger.png" alt="menu" id="menu-button" />
+                <img src="/static/icons/hamburger.webp" alt="menu" id="menu-button" />
               </div>
             </div>
           </div>

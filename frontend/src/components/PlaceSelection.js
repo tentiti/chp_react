@@ -16,9 +16,9 @@ function preloadImages(imageArray) {
 
   
 const backgrounds = [
-    "/static/stockimages/trans_bg1.png",
-    "/static/stockimages/trans_bg2.png",
-    "/static/stockimages/trans_bg3.png",
+    "/static/stockimages/trans_bg1.webp",
+    "/static/stockimages/trans_bg2.webp",
+    "/static/stockimages/trans_bg3.webp",
 ];
 
 const modelPositions = [
@@ -32,19 +32,19 @@ const descriptions = [
         title: "만월",
         date: "2019",
         text: "그림의 꽉 찬 만월은 여성성의 세상이 때가 되었음을 상징합니다. 가부장적인 현장의 시작인 '집' 옥상 위에서 슬리퍼를 신은 여성이 깨춤(절로 흥이 나서 제멋대로 추는 막춤)을 춥니다. 각자의 일상에서 우리는 늘 불평등의 문제를 만납니다. 자, 이제 둥근달이 떴습니다. 모두가 어떤 억압도 없이 나다운 삶을 살 수 있도록 '나'만의 해방의 춤을 신나게 춥시다. 달빛이 닿아 반짝이는 이들의 아름다운 세상을 기대합니다.",
-        image: "static/stockimages/work1.jpg",
+        image: "static/stockimages/work1.webp",
     },
     {
         title: "뭇생명의 작은 날갯짓과 함께",
         date: "2022",
         text: "혐오의 시대, 폭력이 난무하는 시대에 우린 던져져 있습니다. 기후 위기로 산이 불타오르고, 인간은 여전히 전쟁 중이며, 매스컴은 소비와 탐욕을 부추깁니다. 그럼에도 순천만 갈대는 많은 생명들을 품은 채 밤새 춤을 추었고, 작은 풀벌레는 초록 잎 위에서 이슬 한 모금 들이켜고 한껏 노래를 부릅니다. 그 마음들이 모여 뜨거운 생명평화 나무가 솟아납니다. 뭇 생명들과 한데 살아갈 수 있는 세상을 향해 그들의 작은 날갯짓들과 함께 춤을 춥시다. 인권과 자연의 권리가 살아 숨 쉬는 평화로운 세상을 기대합니다.",
-        image: "static/stockimages/work2.jpeg",
+        image: "static/stockimages/work2.webp",
     },
     {
         title: "기쁨의 정원",
         date: "2024",
         text: "우리는 모두 연결된 존재입니다. 그림의 가운데에는 인드라망 무늬가 빛을 내고 있습니다. 이는 해, 달, 나무, 네 발 달린 동물, 사람, 새, 물고기가 이어져 서로 기대어 산다는 의미의 상징 무늬입니다. 버드나무는 팔을 크게 흔들어 마당을 일으키고, 북극곰과 노루, 고양이가 흥겹게 춤을 추고 있습니다. 아이와 상괭이는 블루스를 추고, 새도 신이나 날갯짓을 합니다. 우리도 함께 신나게 춤을 춥시다. 모두가 함께 살아가는 기쁨의 세상을 위해 빛을 내며 춤을 춥시다.",
-        image: "static/stockimages/work3.jpeg",
+        image: "static/stockimages/work3.webp",
     }
 ];
 
@@ -57,7 +57,7 @@ const PlaceSelection = () => {
         const descriptionImages = descriptions.map((description) => description.image);
       
         // 아이콘 이미지 프리로딩
-        const iconImages = ["/static/icons/down.png"];
+        const iconImages = ["/static/icons/down.webp"];
       
         // 모든 이미지 합치기
         const allImages = [...backgroundImages, ...descriptionImages, ...iconImages];
@@ -377,7 +377,7 @@ const PlaceSelection = () => {
                     <span>{isScrolledToBottom ? '장소 고르러 돌아가기' : '원본 작품 보러가기'}</span>
                     <br/>
                     <img 
-                        src="/static/icons/down.png" 
+                        src="/static/icons/down.webp" 
                         alt="Arrow" 
                         style={{
                             margin: '-5px',

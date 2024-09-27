@@ -21,9 +21,9 @@ const modelPositions = [
 ];
 
 const backgroundImages = [
-  '/static/stockimages/trans_bg1.png',
-  '/static/stockimages/trans_bg2.png',
-  '/static/stockimages/trans_bg3.png',
+  '/static/stockimages/trans_bg1.webp',
+  '/static/stockimages/trans_bg2.webp',
+  '/static/stockimages/trans_bg3.webp',
 ];
 
 
@@ -32,10 +32,10 @@ const PostcardCreation = () => {
   const { videoFiles } = UseVideo();
   useEffect(() => {
     // 배경 이미지 프리로딩
-    const backgroundImages = ['/static/stockimages/trans_bg1.png', '/static/stockimages/trans_bg2.png', '/static/stockimages/trans_bg3.png'];
+    const backgroundImages = ['/static/stockimages/trans_bg1.webp', '/static/stockimages/trans_bg2.webp', '/static/stockimages/trans_bg3.webp'];
   
     // 포스트카드 이미지 프리로딩
-    const postcardImages = ['/static/stockimages/postcard.png', '/static/stockimages/postcard_underlined.png'];
+    const postcardImages = ['/static/stockimages/postcard.webp', '/static/stockimages/postcard_underlined.webp'];
   
     // 비디오 파일도 미리 로드
     const videoFilesToPreload = videoFiles || []; // videoFiles가 있을 경우에만 처리
@@ -164,8 +164,8 @@ const PostcardCreation = () => {
           letterSpacing: '-0.5px', /* 자간 -0.5px */
           fontFamily: 'Cafe24Simplehae',
           color:'#412823',
-          backgroundImage: "url('/static/stockimages/postcard_underlined.png')" ,
-          backgroundImage: isCommentEmpty? "url('/static/stockimages/postcard_underlined.png')" : "url('/static/stockimages/postcard.png')" ,
+          backgroundImage: "url('/static/stockimages/postcard_underlined.webp')" ,
+          backgroundImage: isCommentEmpty? "url('/static/stockimages/postcard_underlined.webp')" : "url('/static/stockimages/postcard.webp')" ,
           
           // color:'pink',
         }}>
@@ -179,7 +179,7 @@ const PostcardCreation = () => {
               <div 
                 className="background-image"
                 style={{
-                  backgroundImage: `url('/static/stockimages/trans_bg${selectedBackground}.png')`
+                  backgroundImage: `url('/static/stockimages/trans_bg${selectedBackground}.webp')`
                 }}
               />
 

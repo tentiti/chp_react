@@ -41,7 +41,7 @@ function Invitation({ onBack, showbutton=false }) {
           opacity: 1,
         }}
       >
-        <img src= "/static/stockimages/invitation_background.png" alt='background' style={{
+        <img src= "/static/stockimages/invitation_background.webp" alt='background' style={{
           width: '100%',
           height: '100%',
           objectFit: 'cover',
@@ -86,7 +86,7 @@ function Invitation({ onBack, showbutton=false }) {
             }}
           >
             <img
-              src="/static/icons/back_double.png"
+              src="/static/icons/back_double.webp"
               alt="back"
               onClick={handleBack}
               style={{
@@ -99,7 +99,7 @@ function Invitation({ onBack, showbutton=false }) {
       </div>
 
       <img
-        src="/static/stockimages/moon.png"
+        src="/static/stockimages/moon.webp"
         alt="moon"
         style={{
           position: 'sticky',
@@ -126,7 +126,7 @@ function Invitation({ onBack, showbutton=false }) {
         }}
       >
         <img
-          src="/static/stockimages/invitext.png"
+          src="/static/stockimages/invitext.webp"
           alt="invitation text"
           style={{
             width: '100%',

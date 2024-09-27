@@ -58,12 +58,14 @@ const PostcardView = ({isFixedSize}) => {
   const clock = new THREE.Clock();
 
   const resetAndPlayAnimations = () => {
-    sceneData.mixer.current.forEach((modelData) => {
-      const { model, mixer, action, categoryName } = modelData;
-      action.reset();  
-      action.stop();
-      action.play();  
-    });
+    if (sceneData.mixer.current){
+      sceneData.mixer.current.forEach((modelData) => {
+        const { model, mixer, action, categoryName } = modelData;
+        action.reset();  
+        action.stop();
+        action.play();  
+      });
+    }
   };
 
   const startRecording = () => {
@@ -176,7 +178,6 @@ const PostcardView = ({isFixedSize}) => {
       }
     } catch (error) {
       console.error('Error sharing video:', error.message);
-      alert(`Failed to share video: ${error.message}`);
     } finally {
       setHasShared(false);
     }
@@ -319,7 +320,7 @@ const PostcardView = ({isFixedSize}) => {
       moveAndScaleModels(xOffset, yOffset, zOffset, scaleFactor); 
       
       const loader = new THREE.TextureLoader();
-      loader.load(`/static/stockimages/postcardfinal_${postcard?.number}.png`, (bgTexture) => {
+      loader.load(`/static/stockimages/postcardfinal_${postcard?.number}.webp`, (bgTexture) => {
         bgTexture.colorSpace = THREE.SRGBColorSpace;
         bgTexture.anisotropy = rendererRef.current.capabilities.getMaxAnisotropy();
         bgTexture.minFilter = THREE.LinearFilter;
@@ -340,10 +341,10 @@ const PostcardView = ({isFixedSize}) => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
-        canvas.width = 8192;
-        canvas.height = 4096;
+        canvas.width = 1024;
+        canvas.height = 512;
 
-        const fontSize = size * 3;
+        const fontSize = size * 0.375;
         ctx.font = `bold ${fontSize*1}px Cafe24Simplehae`;
         ctx.fillStyle = 'rgba(65, 40, 35, 1)'; 
         ctx.textAlign = 'center';
@@ -395,7 +396,7 @@ const PostcardView = ({isFixedSize}) => {
       };
       
       const commentMesh = addText(postcard.comment, 0, -12.2, 94, true);
-      const timestampMesh = addText(postcard.timestamp, 0, -14.2, 60);
+      const timestampMesh = addText(postcard.timestamp, 0, -14, 60);
       const nameMesh = addText(postcard.name, 6, -15.8, 80);
 
       setTextMeshes([commentMesh, timestampMesh, nameMesh]);
@@ -570,7 +571,7 @@ const PostcardView = ({isFixedSize}) => {
 
   return (
     <div style={{ 
-      backgroundImage: `url('/static/stockimages/background_paper.png')`, 
+      backgroundImage: `url('/static/stockimages/background_paper.webp')`, 
       width: '100vw', 
       height: '100vh', 
       zIndex: '900',
@@ -594,7 +595,7 @@ const PostcardView = ({isFixedSize}) => {
         }}
       >
         <div onClick={() => navigate('/home')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', paddingLeft: '20px' }}>
-          <img src="/static/icons/home.png" alt="home" style={{ width: '24px', height: '24px' }} />
+          <img src="/static/icons/home.webp" alt="home" style={{ width: '24px', height: '24px' }} />
         </div>
 
         <div
@@ -612,7 +613,7 @@ const PostcardView = ({isFixedSize}) => {
         </div>
 
         <div onClick={handleMenuClick} style={{ cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', paddingRight: '20px' }}>
-          <img src="/static/icons/hamburger.png" alt="menu" id="menu-button" />
+          <img src="/static/icons/hamburger.webp" alt="menu" id="menu-button" />
         </div>
       </header>
 
@@ -622,28 +623,8 @@ const PostcardView = ({isFixedSize}) => {
         <canvas ref={canvasRef} style={canvasStyle} />
       </div>
 
-      {(isFallbackVisible && !isReadyToRecord) && (
-        <div id="safety" style={{ 
-          zIndex: '3000', 
-          display: 'block', 
-          position: 'fixed', 
-          bottom: '100px', 
-          width: '90%', 
-          left: '5%',
-          padding: '20px',
-          textAlign: 'center',
-          backgroundColor: '#f8f6f1', 
-          border: '1px solid #e6e1dc',
-          boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.25)',
-          padding: '10px', 
-          boxSizing: 'border-box'}}>
-          혹시 춤사위가 보이지 않나요? <br/>
-          <a href={`/postcardshareview/${id}`}>수동 녹화하러 가기</a>
-        </div>
-      )}
-
       <img
-        src="/static/stockimages/promotion.png"
+        src="/static/stockimages/promotion.webp"
         alt="Promotion"
         style={{
           position: 'fixed',
@@ -674,15 +655,37 @@ const PostcardView = ({isFixedSize}) => {
           boxSizing: 'border-box',
         }}
       >
-        <button className="upbutton" onClick={recordReady}  disabled={isRecordingDone}>
-          {isRecordingDone? '춤사위 준비 완료' : isRecording? '춤사위 준비 중..' : '춤사위 만들기'}
-        </button>
-        <button className="upbutton" onClick={downloadVideo} disabled={!blobUrl}>
-          {!isRecordingDone ? '춤사위를 만들어 주세요' : '춤사위 저장하기'}
-        </button>
-        <button className="upbutton" onClick={shareVideo} disabled={!blobUrl}>
-          {!isRecordingDone ? '춤사위를 만들어 주세요' : '춤사위 공유하기'}
-        </button>
+
+      {!isRecording && !isRecordingDone && (
+        <>
+          {/* 첫 번째 버튼: '춤사위 만들기' 또는 상태에 따라 다른 텍스트로 변경됨 */}
+          <button className="upbutton" onClick={recordReady} disabled={isRecordingDone}>
+            춤사위 만들기
+          </button>
+
+          {/* 두 번째 버튼: 특정 페이지로 이동 */}
+          <button className="upbutton" onClick={() => window.location.href = `/postcardshareview/${id}`}>
+            춤사위가 보이지 않나요? <br></br>수동 녹화하러 가기
+          </button>
+        </>
+      )}
+
+      {isRecording && !isRecordingDone &&(
+           <button className="upbutton" disabled={true} >
+                  영상 녹화 중..
+          </button>
+      )}
+
+      {isRecordingDone && (
+        <>
+          <button className="upbutton" onClick={downloadVideo} disabled={!blobUrl}>
+            춤사위 저장하기
+          </button>
+          <button className="upbutton" onClick={shareVideo} disabled={!blobUrl}>
+          춤사위 공유하기
+          </button>
+        </>
+      )}
 
       </div>
     </div>

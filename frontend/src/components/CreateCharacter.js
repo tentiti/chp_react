@@ -27,7 +27,7 @@ const CreateCharacter = ({isFixedSize}) => {
     );
 
     // 프리로딩할 overlay 이미지 추가
-    allImages.push('../static/stockimages/maker_invitation.png');
+    allImages.push('../static/stockimages/maker_invitation.webp');
 
     // 이미지 프리로딩
     preloadImages(allImages);
@@ -125,11 +125,11 @@ const handleAssetSelection = (category, index) => {
   };
 
   const CATEGORIES = [
-    { name: 'HEAD', assets: ['head_1.png', 'head_2.png', 'head_3.png', 'head_4.png', 'head_5.png', 'head_6.png', 'head_7.png', 'head_8.png', 'head_9.png', 'head_10.png', 'head_11.png', 'head_12.png'], useColor: true }, // 12개
-    { name: 'TOP', assets: ['top_1.png', 'top_2.png', 'top_3.png', 'top_4.png', 'top_5.png', 'top_6.png', 'top_7.png', 'top_8.png', 'top_9.png', 'top_10.png', 'top_11.png', 'top_12.png', 'top_13.png', 'top_14.png', 'top_15.png', 'top_16.png', 'top_17.png', 'top_18.png', 'top_19.png', 'top_20.png', 'top_21.png', 'top_22.png', 'top_23.png', 'top_24.png'], useColor: false }, // 24개
-    { name: 'BOTTOM', assets: ['bottom_1.png', 'bottom_2.png', 'bottom_3.png', 'bottom_4.png', 'bottom_5.png', 'bottom_6.png', 'bottom_7.png', 'bottom_8.png', 'bottom_9.png', 'bottom_10.png', 'bottom_11.png', 'bottom_12.png', 'bottom_13.png', 'bottom_14.png', 'bottom_15.png', 'bottom_16.png', 'bottom_17.png', 'bottom_18.png', 'bottom_19.png', 'bottom_20.png', 'bottom_21.png', 'bottom_22.png'], useColor: false }, // 22개
-    { name: 'SHOES', assets: ['shoes_1.png', 'shoes_2.png', 'shoes_3.png', 'shoes_4.png', 'shoes_5.png', 'shoes_6.png', 'shoes_7.png', 'shoes_8.png', 'shoes_9.png', 'shoes_10.png', 'shoes_11.png', 'shoes_12.png'], useColor: false }, // 8개
-    { name: 'ACCESSORY', assets: ['accessory_1.png', 'accessory_2.png', 'accessory_3.png', 'accessory_4.png', 'accessory_5.png', 'accessory_6.png', 'accessory_7.png', 'accessory_8.png', 'accessory_9.png', 'accessory_10.png', 'accessory_11.png', 'accessory_12.png', 'accessory_13.png', 'accessory_14.png', 'accessory_15.png', 'accessory_16.png', 'accessory_17.png', 'accessory_18.png'], useColor: false }, // 18개
+    { name: 'HEAD', assets: ['head_1.webp', 'head_2.webp', 'head_3.webp', 'head_4.webp', 'head_5.webp', 'head_6.webp', 'head_7.webp', 'head_8.webp', 'head_9.webp', 'head_10.webp', 'head_11.webp', 'head_12.webp'], useColor: true }, // 12개
+    { name: 'TOP', assets: ['top_1.webp', 'top_2.webp', 'top_3.webp', 'top_4.webp', 'top_5.webp', 'top_6.webp', 'top_7.webp', 'top_8.webp', 'top_9.webp', 'top_10.webp', 'top_11.webp', 'top_12.webp', 'top_13.webp', 'top_14.webp', 'top_15.webp', 'top_16.webp', 'top_17.webp', 'top_18.webp', 'top_19.webp', 'top_20.webp', 'top_21.webp', 'top_22.webp', 'top_23.webp', 'top_24.webp'], useColor: false }, // 24개
+    { name: 'BOTTOM', assets: ['bottom_1.webp', 'bottom_2.webp', 'bottom_3.webp', 'bottom_4.webp', 'bottom_5.webp', 'bottom_6.webp', 'bottom_7.webp', 'bottom_8.webp', 'bottom_9.webp', 'bottom_10.webp', 'bottom_11.webp', 'bottom_12.webp', 'bottom_13.webp', 'bottom_14.webp', 'bottom_15.webp', 'bottom_16.webp', 'bottom_17.webp', 'bottom_18.webp', 'bottom_19.webp', 'bottom_20.webp', 'bottom_21.webp', 'bottom_22.webp'], useColor: false }, // 22개
+    { name: 'SHOES', assets: ['shoes_1.webp', 'shoes_2.webp', 'shoes_3.webp', 'shoes_4.webp', 'shoes_5.webp', 'shoes_6.webp', 'shoes_7.webp', 'shoes_8.webp', 'shoes_9.webp', 'shoes_10.webp', 'shoes_11.webp', 'shoes_12.webp'], useColor: false }, // 8개
+    { name: 'ACCESSORY', assets: ['accessory_1.webp', 'accessory_2.webp', 'accessory_3.webp', 'accessory_4.webp', 'accessory_5.webp', 'accessory_6.webp', 'accessory_7.webp', 'accessory_8.webp', 'accessory_9.webp', 'accessory_10.webp', 'accessory_11.webp', 'accessory_12.webp', 'accessory_13.webp', 'accessory_14.webp', 'accessory_15.webp', 'accessory_16.webp', 'accessory_17.webp', 'accessory_18.webp'], useColor: false }, // 18개
     { name: 'EXPRESSION', assets: [], useColor: false },
   ];
   
@@ -403,15 +403,17 @@ const handleAssetSelection = (category, index) => {
 
       const canvasParent = canvasRef.current.parentNode;
       console.log(window.innerWidth, window.innerHeight);
+      console.log(canvasRef.current.clientWidth, canvasRef.current.clientHeight);
       // cameraRef.current = new THREE.PerspectiveCamera(10, 1, 0.1, 1000);
 
       // 캔버스 크기에 따라 orthographic 카메라 설정
-      const aspect = (canvasParent.innerWidth) / (canvasParent.innerHeight);
+      const aspect = (canvasRef.current.clientWidth) / (canvasRef.current.clientHeight);
+      console.log(aspect);
       const frustumSize = 5; // 카메라 시야 크기, 필요에 따라 조정
 
       cameraRef.current = new THREE.OrthographicCamera(
-        (frustumSize ) / -2, // left
-        (frustumSize ) / 2,  // right
+        (frustumSize * aspect ) / -2, // left
+        (frustumSize * aspect ) / 2,  // right
         frustumSize / 2,             // top
         frustumSize / -2,            // bottom
         0.1,                         // near
@@ -423,7 +425,7 @@ const handleAssetSelection = (category, index) => {
       rendererRef.current.setClearColor(0x000000, 0);
 
         // 카메라 업데이트 후 정사각형 비율로 맞추기
-      cameraRef.current.aspect = 1; // 정사각형 비율 (aspect 1:1)
+      cameraRef.current.aspect = aspect; // 정사각형 비율 (aspect 1:1)
       cameraRef.current.updateProjectionMatrix();
 
       // hiddenRendererRef.current.setClearColor(0x000000, 0);
@@ -944,7 +946,7 @@ const clearExpressionCanvas = useCallback(() => {
     loadModel(modelPath, 'Base', false);  // 모델 로드
 
     // 2. 표정 캔버스 배경 이미지 교체
-    const faceBackground = `static/stockimages/facebackground_${index + 1}.png`;  // 해당 인덱스에 맞는 배경 이미지 선택
+    const faceBackground = `static/stockimages/facebackground_${index + 1}.webp`;  // 해당 인덱스에 맞는 배경 이미지 선택
     const faceBackgroundImage = document.querySelector("#face-background");  // 배경 이미지를 가리키는 요소 선택
     if (faceBackgroundImage) {
       faceBackgroundImage.src = faceBackground;  // 표정 캔버스 배경 이미지 변경
@@ -997,7 +999,14 @@ const clearExpressionCanvas = useCallback(() => {
         canvasRef.current.style.top = '58px';
         canvasRef.current.style.left = '0';
         // 카메라 비율 업데이트
-        cameraRef.current.aspect =  isFixedSize? '390px' : window.innerWidth / newHeight;
+        const aspect = (canvasRef.current.clientWidth) / (newHeight);
+        const frustumSize = 5; // 카메라 시야 크기, 필요에 따라 조정
+        cameraRef.current.left = (-frustumSize * aspect) / 2;
+        cameraRef.current.right = (frustumSize * aspect) / 2;
+        cameraRef.current.top = frustumSize / 2;
+        cameraRef.current.bottom = -frustumSize / 2;
+        cameraRef.current.aspect =  aspect;
+        
         cameraRef.current.updateProjectionMatrix();
 
         const controls = document.querySelector('.controls');
@@ -1095,7 +1104,7 @@ const clearExpressionCanvas = useCallback(() => {
   <div
     style={{
       overflow: "auto",
-      backgroundImage: `url('/static/stockimages/background_paper.png')`,
+      backgroundImage: `url('/static/stockimages/background_paper.webp')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
       height:'100%',
@@ -1111,7 +1120,7 @@ const clearExpressionCanvas = useCallback(() => {
     <div id="overlay" className="overlay">
       <div className="overlay-content">
         <img
-          src="../static/stockimages/maker_invitation.png"
+          src="../static/stockimages/maker_invitation.webp"
           alt="Invitation"
         />
       </div>
@@ -1135,7 +1144,7 @@ const clearExpressionCanvas = useCallback(() => {
   {isRecording && (
     <div id="splash-screen" className="splash-screen" style={{backgroundColor:'#F8F6F1'}}>
       <img
-        src="/static/stockimages/making.png"
+        src="/static/stockimages/making.webp"
         alt="Splash"
         style={{
           position: "Fixed",
@@ -1176,7 +1185,7 @@ const clearExpressionCanvas = useCallback(() => {
         overflow: "hidden",
         // backgroundColor: "salmon",
 
-        backgroundImage: `url('/static/stockimages/background_paper.png')`,
+        backgroundImage: `url('/static/stockimages/background_paper.webp')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
       
@@ -1184,7 +1193,7 @@ const clearExpressionCanvas = useCallback(() => {
       }}
     >
       <canvas id="ourcanvas" ref={canvasRef} style={{
-        backgroundImage: `url('/static/stockimages/background_paper.png')`,
+        backgroundImage: `url('/static/stockimages/background_paper.webp')`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}/>
@@ -1401,7 +1410,7 @@ const clearExpressionCanvas = useCallback(() => {
 
                       {selectedFaceColor === colorObj.color && (
                         <img
-                          src="/static/stockimages/check.png"
+                          src="/static/stockimages/check.webp"
                           alt="check"
                           style={{
                             position: "absolute",
@@ -1439,8 +1448,8 @@ const clearExpressionCanvas = useCallback(() => {
                       backgroundColor: "#000", // 배경색 검정
                       backgroundImage: `url(${
                         expressionIsErasing
-                          ? "static/stockimages/eraser.png"
-                          : "static/stockimages/pencil.png"
+                          ? "static/stockimages/eraser.webp"
+                          : "static/stockimages/pencil.webp"
                       })`, // 조건에 따라 배경 이미지 변경
                       backgroundPosition: "center",
                       backgroundSize: "70%",
@@ -1468,7 +1477,7 @@ const clearExpressionCanvas = useCallback(() => {
                         borderRadius: "50%", // 둥근 원 모양
                         backgroundColor: "#000", // 배경색 검정
                         backgroundImage:
-                          "url(static/stockimages/apply.png)", // apply.png 이미지 사용
+                          "url(static/stockimages/apply.webp)", // apply.webp 이미지 사용
                         backgroundPosition: "center",
                         backgroundSize: "60%", // 이미지 크기를 50%로 설정
                         backgroundRepeat: "no-repeat",
@@ -1498,7 +1507,7 @@ const clearExpressionCanvas = useCallback(() => {
               >
                 {/* 배경 이미지 */}
                 <img
-                  src="static/stockimages/facebackground.png"
+                  src="static/stockimages/facebackground.webp"
                   alt="Face Background"
                   style={{
                     position: "absolute",
@@ -1589,7 +1598,7 @@ const clearExpressionCanvas = useCallback(() => {
                           : `${activeCategory.name.toLowerCase()}_${
                               index + 1
                             }`
-                      }.png`}
+                      }.webp`}
                       alt={`Asset ${index}`}
                       style={{
                         width: "100%",
@@ -1689,7 +1698,7 @@ const clearExpressionCanvas = useCallback(() => {
 
                 {selectedColor === color.name && (
                   <img
-                    src="/static/stockimages/check.png"
+                    src="/static/stockimages/check.webp"
                     alt="check"
                     style={{
                       position: "absolute",
