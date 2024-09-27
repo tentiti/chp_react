@@ -96,20 +96,26 @@ const CreateCharacter = ({isFixedSize}) => {
     ACCESSORY: null,
   });
 
-  // 선택한 카테고리의 인덱스를 업데이트하는 함수
   const handleAssetSelection = (category, index) => {
     setSelectedIndices((prevSelectedIndices) => {
+      // 이미 선택된 모델을 다시 클릭한 경우: 모델을 제거하고 해제
       if (prevSelectedIndices[category] === index) {
-        // 이미 선택된 항목이면 선택 해제 (null로 설정)하고 모델을 씬에서 제거
-        removeModel(category); // 모델을 씬에서 제거하는 함수 호출
+        console.log(`Deselecting model in category ${category}`);
+        removeModel(category); // 선택된 모델 제거
         return {
           ...prevSelectedIndices,
-          [category]: null,
+          [category]: null, // 선택 해제
         };
       }
   
-      // 새로운 항목을 선택하면 이전 모델을 제거하고 새로운 모델을 로드
-      removeModel(category); // 기존 모델 제거
+      // 새로운 모델을 선택한 경우
+      console.log(`Selecting new model in category ${category}, index: ${index}`);
+      
+      // 모델이 중복해서 로드되는 문제를 방지
+      if (prevSelectedIndices[category] !== null) {
+        removeModel(category); // 기존 모델이 있을 경우 제거
+      }
+  
       const modelPath = CATEGORIES.find(cat => cat.name === category)?.useColor
         ? `/static/models/${category.toLowerCase()}_${index + 1}_${selectedColor || "Black"}.glb`
         : `/static/models/${category.toLowerCase()}_${index + 1}.glb`;
@@ -117,54 +123,41 @@ const CreateCharacter = ({isFixedSize}) => {
   
       return {
         ...prevSelectedIndices,
-        [category]: index, // 선택된 인덱스 업데이트
+        [category]: index, // 새로운 인덱스 저장
       };
     });
   };
   
-  
-  // 모델을 씬에서 제거하는 함수
+  // 모델을 씬에서 제거하는 함수 최적화
   const removeModel = (category) => {
     modelsRef.current = modelsRef.current.filter((item) => {
       if (item.categoryName === category) {
-        // 씬에서 해당 모델을 제거
-        if (sceneRef.current.getObjectById(item.model.id)) {
-          console.log(`Removing model for category: ${category}`);
+        const modelInScene = sceneRef.current.getObjectById(item.model.id);
+        if (modelInScene) {
           sceneRef.current.remove(item.model);
+          console.log(`Model removed from scene for category: ${category}`);
         }
   
-        // 애니메이션 믹서도 제거
-        if (item.mixer) {
-          item.mixer.stopAllAction();
-          item.mixer.uncacheRoot(item.model);
-        }
-  
-        // 모델의 모든 자식 요소 순회
+        // 리소스 해제
         item.model.traverse((child) => {
           if (child.isMesh) {
-            // 지오메트리 해제
-            if (child.geometry) {
-              child.geometry.dispose();
-            }
-            // 머티리얼 해제
+            if (child.geometry) child.geometry.dispose();
             if (child.material) {
-              // 텍스처가 있으면 해제
-              if (child.material.map) {
-                child.material.map.dispose();
-              }
+              if (child.material.map) child.material.map.dispose();
               child.material.dispose();
             }
           }
         });
   
-        return false; // 해당 모델을 modelsRef에서 제거
+        return false; // 해당 모델을 삭제
       }
-      return true; // 다른 모델은 유지
+      return true; // 남은 모델은 유지
     });
   
-    // 씬의 상태를 다시 렌더링
+    // 씬을 다시 렌더링
     rendererRef.current.render(sceneRef.current, cameraRef.current);
   };
+  
   
   
   
@@ -276,141 +269,73 @@ const CreateCharacter = ({isFixedSize}) => {
 
   const loadModel = useCallback((modelPath, categoryName, useColor = false, onLoad) => {
     const loader = new GLTFLoader();
-
     const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath('/draco/'); // 이 경로는 Draco 디코더의 경로입니다. 올바른 경로로 설정하세요.
-    loader.setDRACOLoader(dracoLoader); // GLTFLoader에 DRACOLoader 추가
-
+    dracoLoader.setDecoderPath('/draco/');
+    loader.setDRACOLoader(dracoLoader);
+    
     let storedExpressionTexture = null;
-
-    // HEAD 카테고리일 때, 기존 텍스처를 빼온다
+  
+    // HEAD 카테고리인 경우 텍스처 백업
     if (categoryName === 'HEAD') {
       modelsRef.current.forEach(({ model }) => {
         model.traverse((child) => {
-          if (child.name === 'head_1') {
-            if (child.material.map) {
-              storedExpressionTexture = child.material.map; // 기존 텍스처 저장
-            }
+          if (child.name === 'head_1' && child.material.map) {
+            storedExpressionTexture = child.material.map;
           }
         });
       });
     }
-
-    // 원피스가 선택되었는지 여부 확인 및 하의 비활성화 및 제거
-    if (categoryName === 'TOP' && ['19', '20', '21', '22', '23', '24'].some(num => modelPath.includes(num))) {
-      setIsDressSelected(true);  // 원피스 또는 지정된 숫자가 포함된 경우 하의 비활성화
-
-      // 기존 하의 모델을 찾아서 삭제
-      modelsRef.current = modelsRef.current.filter((item) => {
-        if (item.categoryName === 'BOTTOM') {
-          sceneRef.current.remove(item.model);  // 하의 모델을 씬에서 제거
-          item.model.traverse((child) => {
-            if (child.isMesh) {
-              if (child.geometry) child.geometry.dispose();
-              if (child.material) {
-                if (child.material.map) child.material.map.dispose(); // 텍스처 해제
-                child.material.dispose(); // 머티리얼 해제
-              }
-            }
-          });
-          return false;  // 해당 모델을 modelsRef에서 제거
-        }
-        return true;
-      });
-    } else if (categoryName === 'TOP') {
-      setIsDressSelected(false); // 다른 상의를 선택하면 하의 활성화
+  
+    // 중복된 모델이 이미 있는지 확인
+    const existingModelIndex = findExistingModel(categoryName);
+  
+    if (existingModelIndex !== -1) {
+      const existingModel = modelsRef.current[existingModelIndex];
+  
+      // 이미 선택된 동일 모델이면 제거만 하고 리턴
+      if (existingModel.modelPath === modelPath) {
+        console.log('Same model selected again, removing it.');
+        removeModelFromScene(existingModel);
+        modelsRef.current.splice(existingModelIndex, 1);
+        console.log('Current modelsRef after removal:', modelsRef.current);
+        return; // 여기서 즉시 리턴
+      }
+  
+      // 다른 모델이면 기존 모델을 제거
+      console.log(`Removing existing model in the same category: ${existingModel.categoryName}`);
+      removeModelFromScene(existingModel);
+      modelsRef.current.splice(existingModelIndex, 1);
     }
   
-    modelsRef.current = modelsRef.current.filter((item) => {
-      if (item.categoryName === categoryName) {
-        sceneRef.current.remove(item.model);
-        item.model.traverse((child) => {
-          if (child.isMesh) {
-              // Dispose of geometries and materials
-              if (child.geometry) child.geometry.dispose();
-              if (child.material) {
-                  // If the material has a texture, dispose of it
-                  if (child.material.map) child.material.map.dispose();
-                  child.material.dispose();
-              }
-          }
-      });
-        
-        return false;
-      }
-      return true;
-    });
-
+    // 새로운 모델 로드
     loader.load(
       modelPath,
       (gltf) => {
         const model = gltf.scene;
         sceneRef.current.add(model);
-
-        if (categoryName === 'Base') {
-          gltf.scene.traverse((child) => {
-            if (child.isMesh) {
-              child.renderOrder = 1000;
-            }
-          });
-        } else {
-          gltf.scene.traverse((child) => {
-            if (child.isMesh) {
-              child.renderOrder = 100;
-            }
-          });
-        }
-
-        model.traverse((child) => {
-          if (child.isMesh && child.name === 'HEAD') {
-            child.material.depthTest = false;  // 깊이 테스트 비활성화
-            child.material.depthWrite = false;  // 깊이 쓰기 비활성화
-            child.material.needsUpdate = true;
-          }
-        });
-
-        // if (categoryName === 'HEAD'){
-        //   const scale = 1.06;
-        //   model.position.set(0, -0.3, 0); // 필요시 위치 조정
-        //   model.scale.set(scale, scale, scale); // 필요시 크기 조정
-        // }
-
+  
+        setRenderOrder(model, categoryName);
+  
+        // HEAD 카테고리의 경우 텍스처 복원
         if (categoryName === 'HEAD' && storedExpressionTexture) {
-          model.traverse((child) => {
-            if (child.name === 'head_1') {
-              const mesh = child;
-              if (mesh) {
-                mesh.material.map = storedExpressionTexture; // 저장한 텍스처를 다시 적용
-                mesh.material.needsUpdate = true;
-                mesh.material.polygonOffset = true;
-                mesh.material.polygonOffsetFactor = -0.1;
-              }
-            }
-          });
+          applyStoredTexture(model, storedExpressionTexture);
         }
-
+  
         const mixer = new THREE.AnimationMixer(model);
         let action = null;
-
+  
+        // 애니메이션 설정
         if (gltf.animations.length > 0) {
-          console.log('Animations:', gltf.animations);  // 애니메이션 클립을 출력해 확인
-          action = mixer.clipAction(gltf.animations[0]);
-          action.setLoop(THREE.LoopRepeat);
-          action.clampWhenFinished = true;
-          // action.paused = true;
-          action.play();
-          const frameDuration = 1 / 24;  // For 24fps animation
-          mixer.update(frameDuration);  // Move animation forward by 1 frame
-          action.paused = true;
+          console.log('Animations:', gltf.animations);
+          action = setupAnimation(mixer, gltf.animations[0]);
         }
-
-        mixersRef.current.push(mixer); 
-
-        // console.log({ model, mixer, action, categoryName });
-
-        modelsRef.current.push({ model, mixer, action, categoryName });
-        // updateCameraView();
-
+  
+        mixersRef.current.push(mixer);
+  
+        // 새 모델을 modelsRef에 추가
+        modelsRef.current.push({ model, mixer, action, categoryName, modelPath });
+        console.log('Adding model to modelsRef:', { categoryName, modelPath });
+  
         if (onLoad) onLoad();
         setLoadingStatus('Loaded Successfully');
       },
@@ -426,6 +351,103 @@ const CreateCharacter = ({isFixedSize}) => {
       }
     );
   }, []);
+  
+  
+  
+  // 기존 모델을 찾아서 제거
+  function findExistingModel(categoryName) {
+    return modelsRef.current.findIndex(item => {
+      return item.categoryName.trim().toLowerCase() === categoryName.trim().toLowerCase();
+    });
+  }
+  
+  // 하의를 제거하는 함수
+  function removeBottomModel() {
+    modelsRef.current = modelsRef.current.filter((item) => {
+      if (item.categoryName === 'BOTTOM') {
+        removeModelFromScene(item);
+        return false;
+      }
+      return true;
+    });
+  }
+  
+  // 모델을 씬에서 제거하고 메모리 해제
+  function removeModelFromScene(modelItem) {
+    sceneRef.current.remove(modelItem.model);
+    disposeModel(modelItem.model);
+  }
+  
+  // 모델 리소스를 해제하는 함수
+  function disposeModel(model) {
+    model.traverse((child) => {
+      if (child.isMesh) {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) {
+          if (child.material.map) child.material.map.dispose();
+          child.material.dispose();
+        }
+      }
+    });
+  }
+  
+  // 저장된 텍스처를 적용하는 함수
+  function applyStoredTexture(model, storedTexture) {
+    model.traverse((child) => {
+      if (child.name === 'head_1' && child.isMesh) {
+        child.material.map = storedTexture;
+        child.material.needsUpdate = true;
+      }
+    });
+  }
+  
+  // 모델의 렌더 순서 설정
+  function setRenderOrder(model, categoryName) {
+    const renderOrderMap = {
+      'Base': 10,
+      'HEAD': 20,
+      'TOP': 30,
+      'BOTTOM': 40,
+      'SHOES': 50,
+      'ACCESSORY': 60
+    };
+    model.traverse((child) => {
+      if (child.isMesh) {
+        child.renderOrder = renderOrderMap[categoryName] || 0;
+      }
+    });
+  }
+  
+  
+  // 모델의 렌더 순서 설정
+  function setRenderOrder(model, categoryName) {
+    const renderOrderMap = {
+      'Base': 10,
+      'HEAD': 20,
+      'TOP': 30,
+      'BOTTOM': 40,
+      'SHOES': 50,
+      'ACCESSORY': 60
+    };
+    model.traverse((child) => {
+      if (child.isMesh) {
+        child.renderOrder = renderOrderMap[categoryName] || 0;
+      }
+    });
+  }
+  
+  
+  const setupAnimation = (mixer, animation) => {
+    const action = mixer.clipAction(animation);
+    action.setLoop(THREE.LoopRepeat);
+    action.clampWhenFinished = true;
+    action.play();
+    const frameDuration = 1 / 24;
+    mixer.update(frameDuration);
+    action.paused = true;
+    return action;
+  };
+  
 
   const updateCameraView = useCallback(() => {
     if (modelsRef.current.length === 0) return;
@@ -957,6 +979,7 @@ const uploadGif = async (gifBlob) => {
             });
   
             mesh.material.needsUpdate = true;
+            mesh.renderOrder = 10;
           }
         }
       });
@@ -1653,12 +1676,12 @@ const clearExpressionCanvas = useCallback(() => {
                             activeCategory.name.toLowerCase()
                           }_${index + 1}.glb`;
 
-                      // console.log(modelPath);
-                      loadModel(
-                        modelPath,
-                        activeCategory.name,
-                        activeCategory.useColor
-                      );
+                      // // console.log(modelPath);
+                      // loadModel(
+                      //   modelPath,
+                      //   activeCategory.name,
+                      //   activeCategory.useColor
+                      // );
                     }}
                   >
                     <img

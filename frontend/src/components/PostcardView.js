@@ -307,9 +307,9 @@ const PostcardView = ({isFixedSize}) => {
       cameraRef.current.updateProjectionMatrix(); 
 
       const modelPositionConfigs = {
-        1: { xOffset: -2, yOffset: -2.5, zOffset: 1, scaleFactor: 0.95 },  
-        2: { xOffset: 1.5, yOffset: -0.2, zOffset: 1, scaleFactor: 0.95 },  
-        3: { xOffset: 2.5, yOffset: 1.5, zOffset: 1, scaleFactor: 0.95 },  
+        1: { xOffset: -2, yOffset: -2.5, zOffset:2, scaleFactor: 0.95 },  
+        2: { xOffset: 1.5, yOffset: -0.2, zOffset: 2, scaleFactor: 0.95 },  
+        3: { xOffset: 2.5, yOffset: 1.5, zOffset: 2, scaleFactor: 0.95 },  
       }; 
       const { xOffset, yOffset, zOffset, scaleFactor } = modelPositionConfigs[postcard?.number] || {
         xOffset: 0,
@@ -331,10 +331,10 @@ const PostcardView = ({isFixedSize}) => {
         const bgMesh = new THREE.Mesh(new THREE.PlaneGeometry(frustumSize * (720 / 1280), frustumSize), bgMaterial);
         bgMesh.material.depthTest = false;
         bgMesh.material.depthWrite = false;
-        bgMesh.renderOrder = 30;
+        bgMesh.renderOrder = -1;
         bgMesh.name="text_bg"
         bgMesh.categoryName="background"
-        bgMesh.position.z = 10;
+        bgMesh.position.z = 1;
         sceneRef.current.add(bgMesh);
       });
 
@@ -553,13 +553,16 @@ const PostcardView = ({isFixedSize}) => {
   };
 
   const canvasStyle = {
-    position: 'absolute',
-    marginTop:isFixedSize? '-40px' : '',
-    transform: `scale(${
+    position: 'fixed',
+    top: isFixedSize? '58px' : '24px',
+    transform: isFixedSize? `translate(0, -26.5%) scale(${
       containerRef.current ? 
       Math.min(containerRef.current.clientWidth / 720, containerRef.current.clientHeight / 1280) : 1
+    })` : `translate(0) scale(${
+      containerRef.current ? 
+      Math.min(window.innerWidth / 720, (window.innerHeight - 118) / 1280) : 1
     })`,
-    transformOrigin: 'center center',
+    transformOrigin: isFixedSize? 'center center': 'top center',
   };
 
   const recordReady = () => {
