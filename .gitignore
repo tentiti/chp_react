@@ -11,6 +11,8 @@ node_modules
 .pnp.js
 node_modules/
 
+*.zip
+
 npm-debug.log*
 
 # testing
