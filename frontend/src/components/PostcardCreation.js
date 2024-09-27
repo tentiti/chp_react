@@ -242,7 +242,7 @@ const PostcardCreation = () => {
 
       <div id="submitcontainer">
         <button className="submit-button" onClick={handleSubmit}>
-          포스트카드 제출
+          '나'의 춤 추러가기
         </button>
       </div>
       

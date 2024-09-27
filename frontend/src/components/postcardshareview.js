@@ -295,9 +295,9 @@ const PostcardShareView = () => {
         }}>
           <div>2024. 10. 12 - 10.29.</div>
           <div className="footerBorder">|</div>
-          <a href="https://google.com">김화순 개인전</a>
-          <div className="footerBorder">|</div>
-          <a href="https://google.com">자하미술관</a>
+        <a href="https://www.instagram.com/kkot.pida.gallery/">김화순 개인전</a>
+        <div className="footerBorder">|</div>
+        <a href="https://www.zahamuseum.org">자하미술관</a>
         </footer>
 
       {/* Add the audio element for test.mp3 */}

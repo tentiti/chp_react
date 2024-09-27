@@ -149,7 +149,7 @@ const PostcardView = ({isFixedSize}) => {
   
     try {
       if (navigator.clipboard) {
-        await navigator.clipboard.writeText('Check out this postcard video!');
+        await navigator.clipboard.writeText('@k.imhwasoon @kkot.pida.gallery');
         console.log('Text copied to clipboard');
       }
 
@@ -321,7 +321,7 @@ const PostcardView = ({isFixedSize}) => {
       moveAndScaleModels(xOffset, yOffset, zOffset, scaleFactor); 
       
       const loader = new THREE.TextureLoader();
-      loader.load(`/static/stockimages/postcardfinal_${postcard?.number}.webp`, (bgTexture) => {
+      loader.load(`/static/stockimages/postcardfinal_${postcard?.number}.png`, (bgTexture) => {
         bgTexture.colorSpace = THREE.SRGBColorSpace;
         bgTexture.anisotropy = rendererRef.current.capabilities.getMaxAnisotropy();
         bgTexture.minFilter = THREE.LinearFilter;
@@ -538,10 +538,9 @@ const PostcardView = ({isFixedSize}) => {
   }, [blobUrl, textMeshes]);
 
   const containerStyle = {
-    position: 'absolute',
+    position: 'absoulute',
     top: '58px',
     left: 0,
-    position: 'relative',
     width: '100%',
     aspectRatio: '9 / 16',
     maxHeight: 'calc(100vh - 178px)',
@@ -549,13 +548,13 @@ const PostcardView = ({isFixedSize}) => {
 
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'flexq',
+    justifyContent: 'flex-start',
     alignItems: 'center',
   };
 
   const canvasStyle = {
-    position: 'relative',
-    marginTop:isFixedSize? '' : '',
+    position: 'absolute',
+    marginTop:isFixedSize? '-40px' : '',
     transform: `scale(${
       containerRef.current ? 
       Math.min(containerRef.current.clientWidth / 720, containerRef.current.clientHeight / 1280) : 1
@@ -573,8 +572,9 @@ const PostcardView = ({isFixedSize}) => {
   return (
     <div style={{ 
       backgroundImage: `url('/static/stockimages/background_paper.webp')`, 
+      backgroundSize: 'contain',
       width: '100vw', 
-      height: '100%', 
+      height: '100vh', 
       zIndex: '900',
       overflow: 'hidden' ,
       overflowY: 'hidden',  
@@ -681,10 +681,10 @@ const PostcardView = ({isFixedSize}) => {
       {isRecordingDone && (
         <>
           <button className="upbutton" onClick={downloadVideo} disabled={!blobUrl}>
-            춤사위 저장하기
+            저장하기
           </button>
           <button className="upbutton" onClick={shareVideo} disabled={!blobUrl}>
-          춤사위 공유하기
+           인스타그램 공유하기
           </button>
         </>
       )}
