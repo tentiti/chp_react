@@ -864,7 +864,7 @@ const uploadGif = async (gifBlob) => {
   
   const applyExpressionTextureToModel = () => {
     const canvas = expressionCanvasRef.current;
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext('2d', { willReadFrequently: true });
   
     // 캔버스에서 검정(#000000) 또는 흰색(#FFFFFF) 부분을 선택적으로 처리
     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
@@ -1301,7 +1301,7 @@ const clearExpressionCanvas = useCallback(() => {
           <div className="category-selection">
             {CATEGORIES.map((category, index) => (
               <button
-                key={category.name || index}
+                key={category.name}
                 onClick={() => handleCategorySelection(category)} // Handles category selection on click
                 className={`color-button ${
                   selectedCategory === category.name ? "selected" : ""
@@ -1417,7 +1417,7 @@ const clearExpressionCanvas = useCallback(() => {
                 >
                   {GRAYSCALE_COLORS.map((colorObj, index) => (
                     <button
-                      key={index}
+                      key={colorObj.color}
                       onClick={() => {
                         setExpressionDrawingColor(colorObj.color);
                         clearCanvasWithColor(colorObj.color);
@@ -1644,69 +1644,67 @@ const clearExpressionCanvas = useCallback(() => {
               </div>
             </>
           ) : (
-            <>
-              {activeCategory &&
-                activeCategory.assets.map((asset, index) => (
-                  <div id="makemescrollhere" style={{
-                    key: {index},
-                    overflowY: 'scroll !important',
-                    WebkitOverflowScrolling: 'touch !important',
-                  }}>
-                                      <div
-                    className="pictures"
-                    key={index}
-                    style={{
-                      width: "100%",
-                      aspectRatio: "1 / 1",
-                      borderRadius: "18px",
-                      backgroundColor:
-                        selectedIndices[activeCategory.name] === index
-                          ? "#E9A7A7"
-                          : "#EDECE7", // 선택된 항목에 배경색 추가
-                    }}
-                    onClick={() => {
-                      handleAssetSelection(activeCategory.name, index); // 카테고리별 선택된 인덱스 업데이트
-                      const modelPath = activeCategory.useColor
-                        ? `/static/models/${
-                            activeCategory.name.toLowerCase()
-                          }_${index + 1}_${
-                            selectedColor || "Black"
-                          }.glb`
-                        : `/static/models/${
-                            activeCategory.name.toLowerCase()
-                          }_${index + 1}.glb`;
+<>
+  {activeCategory &&
+    activeCategory.assets.map((asset, index) => (
+      <div
+        key={index} // key 속성은 여기 위치해야 합니다.
+        id="makemescrollhere"
+        style={{
+          overflowY: 'scroll !important',
+          WebkitOverflowScrolling: 'touch !important',
+        }}
+      >
+        <div
+          className="pictures"
+          style={{
+            width: "100%",
+            aspectRatio: "1 / 1",
+            borderRadius: "18px",
+            backgroundColor:
+              selectedIndices[activeCategory.name] === index
+                ? "#E9A7A7"
+                : "#EDECE7", // 선택된 항목에 배경색 추가
+          }}
+          onClick={() => {
+            handleAssetSelection(activeCategory.name, index); // 카테고리별 선택된 인덱스 업데이트
+            const modelPath = activeCategory.useColor
+              ? `/static/models/${activeCategory.name.toLowerCase()}_${
+                  index + 1
+                }_${selectedColor || "Black"}.glb`
+              : `/static/models/${activeCategory.name.toLowerCase()}_${
+                  index + 1
+                }.glb`;
 
-                      // // console.log(modelPath);
-                      // loadModel(
-                      //   modelPath,
-                      //   activeCategory.name,
-                      //   activeCategory.useColor
-                      // );
-                    }}
-                  >
-                    <img
-                      src={`/static/assetImages/${
-                        activeCategory.useColor
-                          ? `${activeCategory.name.toLowerCase()}_${
-                              index + 1
-                            }_${selectedColor}`
-                          : `${activeCategory.name.toLowerCase()}_${
-                              index + 1
-                            }`
-                      }.webp`}
-                      alt={`Asset ${index}`}
-                      style={{
-                        width: "100%",
-                        aspectRatio: "1 / 1",
-                        borderRadius: "18px",
-                        boxSizing: "content-box",
-                      }}
-                    />
-                  </div>
-                  </div>
+            // 모델 로드 코드가 주석 처리되어 있어서, 필요 시 여기에 추가
+            // loadModel(
+            //   modelPath,
+            //   activeCategory.name,
+            //   activeCategory.useColor
+            // );
+          }}
+        >
+          <img
+            src={`/static/assetImages/${
+              activeCategory.useColor
+                ? `${activeCategory.name.toLowerCase()}_${
+                    index + 1
+                  }_${selectedColor}`
+                : `${activeCategory.name.toLowerCase()}_${index + 1}`
+            }.webp`}
+            alt={`Asset ${index}`}
+            style={{
+              width: "100%",
+              aspectRatio: "1 / 1",
+              borderRadius: "18px",
+              boxSizing: "content-box",
+            }}
+          />
+        </div>
+      </div>
+    ))}
+</>
 
-                ))}
-            </>
           )}
         </div>
 
