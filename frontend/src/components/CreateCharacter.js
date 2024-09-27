@@ -1062,9 +1062,9 @@ const clearExpressionCanvas = useCallback(() => {
       cameraRef.current.updateProjectionMatrix();
     } else {
       // 다른 카테고리로 돌아갈 때 카메라 위치와 줌을 원래대로 되돌림
-      cameraRef.current.position.set(0, 2.1, 3);  // 카메라 위치
-      cameraRef.current.lookAt(new THREE.Vector3(0, 2.1, 3));  // 바라볼 좌표 설정
-      cameraRef.current.zoom = 0.45;  // 기본 줌
+      cameraRef.current.position.set(0, 3.15, 3);  // 카메라 위치
+      cameraRef.current.lookAt(new THREE.Vector3(0, 3.15, 3));  // 바라볼 좌표 설정
+      cameraRef.current.zoom = 0.7;  // 기본 줌
       cameraRef.current.updateProjectionMatrix();
     }
   }, [selectedCategory]);
