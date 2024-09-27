@@ -554,7 +554,7 @@ const PostcardView = ({isFixedSize}) => {
 
   const canvasStyle = {
     position: 'relative',
-    marginTop:isFixedSize? '' : '-88px',
+    marginTop:isFixedSize? '' : '',
     transform: `scale(${
       containerRef.current ? 
       Math.min(containerRef.current.clientWidth / 720, containerRef.current.clientHeight / 1280) : 1

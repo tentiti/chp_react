@@ -178,6 +178,28 @@ function Invitation({ onBack, showbutton=false }) {
         </a>
       </div>
       )}
+
+    {!showbutton &&(
+        <div
+        style={{
+          position: 'fixed',
+          bottom: '10%',
+          right: isSlideIn ? '0%' : '-150%',
+          left: 0,
+          zIndex: 99999,
+          display: 'flex',
+          justifyContent: 'center',
+          transition: 'right 0.7s ease',
+          width: '100%',
+          textAlign: 'center',
+          fontSize: '10px',
+          color: '#F8F6F1'
+        }}
+      >
+        이제 댄스타임 : 평화의 나무에 달빛이 닿은 날, 반짝이는 춤결<br />
+        기획 및 제작 | 유채영 김휴초
+      </div>
+      )}
       
     </div>
   );
