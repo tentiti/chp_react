@@ -312,6 +312,7 @@ function Home() {
                 aspectRatio: '1/1',
               }}>
                 <img
+                  style={{width:'100%', height:'100%'}}
                   src={`/api/uploads/${postcard.png_name}?t=${new Date().getTime()}`} 
                   // src={`/api/uploads/${postcard.png_name}`} 
                   alt={`grid ${postcard.id}`}

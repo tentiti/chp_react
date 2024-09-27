@@ -483,7 +483,7 @@ const CreateCharacter = ({isFixedSize}) => {
         antialias: true, 
         canvas: canvasRef.current, 
         alpha: true,
-        preserveDrawingBuffer: true 
+        // preserveDrawingBuffer: true 
       });
 
       rendererRef.currentoutputColorSpace = THREE.SRGBColorSpace;

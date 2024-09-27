@@ -104,6 +104,7 @@ const PostcardView = ({isFixedSize}) => {
         height: 720,
         frameRate: 30 
       },
+      audioBitsPerSecond: 510000,  // 오디오 비트레이트를 510kbps로 설정
     });
 
     audioRef.current.play();

@@ -199,14 +199,14 @@ const PostcardShareView = () => {
         <div
           style={{
             position: 'absolute',
-            top: '60.5%',
+            top: '66%',
             zIndex: '900',
             width: '83%',
             color: '#412823',
             fontSize: '12px',
             textAlign: 'center',
             verticalAlign: 'top',
-            lineHeight: '2',
+            lineHeight: '2.4',
             fontFamily: 'Cafe24Simplehae, sans-serif',
             wordWrap: 'break-word',
             overflowWrap: 'break-word',
@@ -220,7 +220,7 @@ const PostcardShareView = () => {
         <div
           style={{
             position: 'absolute',
-            top: '67.2%',
+            top: '73.5%',
             zIndex: '900',
             width: '20%',
             color: '#412823',
@@ -242,7 +242,7 @@ const PostcardShareView = () => {
         <div
           style={{
             position: 'absolute',
-            top: '71.7%',
+            top: '78.3%',
             zIndex: '900',
             width: '20%',
             color: '#412823',
@@ -250,7 +250,7 @@ const PostcardShareView = () => {
             fontSize: '8px',
             fontFamily: 'pretandard, sans-serif',
             position: 'relative',
-            left: '28%',
+            left: '26.3%',
             textAlign: 'center',
             verticalAlign: 'middle',
             overflow: 'hidden',
