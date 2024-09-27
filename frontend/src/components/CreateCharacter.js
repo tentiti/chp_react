@@ -1196,7 +1196,7 @@ const clearExpressionCanvas = useCallback(() => {
         backgroundImage: `url('/static/stockimages/background_paper.webp')`,
         backgroundSize: "cover",
         backgroundPosition: "center",
-        marginTop: '-1px,'
+        marginTop: '-1px'
       }}/>
       {/* <canvas ref={hiddenCanvasRef} style={{ display: "none" }} /> */}
 
