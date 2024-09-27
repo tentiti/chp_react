@@ -179,7 +179,7 @@ function Invitation({ onBack, showbutton=false }) {
       </div>
       )}
 
-    {!showbutton &&(
+    {/* {!showbutton &&(
         <div
         style={{
           position: 'fixed',
@@ -199,7 +199,7 @@ function Invitation({ onBack, showbutton=false }) {
         이제 댄스타임 : 평화의 나무에 달빛이 닿은 날, 반짝이는 춤결<br />
         기획 및 제작 | 유채영 김휴초
       </div>
-      )}
+      )} */}
       
     </div>
   );

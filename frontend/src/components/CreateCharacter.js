@@ -966,11 +966,17 @@ const clearExpressionCanvas = useCallback(() => {
       cameraRef.current.lookAt(new THREE.Vector3(0, 5.6, 3));  // 바라볼 좌표 설정
       cameraRef.current.zoom = 2.2;  // 적당히 줌인
       cameraRef.current.updateProjectionMatrix();
+    } else if (selectedCategory === 'SHOES') {
+      // 머리 고르기 모드일 때 카메라 위치와 줌을 조정
+      cameraRef.current.position.set(0, 0.7, 3);  // 카메라 위치
+      cameraRef.current.lookAt(new THREE.Vector3(0, 0.7, 3));  // 바라볼 좌표 설정
+      cameraRef.current.zoom = 1.6;  // 적당히 줌인
+      cameraRef.current.updateProjectionMatrix();
     } else {
       // 다른 카테고리로 돌아갈 때 카메라 위치와 줌을 원래대로 되돌림
       cameraRef.current.position.set(0, 2.1, 3);  // 카메라 위치
       cameraRef.current.lookAt(new THREE.Vector3(0, 2.1, 3));  // 바라볼 좌표 설정
-      cameraRef.current.zoom = 0.4;  // 기본 줌
+      cameraRef.current.zoom = 0.45;  // 기본 줌
       cameraRef.current.updateProjectionMatrix();
     }
   }, [selectedCategory]);

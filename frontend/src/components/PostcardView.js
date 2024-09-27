@@ -6,6 +6,7 @@ import RecordRTC from 'recordrtc';
 import Credit from './Credit';
 import { useScene } from './SceneContext';
 import './PostcardView.css';
+import Invitation from './Invitation';
 
 
 const PostcardView = ({isFixedSize}) => {
@@ -577,7 +578,7 @@ const PostcardView = ({isFixedSize}) => {
       zIndex: '900',
       overflow: 'hidden' 
       }}>
-      {isInvitationVisible && <Credit onBack={handleBackClick} />}
+      {isInvitationVisible && <Invitation onBack={handleBackClick} />}
 
       <header
         style={{
