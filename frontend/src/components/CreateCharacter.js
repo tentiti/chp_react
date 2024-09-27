@@ -97,12 +97,77 @@ const CreateCharacter = ({isFixedSize}) => {
   });
 
   // 선택한 카테고리의 인덱스를 업데이트하는 함수
-const handleAssetSelection = (category, index) => {
-  setSelectedIndices((prevSelectedIndices) => ({
-    ...prevSelectedIndices,
-    [category]: index,  // 해당 카테고리의 선택된 인덱스를 업데이트
-  }));
-};
+  const handleAssetSelection = (category, index) => {
+    setSelectedIndices((prevSelectedIndices) => {
+      if (prevSelectedIndices[category] === index) {
+        // 이미 선택된 항목이면 선택 해제 (null로 설정)하고 모델을 씬에서 제거
+        removeModel(category); // 모델을 씬에서 제거하는 함수 호출
+        return {
+          ...prevSelectedIndices,
+          [category]: null,
+        };
+      }
+  
+      // 새로운 항목을 선택하면 이전 모델을 제거하고 새로운 모델을 로드
+      removeModel(category); // 기존 모델 제거
+      const modelPath = CATEGORIES.find(cat => cat.name === category)?.useColor
+        ? `/static/models/${category.toLowerCase()}_${index + 1}_${selectedColor || "Black"}.glb`
+        : `/static/models/${category.toLowerCase()}_${index + 1}.glb`;
+      loadModel(modelPath, category); // 새로운 모델 로드
+  
+      return {
+        ...prevSelectedIndices,
+        [category]: index, // 선택된 인덱스 업데이트
+      };
+    });
+  };
+  
+  
+  // 모델을 씬에서 제거하는 함수
+  const removeModel = (category) => {
+    modelsRef.current = modelsRef.current.filter((item) => {
+      if (item.categoryName === category) {
+        // 씬에서 해당 모델을 제거
+        if (sceneRef.current.getObjectById(item.model.id)) {
+          console.log(`Removing model for category: ${category}`);
+          sceneRef.current.remove(item.model);
+        }
+  
+        // 애니메이션 믹서도 제거
+        if (item.mixer) {
+          item.mixer.stopAllAction();
+          item.mixer.uncacheRoot(item.model);
+        }
+  
+        // 모델의 모든 자식 요소 순회
+        item.model.traverse((child) => {
+          if (child.isMesh) {
+            // 지오메트리 해제
+            if (child.geometry) {
+              child.geometry.dispose();
+            }
+            // 머티리얼 해제
+            if (child.material) {
+              // 텍스처가 있으면 해제
+              if (child.material.map) {
+                child.material.map.dispose();
+              }
+              child.material.dispose();
+            }
+          }
+        });
+  
+        return false; // 해당 모델을 modelsRef에서 제거
+      }
+      return true; // 다른 모델은 유지
+    });
+  
+    // 씬의 상태를 다시 렌더링
+    rendererRef.current.render(sceneRef.current, cameraRef.current);
+  };
+  
+  
+  
 
   const [loadingStatus, setLoadingStatus] = useState('Loading...');
   const [activeCategory, setActiveCategory] = useState(null);
@@ -1482,11 +1547,11 @@ const clearExpressionCanvas = useCallback(() => {
                         width: "32px", // 너비 32px
                         height: "32px", // 높이 32px
                         borderRadius: "50%", // 둥근 원 모양
-                        backgroundColor: "#000", // 배경색 검정
+                        backgroundColor: "#2B74E2", // 배경색 검정
                         backgroundImage:
-                          "url(static/stockimages/apply.webp)", // apply.webp 이미지 사용
+                          "url(static/stockimages/apply.png)", // apply.webp 이미지 사용
                         backgroundPosition: "center",
-                        backgroundSize: "60%", // 이미지 크기를 50%로 설정
+                        backgroundSize: "75%", // 이미지 크기를 50%로 설정
                         backgroundRepeat: "no-repeat",
                         boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.45)", // 그림자 효과
                         border: "none", // 테두리 없음
@@ -1535,13 +1600,13 @@ const clearExpressionCanvas = useCallback(() => {
                   style={{
                     position: "relative",
                     background: "blue", // 배경을 투명하게 설정clipPath: "inset(165px 550px 30px 80px)", // (80, 165)에서 (350, 350) 영역만 보이게 함
-                    clipPath: "inset(165px 550px 30px 70px)", // (80, 165)에서 (350, 350) 영역만 보이게 함
+                    clipPath: "inset(165px 510px 30px 30px)", // (80, 165)에서 (350, 350) 영역만 보이게 함
                     // transform: "translate(0, 0)", // X축으로 -500px 이동하여 오른쪽을 보이게 함
                     zIndex: 2, // 캔버스가 이미지 위에 렌더링되도록 설정
                     // overflow: "hidden",
                     // transform: "scale(2)",
-                    left: "calc(50% - 220px)",
-                    top: "calc(50% - 240px)",
+                    left: "calc(50% - 240px)",
+                    top: "calc(50% - 230px)",
                     border: "10px solid red",
                   }}
                   // 마우스 이벤트

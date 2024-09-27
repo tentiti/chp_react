@@ -161,7 +161,7 @@ const PostcardShareView = () => {
         position: 'fixed',
         top: '58px',
         // width: '100%',  // 창 너비를 100%로 맞춤
-        aspectRatio: '9/18',  // 16:9 비율을 유지
+        aspectRatio: '9/16.5',  // 16:9 비율을 유지
         height: 'calc(100% - 70px)',  // 높이는 전체에서 160px을 뺀 값으로 설정
         
         minWidth: '200px',  // 최대 너비 제한

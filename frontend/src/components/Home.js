@@ -328,7 +328,7 @@ function Home() {
           
         </div>
         <div style={{
-            fontFamily: 'pretendard',
+            fontFamily: 'Pretendard-Regular',
             fontSize: '9px',
             textAlign: 'center',
             color: '#412823',

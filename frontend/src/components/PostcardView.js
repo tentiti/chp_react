@@ -549,7 +549,7 @@ const PostcardView = ({isFixedSize}) => {
 
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center',
+    justifyContent: 'flexq',
     alignItems: 'center',
   };
 
@@ -574,9 +574,10 @@ const PostcardView = ({isFixedSize}) => {
     <div style={{ 
       backgroundImage: `url('/static/stockimages/background_paper.webp')`, 
       width: '100vw', 
-      height: '100vh', 
+      height: '100%', 
       zIndex: '900',
-      overflow: 'hidden' 
+      overflow: 'hidden' ,
+      overflowY: 'hidden',  
       }}>
       {isInvitationVisible && <Invitation onBack={handleBackClick} />}
 

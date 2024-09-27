@@ -29,7 +29,7 @@ const modelPositions = [
 
 const descriptions = [
     {
-        title: "만월",
+        title: "만월댄스",
         date: "2019",
         text: "그림의 꽉 찬 만월은 여성성의 세상이 때가 되었음을 상징합니다. 가부장적인 현장의 시작인 '집' 옥상 위에서 슬리퍼를 신은 여성이 깨춤(절로 흥이 나서 제멋대로 추는 막춤)을 춥니다. 각자의 일상에서 우리는 늘 불평등의 문제를 만납니다. 자, 이제 둥근달이 떴습니다. 모두가 어떤 억압도 없이 나다운 삶을 살 수 있도록 '나'만의 해방의 춤을 신나게 춥시다. 달빛이 닿아 반짝이는 이들의 아름다운 세상을 기대합니다.",
         image: "static/stockimages/work1.webp",
@@ -262,7 +262,7 @@ const PlaceSelection = () => {
                         display: 'flex',
                         flexDirection: 'row',
                         justifyContent: 'space-between',
-                        top: (isDesktop || isTablet) ? '150px' : 'calc(47.5dvh - 205px)',
+                        top: (isDesktop || isTablet) ? '175px' : 'calc(47.5dvh - 205px)',
                         left: '0',
                         width: '100%',
                         padding: '0 30px',
