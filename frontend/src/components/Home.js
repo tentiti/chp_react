@@ -115,6 +115,7 @@ function Home() {
     
     if (floatingButton && container && isFloatingVisible) {
 
+
       const buttonWidth = 70;
       const buttonHeight = 70;
       const collisionMargin = 5;
@@ -263,7 +264,10 @@ function Home() {
 
   return (
     <div className="App" style={{height: '100%', width: '100%'}}>
-      {isFloatingVisible && <div ref={floatingButtonRef} className="floating"></div>}
+      {isFloatingVisible && <div ref={floatingButtonRef} className="floating" style={{
+        left: '50px', // 초기 위치 설정
+        top: '100px', // 초기 위치 설정
+      }}></div>}
       
       <div id="headerLoader" style={{ 
         backgroundColor: isInvitationVisible ? 'transparent' : '#f8f6f1', 

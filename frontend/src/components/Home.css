@@ -43,6 +43,10 @@ body {
   flex-direction: column;
 }
 
+* {
+  font-family: "Pretendard-Regular", sans-serif;
+}
+
 .App {
   position: fixed;
   top: 0;

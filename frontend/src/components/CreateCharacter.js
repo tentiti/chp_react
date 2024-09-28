@@ -739,6 +739,9 @@ function disposeModel(model) {
 
   const startRecording = async (setVideoFile) => {
     setIsRecording(true); // 녹화 시작
+
+    await new Promise((resolve) => setTimeout(resolve, 200)); // 약간의 대기 후 녹화 시작
+
     //모델링 정보 넘기기
     updateSceneData({
       mixer: modelsRef,
@@ -1435,7 +1438,7 @@ const clearExpressionCanvas = useCallback(() => {
                 <span
                   style={{
                     position: "absolute",
-                    top: "48%",
+                    top: "47%",
                     left: "50%",
                     transform: "translate(-50%, -50%)",
                     color: "#f8f6f1",
@@ -1687,7 +1690,7 @@ const clearExpressionCanvas = useCallback(() => {
                   height={380} // 실제 캔버스의 고정된 해상도
                   style={{
                     position: "relative",
-                    background: "blue", // 배경을 투명하게 설정clipPath: "inset(165px 550px 30px 80px)", // (80, 165)에서 (350, 350) 영역만 보이게 함
+                    background: "transparent", // 배경을 투명하게 설정clipPath: "inset(165px 550px 30px 80px)", // (80, 165)에서 (350, 350) 영역만 보이게 함
                     clipPath: "inset(165px 510px 30px 30px)", // (80, 165)에서 (350, 350) 영역만 보이게 함
                     // transform: "translate(0, 0)", // X축으로 -500px 이동하여 오른쪽을 보이게 함
                     zIndex: 2, // 캔버스가 이미지 위에 렌더링되도록 설정

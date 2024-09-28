@@ -16,7 +16,7 @@ const Header = ({ title, needthird = true, onMenuClick }) => {
         </div>
         
         {/* 가운데 제목 */}
-        <div style={{ fontSize: '20px', color: '#412823', textAlign: 'center', flex: 1, verticalAlign:'center' }}>
+        <div style={{ fontSize: '20px', color: '#412823', textAlign: 'center', flex: 1, verticalAlign:'center', minWidth: '50%' }}>
           {title}
         </div>
 

@@ -702,7 +702,7 @@ const PostcardView = ({isFixedSize}) => {
 
           {/* 두 번째 버튼: 특정 페이지로 이동 */}
           <button className="upbutton" onClick={() => window.location.href = `/postcardshareview/${id}`}>
-            춤사위가 보이지 않나요? <br></br>수동 녹화하러 가기
+            춤사위가 보이지 않나요? <br></br>수동 녹화하기
           </button>
         </>
       )}
