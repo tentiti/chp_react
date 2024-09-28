@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import Invitation from './Invitation';
 import './Home.css';
@@ -14,32 +14,51 @@ function Home() {
   const [isFloatingVisible, setIsFloatingVisible] = useState(true);
   const floatingButtonRef = useRef(null);
 
-  const bannerImages = [
+  const bannerImages = useMemo(() => [
     '/static/stockimages/mainbanner1.webp',
     '/static/stockimages/mainbanner2.webp',
     '/static/stockimages/mainbanner3.webp'
-  ];
+  ], []);
 
-  //플로팅 사진 미리 반영// 배너 이미지와 플로팅 버튼 이미지 미리 로드
-  useEffect(() => {
-    const preloadImages = (imageArray) => {
-      imageArray.forEach((imageSrc) => {
+  const buttonImages = useMemo(() => [
+    '/static/images/buttonImages/button1.webp',
+    '/static/images/buttonImages/button2.webp',
+    '/static/images/buttonImages/button3.webp',
+    '/static/images/buttonImages/button4.webp',
+    '/static/images/buttonImages/button5.webp',
+    '/static/images/buttonImages/button6.webp',
+    '/static/images/buttonImages/button7.webp',
+    '/static/images/buttonImages/button8.webp'
+  ], []);
+
+  const preloadedRef = useRef(false);
+
+  const preloadImages = useCallback((imageArray) => {
+    if (preloadedRef.current) return;
+
+    const preloadPromises = imageArray.map((imageSrc) => {
+      return new Promise((resolve, reject) => {
         const img = new Image();
+        img.onload = resolve;
+        img.onerror = reject;
         img.src = imageSrc;
       });
-    };
+    });
 
-    preloadImages([
-      ...bannerImages,
-      '/static/images/buttonImages/button1.webp',
-      '/static/images/buttonImages/button2.webp',
-      '/static/images/buttonImages/button3.webp',
-      '/static/images/buttonImages/button4.webp',
-      '/static/images/buttonImages/button5.webp',
-      '/static/images/buttonImages/button6.webp',
-      '/static/images/buttonImages/button7.webp',
-      '/static/images/buttonImages/button8.webp'
-    ]);
+    Promise.all(preloadPromises)
+      .then(() => {
+        console.log('All images preloaded successfully');
+        preloadedRef.current = true;
+      })
+      .catch((error) => {
+        console.error('Error preloading images:', error);
+      });
+  }, []);
+  
+  useEffect(() => {
+    preloadImages([...bannerImages, ...buttonImages]);
+
+    // ... rest of the useEffect logic ...
 
     const fetchPostcards = async () => {
       try {
@@ -61,7 +80,7 @@ function Home() {
     }, 3000);
 
     return () => clearInterval(imageInterval);
-  }, []);
+  },[bannerImages, buttonImages, preloadImages]);
 
   const handleImageError = (e, num) => {
     const fallbackSrc = `https://placehold.co/200x200?text=Image+${num}+Error`;
@@ -100,17 +119,6 @@ function Home() {
       const buttonHeight = 70;
       const collisionMargin = 5;
       const collisionCooldown = 2000; // Reduced cooldown time
-  
-      const buttonImages = [
-        '/static/images/buttonImages/button1.webp',
-        '/static/images/buttonImages/button2.webp',
-        '/static/images/buttonImages/button3.webp',
-        '/static/images/buttonImages/button4.webp',
-        '/static/images/buttonImages/button5.webp',
-        '/static/images/buttonImages/button6.webp',
-        '/static/images/buttonImages/button7.webp',
-        '/static/images/buttonImages/button8.webp'
-      ];
   
       let lastCollisionTime = 0;
 
@@ -186,6 +194,7 @@ function Home() {
       floatingButton.style.backgroundSize = 'cover';
       // floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
       floatingButton.style.display = 'block';
+      floatingButton.style.zIndex='99999999';
       
       // 초기 위치 설정
       posX = Math.random() * (maxX - buttonWidth - 2 * collisionMargin) + collisionMargin;
@@ -249,7 +258,7 @@ function Home() {
       window.removeEventListener('resize', adjustContainerHeight);
       container.removeEventListener('scroll', handleScroll);
     };
-  }, [isFloatingVisible]);
+  }, [isFloatingVisible, buttonImages]);
 
 
   return (
@@ -289,7 +298,7 @@ function Home() {
                 alignItems:"center",
                 // marginLeft: 'auto'
               }}>
-                <img src="/static/icons/hamburger.webp" alt="menu" id="menu-button" />
+                <img src="/static/icons/hamburger.webp" alt="menu" id="menu-button" style={{width: '30px'}}/>
               </div>
             </div>
           </div>
@@ -313,8 +322,8 @@ function Home() {
               }}>
                 <img
                   style={{width:'100%', height:'100%'}}
-                  src={`/api/uploads/${postcard.png_name}?t=${new Date().getTime()}`} 
-                  // src={`/api/uploads/${postcard.png_name}`} 
+                  // src={`/api/uploads/${postcard.png_name}?t=${new Date().getTime()}`} 
+                  src={`/api/uploads/${postcard.png_name}`} 
                   alt={`grid ${postcard.id}`}
                   onError={(e) => handleImageError(e, postcard.id)} 
                   onClick={() => window.location.href = `/postcardshareview/${postcard.id}`} 
@@ -350,7 +359,7 @@ function Home() {
         </div>
       )}
 
-      <footer style={{letterSpacing:'-0.025em', zIndex:'100'}}>
+      <footer style={{letterSpacing:'-0.025em', zIndex:'9999999'}}>
         <div>2024. 10. 12 - 11. 3.</div>
         <div className="footerBorder">|</div>
         <a href="https://www.instagram.com/kkot.pida.gallery/">김화순 개인전</a>

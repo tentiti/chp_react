@@ -5,13 +5,13 @@ const Header = ({ title, needthird = true, onMenuClick }) => {
     <header style={{ left: '0', width: '100%', boxSizing: 'border-box', background: 'transparent', border: 'none' }}>
       <div className="titleArea">
         {/* 왼쪽의 백 버튼 */}
-        <div style = {{width: '10%', height:'40%', display: 'flex', justifyContent:'center', alignItems:'center'}}>
+        <div style = {{width: '30px', height:'30px', display: 'flex', justifyContent:'center', alignItems:'center'}}>
           <img
             src="/static/icons/back_double.webp"
             alt="back"
             id="back-button"
             onClick={() => window.history.back()}
-            style={{ cursor: 'pointer' , size:'contain'}}
+            style={{ cursor: 'pointer' , size:'contain', width: '100%'}}
           />
         </div>
         
@@ -21,16 +21,11 @@ const Header = ({ title, needthird = true, onMenuClick }) => {
         </div>
 
         {/* 오른쪽 메뉴 버튼 */}
-        <div style =  {{width: '10%', height:'40%', display: 'flex', justifyContent:'center', alignItems:'center'}}>
+        <div style =  {{width: '30px', height:'30px', display: 'flex', justifyContent:'center', alignItems:'center'}} onClick={onMenuClick}>
           {needthird && (
-            <button
-              className="ajax-link"
-              id="headerthirdbutton"
-              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-              onClick={onMenuClick}
-            >
-              <img src="/static/icons/hamburger.webp" alt="menu" id="menu-button" style={{ size:'contain'}}/>
-            </button>
+
+              <img src="/static/icons/hamburger.webp" alt="menu" id="menu-button" style={{ size:'contain', width: '100%', height:'100%'}}/>
+
           )}
         </div>
       </div>

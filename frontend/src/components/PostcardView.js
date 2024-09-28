@@ -56,6 +56,8 @@ const PostcardView = ({isFixedSize}) => {
 
   const [isFrameVisible, setIsFrameVisible] = useState(true);
 
+  const [isLoading, setIsLoading] = useState(true); // 배경 이미지 로딩 상태를 관리
+
   const clock = new THREE.Clock();
 
   const resetAndPlayAnimations = () => {
@@ -154,6 +156,8 @@ const PostcardView = ({isFixedSize}) => {
         console.log('Text copied to clipboard');
       }
 
+      alert('해시태그가 복사되었습니다. 인스타그램 공유 (불가시 저장 후 수동 공유)시 텍스트를 붙여 넣어 주세요!');
+
       if (navigator.canShare && blobUrl) {
         const response = await fetch(blobUrl);
         const blob = await response.blob();
@@ -167,8 +171,6 @@ const PostcardView = ({isFixedSize}) => {
 
         if (navigator.canShare({ files: [file] })) {
           await navigator.share({
-            title: `${postcard?.name || 'Postcard'}'s Dance`,
-            text: 'Check out this postcard video!',
             files: [file],
           });
           console.log('Video shared successfully');
@@ -209,6 +211,29 @@ const PostcardView = ({isFixedSize}) => {
     fetchPostcard();
   }, [id]);
 
+  const preloadImage = (src, callback) => {
+    const img = new Image();
+    img.src = src;
+    img.onload = callback; // 이미지가 로드된 후 callback 호출
+    img.onerror = (error) => {
+      console.error('Error loading image:', error);
+      callback(); // 에러 발생 시에도 callback 호출하여 진행
+    };
+  };
+
+  // 배경 이미지를 먼저 로드하고, 로드 완료 후 Three.js를 초기화
+  useEffect(() => {
+    if (!postcard) return;
+
+    const imageUrl = `/static/stockimages/postcardfinal_${postcard?.number}.png`;
+
+    // 이미지 프리로딩
+    preloadImage(imageUrl, () => {
+      setIsLoading(false); // 이미지 로드 완료 후 로딩 상태 해제
+      initThreeJS(imageUrl); // Three.js 초기화
+    });
+  }, [postcard]);
+
   const moveAndScaleModels = (xOffset = 0, yOffset = 0, zOffset = 0, scaleFactor = 1) => {
     if (!sceneRef.current) return;
 
@@ -226,185 +251,189 @@ const PostcardView = ({isFixedSize}) => {
     });
   };
 
-  useEffect(() => {
-    const initThreeJS = async () => {
-      if (!sceneData.mixer || !postcard) return <div>필요한 정보 로딩중...</div>;  
+  const initThreeJS = async () => {
+    if (!sceneData.mixer || !postcard) return <div>필요한 정보 로딩중...</div>;  
 
-      sceneRef.current = new THREE.Scene();
+    sceneRef.current = new THREE.Scene();
 
-      const ambientLight1 = new THREE.AmbientLight(0xffffff, 1.0);
-      sceneRef.current.add(ambientLight1);
+    const ambientLight1 = new THREE.AmbientLight(0xffffff, 1.0);
+    sceneRef.current.add(ambientLight1);
 
-      const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1.0);
-      directionalLight2.position.set(2, 2, 2);
-      sceneRef.current.add(directionalLight2);
+    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1.0);
+    directionalLight2.position.set(2, 2, 2);
+    sceneRef.current.add(directionalLight2);
 
-      const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
-      sceneRef.current.add(ambientLight);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+    sceneRef.current.add(ambientLight);
 
-      const addedCategories = new Set();
+    const addedCategories = new Set();
 
-      if (Array.isArray(sceneData.mixer.current) && sceneData.mixer.current.length > 0) {
-        sceneData.mixer.current.forEach((modelData) => {
-          const { model, mixer, action, categoryName } = modelData;
+    if (Array.isArray(sceneData.mixer.current) && sceneData.mixer.current.length > 0) {
+      sceneData.mixer.current.forEach((modelData) => {
+        const { model, mixer, action, categoryName } = modelData;
 
-          if (!addedCategories.has(categoryName)) {
-            if (model instanceof THREE.Object3D) {
-              if (!model.name) {
-                model.name = `model_${categoryName}`;
-              }
+        if (!addedCategories.has(categoryName)) {
+          if (model instanceof THREE.Object3D) {
+            if (!model.name) {
+              model.name = `model_${categoryName}`;
+            }
 
-              model.traverse((child) => {
-                if (child.isMesh) {
-                  if (child.material.map) {
-                    child.material.needsUpdate = true;
-                  }
+            model.traverse((child) => {
+              if (child.isMesh) {
+                if (child.material.map) {
+                  child.material.needsUpdate = true;
                 }
-              });
+              }
+            });
 
-              sceneRef.current.add(model);
-              console.log(`Added model: ${model.name}`);
-            }
-
-            if (mixer && action) {
-              action.reset();
-              action.stop();
-            }
-
-            addedCategories.add(categoryName);
+            sceneRef.current.add(model);
+            console.log(`Added model: ${model.name}`);
           }
-        });
-      } else {
-        console.warn('sceneData.mixer is not an array or it is empty');
-      }
 
-      const width = 720;
-      const height = 1280;
-
-      rendererRef.current = new THREE.WebGLRenderer({ 
-        canvas: canvasRef.current, 
-        alpha: true, 
-        antialias: true,  
-        powerPreference: "high-performance",
-        preserveDrawingBuffer: true,
-      });
-
-      rendererRef.current.setSize(width, height);
-      rendererRef.current.setClearColor(0x000000, 0);
-      rendererRef.current.autoClear = true;
-      rendererRef.current.outputColorSpace = THREE.SRGBColorSpace;
-
-      const frustumSize = 40;
-      cameraRef.current = new THREE.OrthographicCamera(
-        (frustumSize * 720) / 1280 / -2,
-        (frustumSize * 720) / 1280 / 2,
-        frustumSize / 2,
-        frustumSize / -2,
-        0.1,
-        20
-      );
-      cameraRef.current.position.set(0, 0, 11);
-      cameraRef.current.lookAt(0, 0, 0);
-      cameraRef.current.updateProjectionMatrix(); 
-
-      const modelPositionConfigs = {
-        1: { xOffset: -2, yOffset: -2.5, zOffset:2, scaleFactor: 0.95 },  
-        2: { xOffset: 1.5, yOffset: -0.2, zOffset: 2, scaleFactor: 0.95 },  
-        3: { xOffset: 2.5, yOffset: 1.5, zOffset: 2, scaleFactor: 0.95 },  
-      }; 
-      const { xOffset, yOffset, zOffset, scaleFactor } = modelPositionConfigs[postcard?.number] || {
-        xOffset: 0,
-        yOffset: 0,
-        zOffset: 0,
-        scaleFactor: 0.95,
-      }; 
-
-      moveAndScaleModels(xOffset, yOffset, zOffset, scaleFactor); 
-      
-      const loader = new THREE.TextureLoader();
-      loader.load(`/static/stockimages/postcardfinal_${postcard?.number}.png`, (bgTexture) => {
-        bgTexture.colorSpace = THREE.SRGBColorSpace;
-        bgTexture.anisotropy = rendererRef.current.capabilities.getMaxAnisotropy();
-        bgTexture.minFilter = THREE.LinearFilter;
-        bgTexture.magFilter = THREE.LinearFilter;
-
-        const bgMaterial = new THREE.MeshBasicMaterial({ map: bgTexture });
-        const bgMesh = new THREE.Mesh(new THREE.PlaneGeometry(frustumSize * (720 / 1280), frustumSize), bgMaterial);
-        bgMesh.material.depthTest = false;
-        bgMesh.material.depthWrite = false;
-        bgMesh.renderOrder = -1;
-        bgMesh.name="text_bg"
-        bgMesh.categoryName="background"
-        bgMesh.position.z = 1;
-        sceneRef.current.add(bgMesh);
-      });
-
-      const addText = (text, x, y, size = 50, breakLine=false) => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        canvas.width = 1024;
-        canvas.height = 512;
-
-        const fontSize = size * 0.375;
-        ctx.font = `bold ${fontSize*1}px Cafe24Simplehae`;
-        ctx.fillStyle = 'rgba(65, 40, 35, 1)'; 
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-      
-        const maxLineLength = 38; 
-        const words = text.split(' ');
-        const lines = [];
-        let currentLine = '';
-      
-        words.forEach(word => {
-          if ((currentLine + word).length <= maxLineLength) {
-            currentLine += (currentLine ? ' ' : '') + word;
-          } else {
-            lines.push(currentLine);
-            currentLine = word;
+          if (mixer && action) {
+            action.reset();
+            action.stop();
           }
-        });
-        lines.push(currentLine); 
-      
-        const lineHeight = fontSize * 2.2;
-        const totalTextHeight = lines.length * lineHeight;
-        const centerY = canvas.height / 2;
-      
-        lines.forEach((line, index) => {
-          const yPos = centerY - (totalTextHeight / 2) + index * (lineHeight-1);
-          ctx.fillText(line, canvas.width / 2, yPos);
-        });
-      
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.minFilter = THREE.LinearFilter;
-        texture.magFilter = THREE.LinearFilter;
-        texture.format = THREE.RGBAFormat;
-      
-        const aspectRatio = canvas.width / canvas.height;
-        const geometry = new THREE.PlaneGeometry(10 * aspectRatio, 10); 
-        const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide });
-        const mesh = new THREE.Mesh(geometry, material);
 
-        mesh.name = `text_${text}`;
-        if (breakLine && text.length <= maxLineLength) {
-          y += 0.8;
+          addedCategories.add(categoryName);
         }
-        mesh.position.set(x, y, 5);
-        mesh.renderOrder = 2;
-        sceneRef.current.add(mesh);
+      });
+    } else {
+      console.warn('sceneData.mixer is not an array or it is empty');
+    }
 
-        return mesh;
-      };
+    const width = 720;
+    const height = 1280;
+
+    rendererRef.current = new THREE.WebGLRenderer({ 
+      canvas: canvasRef.current, 
+      alpha: true, 
+      antialias: true,  
+      powerPreference: "high-performance",
+      preserveDrawingBuffer: true,
+    });
+
+    rendererRef.current.setSize(width, height);
+    rendererRef.current.setClearColor(0x000000, 0);
+    rendererRef.current.autoClear = true;
+    rendererRef.current.outputColorSpace = THREE.SRGBColorSpace;
+
+    const frustumSize = 40;
+    cameraRef.current = new THREE.OrthographicCamera(
+      (frustumSize * 720) / 1280 / -2,
+      (frustumSize * 720) / 1280 / 2,
+      frustumSize / 2,
+      frustumSize / -2,
+      0.1,
+      20
+    );
+    cameraRef.current.position.set(0, 0, 11);
+    cameraRef.current.lookAt(0, 0, 0);
+    cameraRef.current.updateProjectionMatrix(); 
+
+    const modelPositionConfigs = {
+      1: { xOffset: -2, yOffset: -2.5, zOffset:2, scaleFactor: 0.95 },  
+      2: { xOffset: 1.5, yOffset: -0.2, zOffset: 2, scaleFactor: 0.95 },  
+      3: { xOffset: 2.5, yOffset: 1.5, zOffset: 2, scaleFactor: 0.95 },  
+    }; 
+    const { xOffset, yOffset, zOffset, scaleFactor } = modelPositionConfigs[postcard?.number] || {
+      xOffset: 0,
+      yOffset: 0,
+      zOffset: 0,
+      scaleFactor: 0.95,
+    }; 
+
+    moveAndScaleModels(xOffset, yOffset, zOffset, scaleFactor); 
+    
+    const loader = new THREE.TextureLoader();
+    loader.load(`/static/stockimages/postcardfinal_${postcard?.number}.png`, (bgTexture) => {
+      bgTexture.colorSpace = THREE.SRGBColorSpace;
+      bgTexture.anisotropy = rendererRef.current.capabilities.getMaxAnisotropy();
+      bgTexture.minFilter = THREE.LinearFilter;
+      bgTexture.magFilter = THREE.LinearFilter;
+
+      const bgMaterial = new THREE.MeshBasicMaterial({ map: bgTexture });
+      const bgMesh = new THREE.Mesh(new THREE.PlaneGeometry(frustumSize * (720 / 1280), frustumSize), bgMaterial);
+      bgMesh.material.depthTest = false;
+      bgMesh.material.depthWrite = false;
+      bgMesh.renderOrder = -1;
+      bgMesh.name="text_bg"
+      bgMesh.categoryName="background"
+      bgMesh.position.z = 1;
+      sceneRef.current.add(bgMesh);
+    });
+
+    const addText = (text, x, y, size = 50, breakLine=false) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
       
-      const commentMesh = addText(postcard.comment, 0, -12.2, 94, true);
-      const timestampMesh = addText(postcard.timestamp, 0, -14, 60);
-      const nameMesh = addText(postcard.name, 6, -15.8, 80);
+      canvas.width = 1024;
+      canvas.height = 512;
 
-      setTextMeshes([commentMesh, timestampMesh, nameMesh]);
+      const fontSize = size * 0.375;
+      // ctx.font = `bold ${fontSize*1}px Cafe24Simplehae`;
+      ctx.font = `${fontSize*1}px Cafe24Simplehae`;
+      ctx.fillStyle = 'rgba(65, 40, 35, 1)'; 
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+    
+      const maxLineLength = 38; 
+      const words = text.split(' ');
+      const lines = [];
+      let currentLine = '';
+    
+      words.forEach(word => {
+        if ((currentLine + word).length <= maxLineLength) {
+          currentLine += (currentLine ? ' ' : '') + word;
+        } else {
+          lines.push(currentLine);
+          currentLine = word;
+        }
+      });
+      lines.push(currentLine); 
+    
+      const lineHeight = fontSize * 2.2;
+      const totalTextHeight = lines.length * lineHeight;
+      const centerY = canvas.height / 2;
+    
+      lines.forEach((line, index) => {
+        const yPos = centerY - (totalTextHeight / 2) + index * (lineHeight-1);
+        ctx.fillText(line, canvas.width / 2, yPos);
+      });
+    
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.format = THREE.RGBAFormat;
+    
+      const aspectRatio = canvas.width / canvas.height;
+      const geometry = new THREE.PlaneGeometry(10 * aspectRatio, 10); 
+      const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide });
+      const mesh = new THREE.Mesh(geometry, material);
 
-      animate(); 
+      mesh.name = `text_${text}`;
+      if (breakLine && text.length <= maxLineLength) {
+        y += 0.8;
+      }
+      mesh.position.set(x, y, 5);
+      mesh.renderOrder = 2;
+      sceneRef.current.add(mesh);
+
+      return mesh;
     };
+    
+    const commentMesh = addText(postcard.comment, 0, -12.2, 94, true);
+    const timestampMesh = addText(postcard.timestamp, 0, -14, 60);
+    const nameMesh = addText(postcard.name, 6, -15.8, 80);
+
+    setTextMeshes([commentMesh, timestampMesh, nameMesh]);
+
+    animate(); 
+  };
+
+  useEffect(() => {
+    
+
 
     if (sceneData && sceneData.mixer && Array.isArray(sceneData.mixer.current)) {
       initThreeJS();
@@ -450,6 +479,8 @@ const PostcardView = ({isFixedSize}) => {
       audioContextRef.current = null;
     };
   },  [sceneData.scene, sceneData.mixer, postcard, canvasRef.current]);
+
+  
 
   const animate = useCallback(() => {
     if (!sceneRef.current || !cameraRef.current || !rendererRef.current) return;
@@ -601,7 +632,7 @@ const PostcardView = ({isFixedSize}) => {
         }}
       >
         <div onClick={() => navigate('/home')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', paddingLeft: '20px' }}>
-          <img src="/static/icons/home.webp" alt="home" style={{ width: '24px', height: '24px' }} />
+          <img src="/static/icons/home.webp" alt="home" style={{ width: '20px', height: '20px' }} />
         </div>
 
         <div
@@ -619,7 +650,7 @@ const PostcardView = ({isFixedSize}) => {
         </div>
 
         <div onClick={handleMenuClick} style={{ cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', paddingRight: '20px' }}>
-          <img src="/static/icons/hamburger.webp" alt="menu" id="menu-button" />
+          <img src="/static/icons/hamburger.webp" alt="menu" id="menu-button" style={{width:'30px', height:'30px'}}/>
         </div>
       </header>
 

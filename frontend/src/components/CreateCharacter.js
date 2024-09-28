@@ -12,13 +12,25 @@ import { useScene } from './SceneContext'; // SceneContext 사용
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
 function preloadImages(imageArray) {
-  imageArray.forEach((imageSrc) => {
-    const img = new Image();
-    img.src = imageSrc;
-  });
+  // 이미지 로드를 Promise로 처리
+  return Promise.all(
+    imageArray.map(
+      (imageSrc) =>
+        new Promise((resolve, reject) => {
+          const img = new Image();
+          img.src = imageSrc;
+          img.onload = resolve;  // 이미지가 로드되면 resolve
+          img.onerror = reject;  // 로드 실패 시 reject
+        })
+    )
+  );
 }
 
 const CreateCharacter = ({isFixedSize}) => {
+  const [loading, setLoading] = useState(true); // 로딩 상태 관리
+
+  const dracoLoaderRef = useRef(null);
+  const loaderRef = useRef(null);
 
   useEffect(() => {
     // 프리로딩할 이미지 리스트 구성
@@ -29,10 +41,16 @@ const CreateCharacter = ({isFixedSize}) => {
     // 프리로딩할 overlay 이미지 추가
     allImages.push('../static/stockimages/maker_invitation.webp');
 
-    // 이미지 프리로딩
-    preloadImages(allImages);
+    // 이미지 프리로딩 후 로딩 상태 업데이트
+    preloadImages(allImages)
+      .then(() => {
+        setLoading(false); // 이미지 로드가 완료되면 로딩 종료
+      })
+      .catch((error) => {
+        console.error("Error preloading images:", error);
+        setLoading(false); // 에러 발생해도 로딩 종료
+      });
   }, []);
-
 
   const { updateSceneData } = useScene(); // SceneContext의 업데이트 함수 사용
 
@@ -128,38 +146,49 @@ const CreateCharacter = ({isFixedSize}) => {
     });
   };
   
-  // 모델을 씬에서 제거하는 함수 최적화
-  const removeModel = (category) => {
-    modelsRef.current = modelsRef.current.filter((item) => {
-      if (item.categoryName === category) {
-        const modelInScene = sceneRef.current.getObjectById(item.model.id);
-        if (modelInScene) {
-          sceneRef.current.remove(item.model);
-          console.log(`Model removed from scene for category: ${category}`);
-        }
-  
-        // 리소스 해제
-        item.model.traverse((child) => {
-          if (child.isMesh) {
-            if (child.geometry) child.geometry.dispose();
-            if (child.material) {
-              if (child.material.map) child.material.map.dispose();
-              child.material.dispose();
+  // 모델을 씬에서 제거하는 함수 최적화// 모델을 씬에서 제거하는 함수 최적화
+const removeModel = (category) => {
+  modelsRef.current = modelsRef.current.filter((item) => {
+    if (item.categoryName === category) {
+      const modelInScene = sceneRef.current.getObjectById(item.model.id);
+      if (!modelInScene) {
+        console.log(`Model in category ${category} is already removed`);
+        return false; // 모델이 이미 삭제된 경우 필터에서 제거
+      }
+      
+      // 모델이 존재하면 삭제
+      sceneRef.current.remove(item.model);
+      console.log(`Model removed from scene for category: ${category}`);
+
+      // 리소스 해제
+      item.model.traverse((child) => {
+        if (child.isMesh) {
+          if (child.geometry) {
+            child.geometry.dispose(); // Geometry 해제
+          }
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach((material) => {
+                if (material.map) material.map.dispose(); // 텍스처 해제
+                material.dispose(); // Material 해제
+              });
+            } else {
+              if (child.material.map) child.material.map.dispose(); // 텍스처 해제
+              child.material.dispose(); // Material 해제
             }
           }
-        });
-  
-        return false; // 해당 모델을 삭제
-      }
-      return true; // 남은 모델은 유지
-    });
-  
-    // 씬을 다시 렌더링
-    rendererRef.current.render(sceneRef.current, cameraRef.current);
-  };
-  
-  
-  
+        }
+      });
+
+      return false; // 해당 모델을 삭제
+    }
+    return true; // 남은 모델은 유지
+  });
+
+  // 씬을 다시 렌더링
+  rendererRef.current.render(sceneRef.current, cameraRef.current);
+};
+
   
 
   const [loadingStatus, setLoadingStatus] = useState('Loading...');
@@ -267,11 +296,21 @@ const CreateCharacter = ({isFixedSize}) => {
 
   const mixersRef = useRef([]);
 
+
+
   const loadModel = useCallback((modelPath, categoryName, useColor = false, onLoad) => {
-    const loader = new GLTFLoader();
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath('/draco/');
-    loader.setDRACOLoader(dracoLoader);
+   
+    if (!dracoLoaderRef.current) {
+      const dracoLoader = new DRACOLoader();
+      dracoLoader.setDecoderPath('/draco/');
+      dracoLoaderRef.current = dracoLoader;
+    }
+  
+    if (!loaderRef.current) {
+      const loader = new GLTFLoader();
+      loader.setDRACOLoader(dracoLoaderRef.current);
+      loaderRef.current = loader;
+    }
     
     let storedExpressionTexture = null;
   
@@ -306,12 +345,16 @@ const CreateCharacter = ({isFixedSize}) => {
       removeModelFromScene(existingModel);
       modelsRef.current.splice(existingModelIndex, 1);
     }
+
   
     // 새로운 모델 로드
+    const loader = loaderRef.current;
     loader.load(
       modelPath,
       (gltf) => {
         const model = gltf.scene;
+
+
         sceneRef.current.add(model);
   
         setRenderOrder(model, categoryName);
@@ -372,24 +415,32 @@ const CreateCharacter = ({isFixedSize}) => {
     });
   }
   
-  // 모델을 씬에서 제거하고 메모리 해제
-  function removeModelFromScene(modelItem) {
-    sceneRef.current.remove(modelItem.model);
-    disposeModel(modelItem.model);
-  }
-  
-  // 모델 리소스를 해제하는 함수
-  function disposeModel(model) {
-    model.traverse((child) => {
-      if (child.isMesh) {
-        if (child.geometry) child.geometry.dispose();
-        if (child.material) {
+// 모델을 씬에서 제거하고 메모리 해제
+function removeModelFromScene(modelItem) {
+  sceneRef.current.remove(modelItem.model);  // 씬에서 모델 제거
+  disposeModel(modelItem.model);  // 모델의 리소스 해제
+}
+
+// 모델 리소스를 해제하는 함수
+function disposeModel(model) {
+  model.traverse((child) => {
+    if (child.isMesh) {
+      if (child.geometry) child.geometry.dispose();
+      if (child.material) {
+        if (Array.isArray(child.material)) {
+          child.material.forEach((material) => {
+            if (material.map) material.map.dispose();
+            material.dispose();
+          });
+        } else {
           if (child.material.map) child.material.map.dispose();
           child.material.dispose();
         }
       }
-    });
-  }
+    }
+  });
+}
+
   
   // 저장된 텍스처를 적용하는 함수
   function applyStoredTexture(model, storedTexture) {
@@ -472,6 +523,17 @@ const CreateCharacter = ({isFixedSize}) => {
     cameraRef.current.updateProjectionMatrix();
   }, []);
 
+  useEffect(() => {
+    return () => {
+      // Stop and dispose mixers
+      mixersRef.current.forEach((mixer) => {
+        mixer.stopAllAction();
+        // No dispose method on AnimationMixer, but removing references helps GC
+      });
+      mixersRef.current = [];
+    };
+  }, []);
+  
   useEffect(() => {
     if (!canvasRef.current) return;
 
@@ -613,7 +675,7 @@ const CreateCharacter = ({isFixedSize}) => {
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
   
       const gif = new GIF({
-        workers: 2,
+        workers: 4,
         quality: 10,
         width: 400,
         height: 400,
@@ -639,6 +701,7 @@ const CreateCharacter = ({isFixedSize}) => {
       
         // 업로드 후 URL 반환
         resolve(gifUploadUrl);
+        gif.abort();
       });
       
       // 빠르게 렌더링 및 캡처하는 루프
@@ -1170,9 +1233,11 @@ const clearExpressionCanvas = useCallback(() => {
         window.removeEventListener('scroll', allowScrollOnGrid);
       };
     }, []);
-    
   
+    
   return (
+
+    
   <div
     id="oversize"
     style={{     

@@ -8,11 +8,17 @@ import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
 import { UseVideo } from './VideoContext';
 
 function preloadImages(imageArray) {
-    imageArray.forEach((imageSrc) => {
-      const img = new Image();
-      img.src = imageSrc;
+    const promises = imageArray.map((imageSrc) => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.src = imageSrc;
+            img.onload = resolve;
+            img.onerror = reject;
+        });
     });
-  }
+
+    return Promise.all(promises);
+}
 
   
 const backgrounds = [
@@ -380,9 +386,9 @@ const PlaceSelection = () => {
                         src="/static/icons/down.webp" 
                         alt="Arrow" 
                         style={{
-                            margin: '-5px',
+                            margin: '-12px',
                             width: 'auto', 
-                            height: '13px', 
+                            height: '55%', 
                             transform: isScrolledToBottom ? 'rotate(180deg)' : 'none',
                         }} 
                     />

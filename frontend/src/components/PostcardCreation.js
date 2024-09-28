@@ -8,10 +8,15 @@ import { UseVideo } from './VideoContext';
 
 // 이미지 프리로딩 함수
 function preloadImages(imageArray) {
-  imageArray.forEach((imageSrc) => {
-    const img = new Image();
-    img.src = imageSrc;
+  const promises = imageArray.map((imageSrc) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = imageSrc;
+      img.onload = resolve;
+      img.onerror = reject;
+    });
   });
+  return Promise.all(promises);
 }
 
 const modelPositions = [
@@ -26,25 +31,28 @@ const backgroundImages = [
   '/static/stockimages/trans_bg3.webp',
 ];
 
+const postcardImages = [
+  '/static/stockimages/postcard.webp',
+  '/static/stockimages/postcard_underlined.webp',
+];
+
 
 
 const PostcardCreation = () => {
   const { videoFiles } = UseVideo();
+
   useEffect(() => {
-    // 배경 이미지 프리로딩
-    const backgroundImages = ['/static/stockimages/trans_bg1.webp', '/static/stockimages/trans_bg2.webp', '/static/stockimages/trans_bg3.webp'];
-  
-    // 포스트카드 이미지 프리로딩
-    const postcardImages = ['/static/stockimages/postcard.webp', '/static/stockimages/postcard_underlined.webp'];
-  
-    // 비디오 파일도 미리 로드
-    const videoFilesToPreload = videoFiles || []; // videoFiles가 있을 경우에만 처리
-  
-    // 모든 이미지 및 비디오 합치기
-    const allAssetsToPreload = [...backgroundImages, ...postcardImages, ...videoFilesToPreload];
-  
-    // 이미지 프리로딩
-    preloadImages(allAssetsToPreload);
+    // 이미지 및 비디오 파일 프리로딩
+    const allAssetsToPreload = [...backgroundImages, ...postcardImages, ...(videoFiles || [])];
+    
+    preloadImages(allAssetsToPreload)
+      .then(() => {
+        // setIsLoading(false); // 이미지 로딩 완료 시 로딩 상태 업데이트
+      })
+      .catch((error) => {
+        console.error('Error preloading images:', error);
+        // setIsLoading(false); // 에러 발생 시에도 로딩 완료로 간주
+      });
   }, [videoFiles]);
   
 

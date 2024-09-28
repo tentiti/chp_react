@@ -1,16 +1,50 @@
 import React, { useEffect, useState } from 'react';
 
-function Invitation({ onBack, showbutton=false }) {
+function Invitation({ onBack, showbutton = false }) {
   const [isSlideIn, setIsSlideIn] = useState(false);
+  const [isImagesLoaded, setIsImagesLoaded] = useState(false);
+
+  const imageSources = [
+    '/static/stockimages/invitation_background.webp',
+    '/static/icons/back_double.webp',
+    '/static/stockimages/moon.webp',
+    '/static/stockimages/invitext.webp'
+  ];
+
+  // Preload images function
+  const preloadImages = (sources) => {
+    return Promise.all(
+      sources.map((src) => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.src = src;
+          img.onload = resolve;
+          img.onerror = reject;
+        });
+      })
+    );
+  };
 
   useEffect(() => {
-    setTimeout(() => setIsSlideIn(true), 50);
+    // Preload images before setting slide-in effect
+    preloadImages(imageSources)
+      .then(() => {
+        setIsImagesLoaded(true); // Images are fully loaded
+        setTimeout(() => setIsSlideIn(true), 50);
+      })
+      .catch((error) => {
+        console.error('Error loading images:', error);
+      });
   }, []);
 
   const handleBack = () => {
     setIsSlideIn(false);
     setTimeout(() => onBack(), 700);
   };
+
+  if (!isImagesLoaded) {
+    return <div></div>; // You can replace this with a custom loader
+  }
 
   return (
     <div
@@ -23,7 +57,7 @@ function Invitation({ onBack, showbutton=false }) {
         transition: 'right 0.7s ease',
         backgroundColor: '#412823 !important',
         overflow: 'hidden',
-        zIndex: '999999',
+        zIndex: '99999999',
       }}
     >
       <div
@@ -36,16 +70,19 @@ function Invitation({ onBack, showbutton=false }) {
           height: '100%',
           backgroundColor: '#red !important',
           overflow: 'hidden',
-          // borderTopLeftRadius: '20px',
           zIndex: '999999 !important',
           opacity: 1,
         }}
       >
-        <img src= "/static/stockimages/invitation_background.webp" alt='background' style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-        }}></img>
+        <img
+          src="/static/stockimages/invitation_background.webp"
+          alt="background"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
       </div>
 
       {/* Header */}
@@ -69,7 +106,7 @@ function Invitation({ onBack, showbutton=false }) {
             width: '100%',
             height: '100%',
             display: 'flex',
-            justifyContent: 'center',
+            justifyContent: 'space-between',
             background: 'transparent',
             alignItems: 'center',
             padding: '0 15px',
@@ -79,10 +116,8 @@ function Invitation({ onBack, showbutton=false }) {
         >
           <div
             style={{
-              position: 'absolute',
-              top: '50%',
               left: '15px',
-              transform: 'translateY(-50%)',
+              width: '30px',
             }}
           >
             <img
@@ -90,11 +125,14 @@ function Invitation({ onBack, showbutton=false }) {
               alt="back"
               onClick={handleBack}
               style={{
+                width: '100%',
+                height: '100%',
                 filter: 'brightness(0) invert(1)',
               }}
             />
           </div>
           <div style={{ fontSize: '20px' }}>춤 이야기</div>
+          <div style={{ width: '7%' }}></div>
         </div>
       </div>
 
@@ -137,70 +175,47 @@ function Invitation({ onBack, showbutton=false }) {
       </div>
 
       {/* Button container */}
-      {showbutton &&(
+      {showbutton && (
         <div
-        style={{
-          position: 'fixed',
-          bottom: '10%',
-          right: isSlideIn ? '0%' : '-150%',
-          left: 0,
-          zIndex: 999,
-          display: 'flex',
-          justifyContent: 'center',
-          transition: 'right 0.7s ease',
-        }}
-      >
-        <a
-          href="/CreateCharacter"
           style={{
-            display: 'inline-block',
-            width: '170px',
-            height: '35px',
-            lineHeight: '35px',
-            textAlign: 'center',
-            boxSizing: 'border-box',
-            background: '#f8f6f1',
-            border: '1px solid #e6e1dc',
-            boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.25)',
-            textDecoration: 'none',
-            color: 'inherit',
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.background = '#ed9a9a';
-            e.target.style.color = '#f8f6f1';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.background = '#f8f6f1';
-            e.target.style.color = 'inherit';
+            position: 'fixed',
+            bottom: '10%',
+            right: isSlideIn ? '0%' : '-150%',
+            left: 0,
+            zIndex: 999,
+            display: 'flex',
+            justifyContent: 'center',
+            transition: 'right 0.7s ease',
           }}
         >
-          캐릭터 생성하기
-        </a>
-      </div>
+          <a
+            href="/CreateCharacter"
+            style={{
+              display: 'inline-block',
+              width: '170px',
+              height: '35px',
+              lineHeight: '35px',
+              textAlign: 'center',
+              boxSizing: 'border-box',
+              background: '#f8f6f1',
+              border: '1px solid #e6e1dc',
+              boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.25)',
+              textDecoration: 'none',
+              color: 'inherit',
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = '#ed9a9a';
+              e.target.style.color = '#f8f6f1';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = '#f8f6f1';
+              e.target.style.color = 'inherit';
+            }}
+          >
+            캐릭터 생성하기
+          </a>
+        </div>
       )}
-
-    {/* {!showbutton &&(
-        <div
-        style={{
-          position: 'fixed',
-          bottom: '10%',
-          right: isSlideIn ? '0%' : '-150%',
-          left: 0,
-          zIndex: 99999,
-          display: 'flex',
-          justifyContent: 'center',
-          transition: 'right 0.7s ease',
-          width: '100%',
-          textAlign: 'center',
-          fontSize: '10px',
-          color: '#F8F6F1'
-        }}
-      >
-        이제 댄스타임 : 평화의 나무에 달빛이 닿은 날, 반짝이는 춤결<br />
-        기획 및 제작 | 유채영 김휴초
-      </div>
-      )} */}
-      
     </div>
   );
 }
