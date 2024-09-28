@@ -422,6 +422,7 @@ const PlaceSelection = () => {
                 alignItems: 'center',
                 backgroundColor: '#F8F6F1',
                 zIndex: 1000,
+                fontFamily: "Pretendard-Regular",
             }}>
                 <button id="scrolldownbutton" onClick={handleSelectPlace}>
                     여기서 춤추기
