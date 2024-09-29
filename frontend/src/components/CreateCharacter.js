@@ -955,11 +955,11 @@ const uploadGif = async (gifBlob) => {
   
             // 원래 컬러 적용
             const originalColor = new THREE.Color(FACE_COLOR[selectedHeadIndex]);
-            originalColor.addScalar(0.2);  // 색을 밝게 만듦
+            // originalColor.addScalar(0.2);  // 색을 밝게 만듦
   
             // 새로운 머티리얼 생성 및 적용
             mesh.material = new THREE.MeshStandardMaterial({
-              color: originalColor,  // 얼굴 전체를 originalColor로 채움
+              color: originalColor.convertSRGBToLinear,  // 얼굴 전체를 originalColor로 채움
               map: texture,  // 텍스처를 적용
               opacity: 1.0,  // 불투명하게 설정
               depthWrite: true,  // 깊이 쓰기 활성화
