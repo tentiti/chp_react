@@ -242,7 +242,7 @@ const PostcardShareView = () => {
         <div
           style={{
             position: 'absolute',
-            top: isFixedSize? '78.3%' : '78%',
+            top: isFixedSize? '78.3%' : '78.4%',
             zIndex: '900',
             width: '20%',
             color: '#412823',
