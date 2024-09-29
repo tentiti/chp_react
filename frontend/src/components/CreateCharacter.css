@@ -47,7 +47,7 @@ body {
   -ms-overflow-style: none;
 }
 
-body ::after{
+body ::after {
   background-image: "/static/stockimages/background_paper.png !important !important";
   background-size: cover;
 }
@@ -270,6 +270,10 @@ header {
   justify-content: center;
   color: #412823;
   cursor: pointer;
+}
+
+.titleArea {
+  font-family: "ClimateCrisisKR-1979";
 }
 
 .create-character:active {

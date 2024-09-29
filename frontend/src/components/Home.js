@@ -290,9 +290,9 @@ function Home() {
             alignItems: 'center',
           }}>
             <div className="titleArea" style={{ width: '100%' }}>
-              <div style={{ fontFamily: 'ClimateCrisisKR-1979', flexGrow: 0, textAlign: 'left' }}  onClick={() => window.location.reload()}>
-                <span style={{ fontWeight: 200, fontSize: '15px', color: '#412823', lineHeight: '0.9', display: 'block' }}>이제</span>
-                <span style={{ fontWeight: 400, fontSize: '24px', color: '#412823', lineHeight: '0.9', display: 'block' }}>댄스타임</span>
+              <div style={{  flexGrow: 0, textAlign: 'left' }}  onClick={() => window.location.reload()}>
+                <span style={{ fontFamily: "ClimateCrisisKR-1979", fontWeight: 200, fontSize: '15px', color: '#412823', lineHeight: '0.9', display: 'block' }}>이제</span>
+                <span style={{ fontFamily: "ClimateCrisisKR-1979", fontWeight: 400, fontSize: '24px', color: '#412823', lineHeight: '0.9', display: 'block' }}>댄스타임</span>
               </div>
         
               <div onClick={handleMenuClick} style={{ 

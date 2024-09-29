@@ -930,92 +930,20 @@ const uploadGif = async (gifBlob) => {
   
   const applyExpressionTextureToModel = () => {
     const canvas = expressionCanvasRef.current;
-    const context = canvas.getContext('2d', { willReadFrequently: true });
-  
-    // 캔버스에서 검정(#000000) 또는 흰색(#FFFFFF) 부분을 선택적으로 처리
-    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
-  
-    // 특정 범위 안에 있는 색상을 투명하게 처리하는 범위 설정 (검정/흰색)
-    const threshold = 10; // 색상 판단 허용 오차
-  
-    // 펜 색상에 따른 로직 분기
-    const isLightBackground = selectedHeadIndex <= 2; // 밝은 배경(검정색 펜)
-    const isDarkBackground = selectedHeadIndex >= 3; // 어두운 배경(흰색 펜)
-  
-    // 발광 맵을 위한 데이터 생성 (emissiveMap을 적용하기 위해)
-    const emissiveImageData = context.createImageData(canvas.width, canvas.height);
-    const emissiveData = emissiveImageData.data;
-  
-    for (let i = 0; i < data.length; i += 4) {
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
-  
-      // 검정색에 가까운지 판단
-      const isAlmostBlack = (r < threshold && g < threshold && b < threshold);
-      // 흰색에 가까운지 판단
-      const isAlmostWhite = (r > 255 - threshold && g > 255 - threshold && b > 255 - threshold);
-  
-      // 밝은 배경일 때: 검정색(#000000)만 남기고 나머지는 배경색을 유지
-      if (isLightBackground) {
-        if (isAlmostBlack) {
-          // 검정색 선만 유지
-          data[i + 3] = 255; // 알파 채널을 불투명하게
-        } else {
-          // 나머지 배경은 원래의 알파 값(255)로 유지하여 배경색 보존
-          data[i + 3] = 255;
-        }
-        // 발광 맵에선 검정색이 발광하지 않으므로 발광 채널 0으로 설정
-        emissiveData[i + 3] = 0;
-      }
-  
-      // 어두운 배경일 때: 흰색(#FFFFFF)만 남기고 나머지는 배경색을 유지
-      if (isDarkBackground) {
-        if (isAlmostWhite) {
-          // 흰색 선만 유지
-          data[i + 3] = 255; // 알파 채널을 불투명하게
-  
-          // 흰색 선을 발광시키기 위해 emissiveMap에 흰색 부분을 추가
-          emissiveData[i] = 255; // R
-          emissiveData[i + 1] = 255; // G
-          emissiveData[i + 2] = 255; // B
-          emissiveData[i + 3] = 255; // 알파 채널 (불투명)
-        } else {
-          // 나머지 부분은 배경색만 유지
-          data[i + 3] = 255;
-  
-          // 발광하지 않도록 emissiveMap의 알파 채널을 0으로 설정
-          emissiveData[i + 3] = 0;
-        }
-      }
-    }
-  
-    context.putImageData(imageData, 0, 0);
-    const emissiveCanvas = document.createElement('canvas');
-    emissiveCanvas.width = canvas.width;
-    emissiveCanvas.height = canvas.height;
-    const emissiveContext = emissiveCanvas.getContext('2d');
-    emissiveContext.putImageData(emissiveImageData, 0, 0);
+    const context = canvas.getContext('2d');
   
     // 캔버스를 텍스처로 변환
     const texture = new THREE.CanvasTexture(canvas);
-    const emissiveMap = new THREE.CanvasTexture(emissiveCanvas); // 발광 맵으로 사용
   
     // 텍스처 설정
     texture.flipY = false;  // Y축 반전 방지
     texture.needsUpdate = true;  // 텍스처 갱신 필요
-    emissiveMap.flipY = false;  // Y축 반전 방지
-    emissiveMap.needsUpdate = true;  // 텍스처 갱신 필요
     texture.minFilter = THREE.LinearFilter;  // 텍스처 확대 시 선명하게 처리
     texture.magFilter = THREE.NearestFilter;  // 텍스처 확대 시 블러링 방지
-    emissiveMap.minFilter = THREE.LinearFilter;  // 텍스처 확대 시 선명하게 처리
-    emissiveMap.magFilter = THREE.NearestFilter;  // 텍스처 확대 시 블러링 방지
     texture.format = THREE.RGBAFormat;  // 알파 채널 사용
     texture.premultipliedAlpha = false;  // 프리멀티플라이드 알파 비활성화
     texture.colorSpace = THREE.SRGBColorSpace;  // 색 공간을 sRGB로 설정
     texture.generateMipmaps = false;  // Mipmap 비활성화
-    emissiveMap.generateMipmaps = false;  // Mipmap 비활성화
   
     // 모델에 텍스처 적용하는 로직
     modelsRef.current.forEach(({ model }) => {
@@ -1027,30 +955,30 @@ const uploadGif = async (gifBlob) => {
   
             // 원래 컬러 적용
             const originalColor = new THREE.Color(FACE_COLOR[selectedHeadIndex]);
-            // 밝기를 균일하게 조정하는 방식
-            originalColor.addScalar(0.2);  // 모든 RGB 채널에 0.2씩 더해 색을 밝게 만듦
-
+            originalColor.addScalar(0.2);  // 색을 밝게 만듦
+  
             // 새로운 머티리얼 생성 및 적용
             mesh.material = new THREE.MeshStandardMaterial({
-              // transparent: true,
               color: originalColor,  // 얼굴 전체를 originalColor로 채움
-              map: texture,  // 텍스처를 적용 (투명한 부분을 제외하고 덧씌움)
-              emissiveMap: emissiveMap,  // 발광 맵 적용 (흰색 부분만 발광)
-              emissive: new THREE.Color(0xFFFFFF),  // 발광 색상
-              emissiveIntensity: 1.0,  // 발광 강도
+              map: texture,  // 텍스처를 적용
               opacity: 1.0,  // 불투명하게 설정
-              depthWrite: false,  // 깊이 쓰기 비
-              depthTest: true,  // 깊이 테스트 활
+              depthWrite: true,  // 깊이 쓰기 활성화
+              depthTest: true,  // 깊이 테스트 활성화 (깊이 정보가 정확히 적용되도록)
               transparent: true,  // 투명도 활성화
             });
   
+            // renderOrder를 높게 설정하여 우선적으로 렌더링
+            mesh.renderOrder = 10;  // 소품보다 우선적으로 렌더링되게 함
+  
             mesh.material.needsUpdate = true;
-            mesh.renderOrder = 10;
           }
         }
       });
     });
   };
+  
+  
+  
   
 useEffect(() => {
   const canvas = expressionCanvasRef.current;
@@ -1130,7 +1058,7 @@ const clearExpressionCanvas = useCallback(() => {
       // 다른 카테고리로 돌아갈 때 카메라 위치와 줌을 원래대로 되돌림
       cameraRef.current.position.set(0, 3.15, 3);  // 카메라 위치
       cameraRef.current.lookAt(new THREE.Vector3(0, 3.15, 3));  // 바라볼 좌표 설정
-      cameraRef.current.zoom = 0.7;  // 기본 줌
+      cameraRef.current.zoom = 0.65;  // 기본 줌
       cameraRef.current.updateProjectionMatrix();
     }
   }, [selectedCategory]);
