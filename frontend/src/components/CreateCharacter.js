@@ -52,6 +52,20 @@ const CreateCharacter = ({isFixedSize}) => {
       });
   }, []);
 
+  useEffect(() => {
+    if (!dracoLoaderRef.current) {
+      const dracoLoader = new DRACOLoader();
+      dracoLoader.setDecoderPath('/draco/');
+      dracoLoaderRef.current = dracoLoader;
+    }
+  
+    if (!loaderRef.current) {
+      const loader = new GLTFLoader();
+      loader.setDRACOLoader(dracoLoaderRef.current);
+      loaderRef.current = loader;
+    }
+  }, []);  
+
   const { updateSceneData } = useScene(); // SceneContext의 업데이트 함수 사용
 
 
@@ -147,48 +161,61 @@ const CreateCharacter = ({isFixedSize}) => {
   };
   
   // 모델을 씬에서 제거하는 함수 최적화// 모델을 씬에서 제거하는 함수 최적화
-const removeModel = (category) => {
-  modelsRef.current = modelsRef.current.filter((item) => {
-    if (item.categoryName === category) {
+  const disposeMaterial = (material) => {
+    if (material.map) {
+      material.map.dispose();  // 텍스처 해제
+    }
+    material.dispose();  // Material 해제
+  };
+  
+  const removeModel = (category) => {
+    modelsRef.current = modelsRef.current.filter((item) => {
+      if (item.categoryName !== category) {
+        return true;  // 다른 카테고리의 모델은 유지
+      }
+  
       const modelInScene = sceneRef.current.getObjectById(item.model.id);
       if (!modelInScene) {
         console.log(`Model in category ${category} is already removed`);
-        return false; // 모델이 이미 삭제된 경우 필터에서 제거
+        return false;  // 모델이 이미 삭제된 경우
       }
-      
-      // 모델이 존재하면 삭제
+  
+      // 씬에서 모델 제거
       sceneRef.current.remove(item.model);
       console.log(`Model removed from scene for category: ${category}`);
-
-      // 리소스 해제
+  
+      // 애니메이션이 있는 경우 중지하고 해제
+      if (item.mixer) {
+        item.mixer.stopAllAction();  // 모든 애니메이션 액션 중지
+        item.mixer.uncacheRoot(item.model);  // 애니메이션과 모델 간의 캐시 해제
+      }
+  
+      // 모델과 그 하위 객체들에 대해 리소스 해제
       item.model.traverse((child) => {
         if (child.isMesh) {
+          // Geometry 해제
           if (child.geometry) {
-            child.geometry.dispose(); // Geometry 해제
+            child.geometry.dispose();
           }
+  
+          // Material 해제
           if (child.material) {
             if (Array.isArray(child.material)) {
-              child.material.forEach((material) => {
-                if (material.map) material.map.dispose(); // 텍스처 해제
-                material.dispose(); // Material 해제
-              });
+              child.material.forEach(disposeMaterial);
             } else {
-              if (child.material.map) child.material.map.dispose(); // 텍스처 해제
-              child.material.dispose(); // Material 해제
+              disposeMaterial(child.material);
             }
           }
         }
       });
-
-      return false; // 해당 모델을 삭제
-    }
-    return true; // 남은 모델은 유지
-  });
-
-  // 씬을 다시 렌더링
-  rendererRef.current.render(sceneRef.current, cameraRef.current);
-};
-
+  
+      return false;  // 이 모델은 삭제되었으므로 filter에서 제외
+    });
+  
+    // 씬을 다시 렌더링
+    rendererRef.current.render(sceneRef.current, cameraRef.current);
+  };
+  
   
 
   const [loadingStatus, setLoadingStatus] = useState('Loading...');
@@ -299,18 +326,7 @@ const removeModel = (category) => {
 
 
   const loadModel = useCallback((modelPath, categoryName, useColor = false, onLoad) => {
-   
-    if (!dracoLoaderRef.current) {
-      const dracoLoader = new DRACOLoader();
-      dracoLoader.setDecoderPath('/draco/');
-      dracoLoaderRef.current = dracoLoader;
-    }
-  
-    if (!loaderRef.current) {
-      const loader = new GLTFLoader();
-      loader.setDRACOLoader(dracoLoaderRef.current);
-      loaderRef.current = loader;
-    }
+
     
     let storedExpressionTexture = null;
   
@@ -333,6 +349,11 @@ const removeModel = (category) => {
   
       // 이미 선택된 동일 모델이면 제거만 하고 리턴
       if (existingModel.modelPath === modelPath) {
+          // Base 카테고리의 경우는 모델을 제거하지 않음
+        if (existingModel.categoryName === 'Base') {
+          console.log('Base model selected again, not removing.');
+          return;  // Base는 다시 선택해도 제거하지 않음
+        }
         console.log('Same model selected again, removing it.');
         removeModelFromScene(existingModel);
         modelsRef.current.splice(existingModelIndex, 1);
@@ -346,7 +367,12 @@ const removeModel = (category) => {
       modelsRef.current.splice(existingModelIndex, 1);
     }
 
-  
+    const pre_existingModel = modelsRef.current.find(modelItem => modelItem.modelPath === modelPath);
+    if (pre_existingModel) {
+      console.log("Model already loaded, skipping load:", modelPath);
+      return;  // 이미 로드된 모델이 있으면 로딩하지 않음
+    }
+
     // 새로운 모델 로드
     const loader = loaderRef.current;
     loader.load(
@@ -362,8 +388,6 @@ const removeModel = (category) => {
           applyStoredTexture(model, storedExpressionTexture);
         }
 
-
-  
         const mixer = new THREE.AnimationMixer(model);
         let action = null;
   
@@ -394,8 +418,6 @@ const removeModel = (category) => {
       }
     );
   }, []);
-  
-  
   
   // 기존 모델을 찾아서 제거
   function findExistingModel(categoryName) {
@@ -441,7 +463,6 @@ function disposeModel(model) {
   });
 }
 
-  
   // 저장된 텍스처를 적용하는 함수
   function applyStoredTexture(model, storedTexture) {
     model.traverse((child) => {
