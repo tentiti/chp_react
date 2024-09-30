@@ -353,8 +353,6 @@ const removeModel = (category) => {
       modelPath,
       (gltf) => {
         const model = gltf.scene;
-
-
         sceneRef.current.add(model);
   
         setRenderOrder(model, categoryName);
@@ -363,6 +361,8 @@ const removeModel = (category) => {
         if (categoryName === 'HEAD' && storedExpressionTexture) {
           applyStoredTexture(model, storedExpressionTexture);
         }
+
+
   
         const mixer = new THREE.AnimationMixer(model);
         let action = null;
@@ -468,25 +468,6 @@ function disposeModel(model) {
       }
     });
   }
-  
-  
-  // 모델의 렌더 순서 설정
-  function setRenderOrder(model, categoryName) {
-    const renderOrderMap = {
-      'Base': 10,
-      'HEAD': 20,
-      'TOP': 30,
-      'BOTTOM': 40,
-      'SHOES': 50,
-      'ACCESSORY': 60
-    };
-    model.traverse((child) => {
-      if (child.isMesh) {
-        child.renderOrder = renderOrderMap[categoryName] || 0;
-      }
-    });
-  }
-  
   
   const setupAnimation = (mixer, animation) => {
     const action = mixer.clipAction(animation);

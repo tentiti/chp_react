@@ -402,7 +402,7 @@ const PlaceSelection = () => {
                             // margin: '10px 0',
                             width: '100%',
                             height: 'auto',
-                            maxHeight: 'calc(100dvh - 205px)',
+                            maxHeight: 'calc(100dvh - 185px)',
                             objectFit: 'contain',
                         }} 
                     />

@@ -109,7 +109,7 @@ function App() {
                 <Route path="/postcardview/:id" element={<PostcardView isFixedSize={isFixedSize}/>} />
                 <Route path="/CreateCharacter" element={<CreateCharacter isFixedSize={isFixedSize} />} />
                 <Route path="/place-selection" element={<PlaceSelection />} />
-                <Route path="/postcardcreation" element={<PostcardCreation />} />
+                <Route path="/postcardcreation" element={<PostcardCreation isFixedSize={isFixedSize}/>} />
                 <Route path="/credit/:id" element={<Credit />} />
                 <Route path="/postcardshareview/:id" element={<PostcardShareView />} />
               </Routes>

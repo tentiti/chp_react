@@ -1,16 +1,19 @@
 #!/bin/bash
 
-# 현재 폴더에 있는 'bottom'이 포함된 모든 파일에 대해 작업
-for file in *bottom*.glb; do
-  # 파일 이름에서 확장자(.glb) 제거
-  base_name="${file%.glb}"
-  
-  # output 파일 이름을 base_name_compressed.glb로 설정
-  output_file="${base_name}_compressed.glb"
-  
-  # gltf-transform optimize 명령 실행
-  gltf-transform optimize "$file" "$output_file" --compress draco --texture-compress webp
-  
-  # 완료 메시지 출력
-  echo "Optimized: $file -> $output_file"
+# 모델들이 있는 디렉토리 경로 설정
+model_dir="/Users/hyungyulee/chp_react/frontend/public/static/models"
+
+# 모델 디렉토리에서 'animated'로 시작하는 모든 GLB 파일에 대해 작업 실행
+for file in "$model_dir"/animation_*.glb
+do
+    if [ -f "$file" ]; then
+        echo "Processing $file..."
+
+        # 텍스처를 WebP로 변환하여 압축
+        gltf-transform toktx "$file" "$file" --target webp
+
+        echo "최적화가 완료되었습니다: $file"
+    else
+        echo "No animated models found in $model_dir"
+    fi
 done

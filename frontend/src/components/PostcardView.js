@@ -344,6 +344,9 @@ const PostcardView = ({isFixedSize}) => {
     }; 
 
     moveAndScaleModels(xOffset, yOffset, zOffset, scaleFactor); 
+
+    console.log(window.innerWidth / 720);
+    console.log((window.innerHeight - 60) / 1280);
     
     const loader = new THREE.TextureLoader();
     loader.load(`/static/stockimages/postcardfinal_${postcard?.number}.png`, (bgTexture) => {
@@ -575,7 +578,7 @@ const PostcardView = ({isFixedSize}) => {
     left: 0,
     width: '100%',
     aspectRatio: '9 / 16',
-    maxHeight: 'calc(100vh - 178px)',
+    maxHeight: 'calc(100vh - 118px)',
     overflow: 'visible',
 
     display: 'flex',
@@ -586,13 +589,13 @@ const PostcardView = ({isFixedSize}) => {
 
   const canvasStyle = {
     position: 'fixed',
-    top: isFixedSize? '58px' : '24px',
+    top: isFixedSize? '58px' : '58px',
     transform: isFixedSize? `translate(0, -26.5%) scale(${
       containerRef.current ? 
       Math.min(containerRef.current.clientWidth / 720, containerRef.current.clientHeight / 1280) : 1
-    })` : `translate(0) scale(${
+    })` : `translate(0, -3%) scale(${
       containerRef.current ? 
-      Math.min(window.innerWidth / 720, (window.innerHeight - 118) / 1280) : 1
+      Math.min(window.innerWidth / 720, (window.innerHeight - 78) / 1280) : 1
     })`,
     transformOrigin: isFixedSize? 'center center': 'top center',
   };
@@ -666,10 +669,10 @@ const PostcardView = ({isFixedSize}) => {
         style={{
           position: 'fixed',
           right: '5%',
-          bottom: '58px',
+          bottom: '38px',
           width: '70%',
           height: 'auto',
-          zIndex: '1100',
+          zIndex: '1199900',
         }}
       />
       

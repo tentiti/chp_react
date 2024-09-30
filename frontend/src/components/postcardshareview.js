@@ -159,12 +159,12 @@ const PostcardShareView = () => {
 
       <div id="createdImages" style={{
         position: 'fixed',
-        top: '58px',
-        // width: '100%',  // 창 너비를 100%로 맞춤
-        aspectRatio: '9/16.5',  // 16:9 비율을 유지
-        height: 'calc(100% - 70px)',  // 높이는 전체에서 160px을 뺀 값으로 설정
-        
-        minWidth: '200px',  // 최대 너비 제한
+        top: '53px',
+        width: '100%',  // 창 너비를 100%로 맞춤
+        aspectRatio: '9/16',  // 16:9 비율을 유지
+        // height: 'calc(100% - 108px)',  // 높이는 전체에서 160px을 뺀 값으로 설정
+        minWidth: '90%',  // 최대 너비 제한
+        maxHeight: 'calc(100dvh - 108px)',  // 최대 높이 제한
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -199,7 +199,7 @@ const PostcardShareView = () => {
         <div
           style={{
             position: 'absolute',
-            top: '66%',
+            top: isFixedSize?'68%':'72.2%',
             zIndex: '900',
             width: '83%',
             color: '#412823',
@@ -220,7 +220,7 @@ const PostcardShareView = () => {
         <div
           style={{
             position: 'absolute',
-            top: isFixedSize? '73.2%': '73.3%',
+            top: isFixedSize? '75.7%': '80.8%',
             zIndex: '900',
             width: '20%',
             color: '#412823',
@@ -242,15 +242,14 @@ const PostcardShareView = () => {
         <div
           style={{
             position: 'absolute',
-            top: isFixedSize? '78.3%' : '78.4%',
+            top: isFixedSize? '80.7%' : '86%',
             zIndex: '900',
             width: '20%',
             color: '#412823',
 
             fontSize: '8px',
             fontFamily: 'pretandard, sans-serif',
-            position: 'relative',
-            left: '26.3%',
+            left: isFixedSize? '26.3%' : '65.5%',
             textAlign: 'center',
             verticalAlign: 'middle',
             overflow: 'hidden',
@@ -259,35 +258,45 @@ const PostcardShareView = () => {
           {postcard.name}
         </div>
 
-
-
-
       </div>
 
               {/* Add a button to start audio playback and restart the GIF */}
+      <div id='buttoncontainer' style={{
+        position: 'fixed',
+        width: '100%',
+        height: '50px',
+        bottom: '0',
+        backgroundColor: '#F8F6F1',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderTop: '1px solid #E6E1DC',
+      }}>
         <button 
-        onClick={handlePlayAudioAndRestartGIF} 
-        style={{
-          position: 'absolute',
-          zIndex: '200000',
-          bottom: '65px',
-          cursor: 'pointer',
-          overflow: 'hidden',
+          onClick={handlePlayAudioAndRestartGIF} 
+          style={{
+            position: 'absolute',
+            zIndex: '200000',
+            cursor: 'pointer',
+            overflow: 'hidden',
 
-          /* 캐릭터 생성하기 */
-          width: '170px',
-          height: '35px',
+            /* 캐릭터 생성하기 */
+            width: '170px',
+            height: '30px',
 
-          background: '#F8F6F1',
-          border: '1px solid #E6E1DC',
-          boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.25)',
-          color: '#412823',
-        }}
-      >
-        음악과 함께 춤추기
-      </button>
+            background: '#F8F6F1',
+            border: '1px solid #E6E1DC',
+            boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.25)',
+            color: '#412823',
+          }}
+        >
+          음악과 함께 춤추기
+        </button>
 
-      <footer style={{
+      </div>
+
+
+      {/* <footer style={{
           position: 'absolute',
           width:'100%',
           bottom: '0.1%',
@@ -298,7 +307,7 @@ const PostcardShareView = () => {
         <a href="https://www.instagram.com/kkot.pida.gallery/">김화순 개인전</a>
         <div className="footerBorder">|</div>
         <a href="https://www.zahamuseum.org">자하미술관</a>
-        </footer>
+        </footer> */}
 
       {/* Add the audio element for test.mp3 */}
       <audio ref={audioRef} loop>

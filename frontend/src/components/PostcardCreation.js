@@ -38,7 +38,7 @@ const postcardImages = [
 
 
 
-const PostcardCreation = () => {
+const PostcardCreation = ({isFixedSize}) => {
   const { videoFiles } = UseVideo();
 
   useEffect(() => {
@@ -234,6 +234,10 @@ const PostcardCreation = () => {
                     value={comment}
                     onChange={handleCommentChange}
                     className={`lined-textarea ${isCommentEmpty ? 'empty' : ''}`}
+                    style ={{          
+                      fontSize: isFixedSize? 'calc(1rem * 0.8)' : '3vw',
+                      lineHeight: isFixedSize? 'calc(1rem * 1.86)' : '6.6vw',
+                    }}
                   />
                 </div>
                 <div className="char-count">{comment.length}/75</div>
@@ -435,12 +439,9 @@ const PostcardCreation = () => {
           
           outline: none;
           font-family: 'Cafe24Simplehae', sans-serif;
-          font-size: calc(1rem * 0.8);
-          line-height: calc(1rem * 1.86);
           font-weight: bold;
           color: #412823;
           resize: none;
-
 
         }
 
