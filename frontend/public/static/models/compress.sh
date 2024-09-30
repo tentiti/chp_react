@@ -3,17 +3,20 @@
 # 모델들이 있는 디렉토리 경로 설정
 model_dir="/Users/hyungyulee/chp_react/frontend/public/static/models"
 
-# 모델 디렉토리에서 'animated'로 시작하는 모든 GLB 파일에 대해 작업 실행
-for file in "$model_dir"/animation_*.glb
+# 모델 디렉토리에서 'animation'으로 시작하는 모든 GLB 파일에 대해 작업 실행
+for file in "$model_dir"/animation*.glb
 do
     if [ -f "$file" ]; then
         echo "Processing $file..."
 
-        # 텍스처를 WebP로 변환하여 압축
-        gltf-transform toktx "$file" "$file" --target webp
+        # 출력 파일 경로 설정 (텍스처가 WebP로 변환된 GLB 파일)
+        output_file="${file%.glb}_webp.glb"
 
-        echo "최적화가 완료되었습니다: $file"
+        # Draco 압축 해제 및 텍스처를 WebP로 변환
+        gltf-transform webp "$file" "$output_file"
+
+        echo "Textures converted to WebP for $file. Output saved to $output_file."
     else
-        echo "No animated models found in $model_dir"
+        echo "No 'animation' GLB models found in $model_dir"
     fi
 done

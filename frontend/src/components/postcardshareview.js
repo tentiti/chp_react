@@ -188,7 +188,7 @@ const PostcardShareView = () => {
               overflow: 'hidden',
 
               zIndex: '900',
-              top: `calc(${modelPositions[postcard.number-1].y}% - 5%)`,
+              top: `calc(${modelPositions[postcard.number-1].y}% - 2%)`,
               left: `calc(${modelPositions[postcard.number-1].x}% + 1%)`,
               width: `calc(${modelPositions[postcard.number-1].width}% + 7%)`,
               height:'auto',
@@ -249,7 +249,7 @@ const PostcardShareView = () => {
 
             fontSize: '8px',
             fontFamily: 'pretandard, sans-serif',
-            left: isFixedSize? '26.3%' : '65.5%',
+            left: isFixedSize? '65.3%' : '65.5%',
             textAlign: 'center',
             verticalAlign: 'middle',
             overflow: 'hidden',
