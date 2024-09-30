@@ -95,6 +95,30 @@ const PostcardShareView = () => {
     // Update the state to trigger a re-render
     setGifKey(prevKey => prevKey + 1);
   };
+
+
+  //글자크기 설정
+  const [fontSize, setFontSize] = useState('16px'); // 기본 폰트 크기
+  const divRef = useRef(null);
+
+  useEffect(() => {
+    // div 요소의 너비를 기준으로 폰트 크기 계산
+    const updateFontSize = () => {
+      if (divRef.current) {
+        const divWidth = divRef.current.offsetWidth; // div 요소의 현재 너비
+        const newFontSize = (divWidth * 12) / 390; // 너비의 12/390 값을 폰트 크기로 설정
+        setFontSize(`${newFontSize}px`);
+      }
+    };
+
+    // 초기 폰트 크기 설정 및 창 크기 변경 시 업데이트
+    updateFontSize();
+    window.addEventListener('resize', updateFontSize);
+
+    return () => {
+      window.removeEventListener('resize', updateFontSize); // 리소스 정리
+    };
+  }, []);
   
   if (!postcard) {
     return <div>Loading...</div>;
@@ -103,6 +127,7 @@ const PostcardShareView = () => {
   document.body.addEventListener('touchmove', function (e) {
     e.preventDefault();
   }, { passive: false });
+
 
   return (
     <div style={{
@@ -157,14 +182,13 @@ const PostcardShareView = () => {
 
 
 
-      <div id="createdImages" style={{
+      <div id="createdImages" ref={divRef} style={{
         position: 'fixed',
         top: '53px',
-        width: '100%',  // 창 너비를 100%로 맞춤
-        aspectRatio: '9/16',  // 16:9 비율을 유지
-        // height: 'calc(100% - 108px)',  // 높이는 전체에서 160px을 뺀 값으로 설정
-        minWidth: '90%',  // 최대 너비 제한
-        maxHeight: 'calc(100dvh - 108px)',  // 최대 높이 제한
+        width: '100vw', // 창의 전체 너비를 차지
+        height: 'calc(100vw * (15/9))', // 9:16 비율을 맞추기 위해 너비에 따른 높이 설정
+        maxHeight: 'calc(100dvh - 108px)', // 동적 뷰포트에서 108px을 뺀 값만큼 최대 높이를 제한
+        maxWidth: 'calc((100dvh - 108px) * (9/15))', // 높이에 맞춘 비율을 유지한 최대 너비
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -175,6 +199,7 @@ const PostcardShareView = () => {
         backgroundSize: 'contain',  // 배경 이미지가 컨테이너를 덮도록 설정
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center Top',  // 이미지가 가운데에 위치하게 설정
+        // border: '2px solid red',
       }}>
 
 
@@ -199,14 +224,14 @@ const PostcardShareView = () => {
         <div
           style={{
             position: 'absolute',
-            top: isFixedSize?'68%':'72.2%',
+            top: '73%', 
             zIndex: '900',
-            width: '83%',
+            width: '85%',
             color: '#412823',
-            fontSize: isFixedSize? '12px' : '2.8vw',
+            fontSize: '0.7em',
             textAlign: 'center',
             verticalAlign: 'top',
-            lineHeight: '2.3',
+            lineHeight: '2.4',
             fontFamily: 'Cafe24Simplehae, sans-serif',
             wordWrap: 'break-word',
             overflowWrap: 'break-word',
@@ -242,14 +267,14 @@ const PostcardShareView = () => {
         <div
           style={{
             position: 'absolute',
-            top: isFixedSize? '80.7%' : '86%',
+            top:  '86%',
             zIndex: '900',
             width: '20%',
             color: '#412823',
 
-            fontSize: '8px',
+            fontSize: '0.6em',
             fontFamily: 'pretandard, sans-serif',
-            left: isFixedSize? '65.3%' : '65.5%',
+            left: '67%',
             textAlign: 'center',
             verticalAlign: 'middle',
             overflow: 'hidden',
