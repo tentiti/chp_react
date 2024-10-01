@@ -99,14 +99,14 @@ const PostcardView = ({isFixedSize}) => {
     const recorder = new RecordRTC(combinedStream, {
       type: 'video',
       mimeType: 'video/mp4',
-      bitsPerSecond: 8000000,
+      bitsPerSecond: 1000000,
       video: {
         codec: 'H264',  
         width: 1280, 
         height: 720,
         frameRate: 30 
       },
-      audioBitsPerSecond: 510000,  // 오디오 비트레이트를 510kbps로 설정
+      audioBitsPerSecond: 128000,  // 오디오 비트레이트를 510kbps로 설정
     });
 
     audioRef.current.play();
@@ -124,16 +124,49 @@ const PostcardView = ({isFixedSize}) => {
       console.warn('Recorder reference is not set');
       return;
     }
-
-    recorderRef.current.stopRecording(() => {
+  
+    recorderRef.current.stopRecording(async () => {
       const blob = recorderRef.current.getBlob();
-      const mp4Blob = new Blob([blob], { type: 'video/mp4' }); 
-      const url = URL.createObjectURL(mp4Blob);
-      setBlobUrl(url);
-      setIsRecording(false); 
+  
+      // MP4 Blob 생성
+      const mp4Blob = new Blob([blob], { type: 'video/mp4' });
+  
+      // 메타데이터 추가를 위한 File 객체로 변환
+      const file = new File([mp4Blob], `dance.mp4`, { 
+        type: 'video/mp4',
+        lastModified: new Date().getTime()
+      });
+  
+      // 메타데이터 추가 로직 (exif 또는 custom metadata)
+      const newBlobWithMetadata = await addMetadataToBlob(file); // 메타데이터 추가 함수 호출
+  
+      const url = URL.createObjectURL(newBlobWithMetadata); // 새로운 Blob URL 생성
+      setBlobUrl(url); // Blob URL 설정
+      setIsRecording(false);
       setIsRecordingDone(true);
     });
   };
+
+  const addMetadataToBlob = async (file) => {
+    // 여기서는 단순히 Blob을 새로운 Blob으로 감싸는 예시입니다.
+    // 실제로는 EXIF 데이터 추가 등 더 복잡한 작업이 필요할 수 있습니다.
+  
+    // 간단한 메타데이터 예시
+    const metadata = {
+      title: 'Postcard Video',
+      author: postcard?.name,
+      description: 'This is a custom postcard video.'
+    };
+  
+    // 기존 Blob 데이터와 메타데이터를 조합하여 새로운 Blob 생성
+    const metadataBlob = new Blob([JSON.stringify(metadata)], { type: 'application/json' });
+  
+    const combinedBlob = new Blob([metadataBlob, file], { type: 'video/mp4' });
+  
+    return combinedBlob;
+  };
+  
+  
 
   const downloadVideo = () => {
     if (blobUrl) {
@@ -162,7 +195,7 @@ const PostcardView = ({isFixedSize}) => {
         const response = await fetch(blobUrl);
         const blob = await response.blob();
         
-        const safeFileName = `${postcard?.name || 'postcard'}_dance.mp4`;
+        const safeFileName = `dance.mp4`;
         
         const file = new File([blob], safeFileName, { 
           type: 'video/mp4',
@@ -171,6 +204,8 @@ const PostcardView = ({isFixedSize}) => {
 
         if (navigator.canShare({ files: [file] })) {
           await navigator.share({
+            title: 'Postcard Dance Video',
+            text: 'Check out this dance video!',
             files: [file],
           });
           console.log('Video shared successfully');

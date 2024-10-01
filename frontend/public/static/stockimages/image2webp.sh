@@ -4,7 +4,7 @@
 QUALITY=100
 
 # 현재 디렉토리 내 모든 png 파일을 webp로 변환
-for file in promotion.png; do
+for file in maker_invitation.png; do
     # 파일명에서 확장자 제거
     filename="${file%.png}"
     # 고품질 webp로 변환

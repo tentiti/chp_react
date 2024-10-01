@@ -363,7 +363,7 @@ function Home() {
         </div>
       )}
 
-      <footer style={{letterSpacing:'-0.025em', zIndex:'9999999'}}>
+      <footer style={{letterSpacing:'-0.025em'}}>
         <div>2024. 10. 12 - 11. 3.</div>
         <div className="footerBorder">|</div>
         <a href="https://www.instagram.com/kkot.pida.gallery/">김화순 개인전</a>

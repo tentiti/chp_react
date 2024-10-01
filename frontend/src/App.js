@@ -14,6 +14,43 @@ import { SceneProvider } from './components/SceneContext'; // SceneProvider impo
 import './App.css';
 
 function App() {
+
+    //카카오 인앱
+    useEffect(() => {
+  
+      const redirectToExternalBrowser = () => {
+        const targetUrl = window.location.href;
+        // copyToClipboard(targetUrl);
+  
+        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+          // window.location.href = "x-safari-https://christiantietze.de/posts/2023/05/safari-for-mac-url-scheme";
+        } else {
+          window.location.href = `intent://${targetUrl.replace(
+            /https?:\/\//i,
+            ""
+          )}#Intent;scheme=http;package=com.android.chrome;end`;
+        }
+      };
+  
+      const userAgent = navigator.userAgent.toLowerCase();
+      if (/kakaotalk/i.test(userAgent)) {
+        window.location.href = `kakaotalk://web/openExternal?url=${encodeURIComponent(
+          window.location.href
+        )}`;
+      } else if (/line/i.test(userAgent)) {
+        const targetUrl = window.location.href;
+        window.location.href = targetUrl.includes("?")
+          ? `${targetUrl}&openExternalBrowser=1`
+          : `${targetUrl}?openExternalBrowser=1`;
+      } else if (
+        /inapp|naver|snapchat|wirtschaftswoche|thunderbird|instagram|everytimeapp|whatsApp|electron|wadiz|aliapp|zumapp|iphone.*whale|android.*whale|kakaostory|band|twitter|DaumApps|DaumDevice\/mobile|FB_IAB|FB4A|FBAN|FBIOS|FBSS|trill|SamsungBrowser\/[^1]/i.test(
+          userAgent
+        )
+      ) {
+        redirectToExternalBrowser();
+      }
+    }, []);
+    
   const [isFixedSize, setIsFixedSize] = useState(false);
   const [showSizeInfo, setShowSizeInfo] = useState(false);
   const [isResponsiveScale, setIsResponsiveScale] = useState(false);
@@ -108,10 +145,10 @@ function App() {
                 <Route path="/invitation" element={<Invitation />} />
                 <Route path="/postcardview/:id" element={<PostcardView isFixedSize={isFixedSize}/>} />
                 <Route path="/CreateCharacter" element={<CreateCharacter isFixedSize={isFixedSize} />} />
-                <Route path="/place-selection" element={<PlaceSelection />} />
+                <Route path="/place-selection" element={<PlaceSelection isFixedSize={isFixedSize}/>} />
                 <Route path="/postcardcreation" element={<PostcardCreation isFixedSize={isFixedSize}/>} />
                 <Route path="/credit/:id" element={<Credit />} />
-                <Route path="/postcardshareview/:id" element={<PostcardShareView />} />
+                <Route path="/postcardshareview/:id" element={<PostcardShareView isFixedSize={isFixedSize} />} />
               </Routes>
             </Router>
           </VideoProvider>

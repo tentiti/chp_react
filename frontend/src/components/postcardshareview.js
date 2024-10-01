@@ -19,35 +19,35 @@ const modelPositions = [
   { x: 42.25, y: 22, width: 36.75},
 ];
 
-const PostcardShareView = () => {
+const PostcardShareView = ({isFixedSize}) => {
   const { id } = useParams();
   const [postcard, setPostcard] = useState(null);
   const [gifKey, setGifKey] = useState(0); // Add state for gif reload
-  const [isFixedSize, setIsFixedSize] = useState(false); // 화면 고정 여부 상태
+  // const [isFixedSize, setIsFixedSize] = useState(false); // 화면 고정 여부 상태
   const audioRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // 화면 크기 설정
-  useEffect(() => {
-    const handleResize = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
+  // // 화면 크기 설정
+  // useEffect(() => {
+  //   const handleResize = () => {
+  //     const width = window.innerWidth;
+  //     const height = window.innerHeight;
 
-      // 화면이 390 * 840보다 크면 고정 크기로 설정
-      if (isTablet || isDesktop) {
-        setIsFixedSize(true);
-      } else {
-        setIsFixedSize(false);
-      }
-    };
+  //     // 화면이 390 * 840보다 크면 고정 크기로 설정
+  //     if (isTablet || isDesktop) {
+  //       setIsFixedSize(true);
+  //     } else {
+  //       setIsFixedSize(false);
+  //     }
+  //   };
 
-    window.addEventListener('resize', handleResize);
-    handleResize(); // 초기 실행
+  //   window.addEventListener('resize', handleResize);
+  //   handleResize(); // 초기 실행
 
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener('resize', handleResize);
+  //   };
+  // }, []);
 
   useEffect(() => {
     const fetchPostcard = async () => {
@@ -185,10 +185,10 @@ const PostcardShareView = () => {
       <div id="createdImages" ref={divRef} style={{
         position: 'fixed',
         top: '53px',
-        width: '100vw', // 창의 전체 너비를 차지
-        height: 'calc(100vw * (15/9))', // 9:16 비율을 맞추기 위해 너비에 따른 높이 설정
-        maxHeight: 'calc(100dvh - 108px)', // 동적 뷰포트에서 108px을 뺀 값만큼 최대 높이를 제한
-        maxWidth: 'calc((100dvh - 108px) * (9/15))', // 높이에 맞춘 비율을 유지한 최대 너비
+        // width: '100vw', // 창의 전체 너비를 차지
+        // height: 'calc(100vw * (15/9))', // 9:16 비율을 맞추기 위해 너비에 따른 높이 설정
+        width: isFixedSize? '390px': 'calc((100dvh - 108px) * (720/1197))', // 높이에 맞춘 비율을 유지한 최대 너비
+        height: isFixedSize? '650px': 'calc(100dvh - 108px)', // 동적 뷰포트에서 108px을 뺀 값만큼 최대 높이를 제한
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -228,10 +228,10 @@ const PostcardShareView = () => {
             zIndex: '900',
             width: '85%',
             color: '#412823',
-            fontSize: '0.7em',
+            fontSize: '0.5em',
             textAlign: 'center',
             verticalAlign: 'top',
-            lineHeight: '2.4',
+            lineHeight: '2.5',
             fontFamily: 'Cafe24Simplehae, sans-serif',
             wordWrap: 'break-word',
             overflowWrap: 'break-word',
@@ -245,7 +245,7 @@ const PostcardShareView = () => {
         <div
           style={{
             position: 'absolute',
-            top: isFixedSize? '75.7%': '80.8%',
+            top: '80.4%',
             zIndex: '900',
             width: '20%',
             color: '#412823',

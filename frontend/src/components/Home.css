@@ -121,16 +121,19 @@ body {
 .image-grid {
   position: relative;
   width: 100%;
-  overflow: hidden;
+  overflow: visible;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   background-color: #f8f6f1;
-  /* gap: 1px; */
+  gap: 1px;
 }
 
 .image-item {
-  overflow: hidden;
+  position: relative;
+  overflow: visible;
   background-color: #f8f6f1;
+  display: block;
+  margin: 1px;
 }
 
 .image-item img {
@@ -147,7 +150,7 @@ footer {
   justify-content: space-evenly;
   align-items: center;
   background-color: #f8f6f1;
-  z-index: 1005;
+  z-index: 99999999;
   box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.3);
 }
 

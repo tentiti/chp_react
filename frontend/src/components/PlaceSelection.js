@@ -54,7 +54,7 @@ const descriptions = [
     }
 ];
 
-const PlaceSelection = () => {
+const PlaceSelection = ({isFixedSize}) => {
     useEffect(() => {
         // 배경 이미지 프리로딩
         const backgroundImages = backgrounds.map((background) => background);
@@ -402,7 +402,7 @@ const PlaceSelection = () => {
                             // margin: '10px 0',
                             width: '100%',
                             height: 'auto',
-                            maxHeight: 'calc(100dvh - 185px)',
+                            maxHeight: isFixedSize? '605px': 'calc(100dvh - 185px)',
                             objectFit: 'contain',
                         }} 
                     />
