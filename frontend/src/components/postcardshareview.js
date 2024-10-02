@@ -336,7 +336,7 @@ const PostcardShareView = ({isFixedSize}) => {
 
       {/* Add the audio element for test.mp3 */}
       <audio ref={audioRef} loop>
-        <source src="/static/test.mp3" type="audio/wav" />
+        <source src="/static/test_short.mp3" type="audio/wav" />
         Your browser does not support the audio element.
       </audio>
     </div>

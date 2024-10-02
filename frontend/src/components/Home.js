@@ -3,6 +3,7 @@ import axios from 'axios';
 import Invitation from './Invitation';
 import './Home.css';
 import { isTablet, isDesktop } from 'react-device-detect';
+import { useLocation } from 'react-router-dom';
 
 function Home() {
   const containerRef = useRef(null);
@@ -261,9 +262,46 @@ function Home() {
     };
   }, [isFloatingVisible, buttonImages]);
 
+  useEffect(() => {
+    const adjustFooterVisibility = () => {
+      const footer = document.querySelector('footer');
+      if (footer) {
+        const windowHeight = window.innerHeight;
+        const footerTop = footer.getBoundingClientRect().top;
+        if (footerTop < windowHeight) {
+          footer.style.visibility = 'visible';
+        } else {
+          footer.style.visibility = 'hidden';
+        }
+      }
+    };
+  
+    window.addEventListener('resize', adjustFooterVisibility);
+    adjustFooterVisibility();
+  
+    return () => window.removeEventListener('resize', adjustFooterVisibility);
+  }, []);
+  
+  const location = useLocation();
+
+  useEffect(() => {
+    const handleResize = () => {
+      const footer = document.querySelector('footer');
+      if (footer) {
+        footer.style.visibility = 'visible';  // 푸터를 강제로 보이도록 설정
+      }
+    };
+  
+    window.addEventListener('resize', handleResize);
+  
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+  
 
   return (
-    <div className="App" style={{height: '100%', width: '100%'}}>
+    <div  key={location.pathname} className="App" style={{height: '100%', width: '100%'}}>
       {isFloatingVisible && <div ref={floatingButtonRef} className="floating" style={{
         left: '50px', // 초기 위치 설정
         top: '100px', // 초기 위치 설정
