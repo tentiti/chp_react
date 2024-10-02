@@ -15,7 +15,7 @@ const backgrounds = [
 
 const modelPositions = [
   { x: 16.75, y: 31.5, width: 36.75},
-  { x: 33.5, y: 26.5, width: 36.75},
+  { x: 33.5, y: 27.7, width: 36.75},
   { x: 42.25, y: 22, width: 36.75},
 ];
 
@@ -172,7 +172,6 @@ const PostcardShareView = ({isFixedSize}) => {
             display: 'flex',
             alignItems: 'center', // Vertically center content
             justifyContent: 'center', // Horizontally center content
-            fontSize: isFixedSize ? '16px' : '2vw', // Adjust font size for larger screens
             padding: '0', // Ensure no extra padding inside the header
             margin: '0', // Remove margins if any
             overflow: 'hidden', // Ensure no overflow
@@ -199,7 +198,7 @@ const PostcardShareView = ({isFixedSize}) => {
         backgroundSize: 'contain',  // 배경 이미지가 컨테이너를 덮도록 설정
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center Top',  // 이미지가 가운데에 위치하게 설정
-        // border: '2px solid red',
+        fontSize: isFixedSize ? '20px' : '2.6dvh', // Adjust font size for larger screens
       }}>
 
 
@@ -224,14 +223,14 @@ const PostcardShareView = ({isFixedSize}) => {
         <div
           style={{
             position: 'absolute',
-            top: '73%', 
+            top: '72.5%', 
             zIndex: '900',
             width: '85%',
             color: '#412823',
-            fontSize: '0.5em',
+            fontSize: '0.6em',
             textAlign: 'center',
             verticalAlign: 'top',
-            lineHeight: '2.5',
+            lineHeight: '2.4',
             fontFamily: 'Cafe24Simplehae, sans-serif',
             wordWrap: 'break-word',
             overflowWrap: 'break-word',
@@ -245,7 +244,7 @@ const PostcardShareView = ({isFixedSize}) => {
         <div
           style={{
             position: 'absolute',
-            top: '80.4%',
+            top: '81%',
             zIndex: '900',
             width: '20%',
             color: '#412823',
@@ -267,11 +266,11 @@ const PostcardShareView = ({isFixedSize}) => {
         <div
           style={{
             position: 'absolute',
-            top:  '86%',
+            top:  '85.6%',
             zIndex: '900',
             width: '20%',
             color: '#412823',
-
+            // border: '1px solid #412823',
             fontSize: '0.6em',
             fontFamily: 'pretandard, sans-serif',
             left: '67%',

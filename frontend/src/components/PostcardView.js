@@ -99,14 +99,15 @@ const PostcardView = ({isFixedSize}) => {
     const recorder = new RecordRTC(combinedStream, {
       type: 'video',
       mimeType: 'video/mp4',
-      bitsPerSecond: 1500000,
+      bitsPerSecond: 2500000,
       video: {
         codec: 'H264',  
-        width: 1280, 
-        height: 720,
+        width: 1920, 
+        height: 1080,
         frameRate: 30 
       },
       audioBitsPerSecond: 128000,  // 오디오 비트레이트를 510kbps로 설정
+      videoBitsPerSecond: 2500000, // 비디오 비트레이트 명시적 설정
     });
 
     audioRef.current.play();
@@ -323,8 +324,8 @@ const PostcardView = ({isFixedSize}) => {
       console.warn('sceneData.mixer is not an array or it is empty');
     }
 
-    const width = 720;
-    const height = 1280;
+    const width = 1080;
+    const height = 1920;
 
     rendererRef.current = new THREE.WebGLRenderer({ 
       canvas: canvasRef.current, 
@@ -341,8 +342,8 @@ const PostcardView = ({isFixedSize}) => {
 
     const frustumSize = 40;
     cameraRef.current = new THREE.OrthographicCamera(
-      (frustumSize * 720) / 1280 / -2,
-      (frustumSize * 720) / 1280 / 2,
+      (frustumSize * 1080) / 1920 / -2,
+      (frustumSize * 1080) / 1920 / 2,
       frustumSize / 2,
       frustumSize / -2,
       0.1,
@@ -353,9 +354,9 @@ const PostcardView = ({isFixedSize}) => {
     cameraRef.current.updateProjectionMatrix(); 
 
     const modelPositionConfigs = {
-      1: { xOffset: -2, yOffset: -2.5, zOffset:2, scaleFactor: 0.95 },  
+      1: { xOffset: -2, yOffset: -2.0, zOffset:2, scaleFactor: 0.95 },  
       2: { xOffset: 1.5, yOffset: -0.2, zOffset: 2, scaleFactor: 0.95 },  
-      3: { xOffset: 2.5, yOffset: 1.5, zOffset: 2, scaleFactor: 0.95 },  
+      3: { xOffset: 2.8, yOffset: 1.5, zOffset: 2, scaleFactor: 0.95 },  
     }; 
     const { xOffset, yOffset, zOffset, scaleFactor } = modelPositionConfigs[postcard?.number] || {
       xOffset: 0,
@@ -366,8 +367,8 @@ const PostcardView = ({isFixedSize}) => {
 
     moveAndScaleModels(xOffset, yOffset, zOffset, scaleFactor); 
 
-    console.log(window.innerWidth / 720);
-    console.log((window.innerHeight - 60) / 1280);
+    console.log(window.innerWidth / 1080);
+    console.log((window.innerHeight - 60) / 1920);
     
     const loader = new THREE.TextureLoader();
     loader.load(`/static/stockimages/postcardfinal_${postcard?.number}.png`, (bgTexture) => {
@@ -377,7 +378,7 @@ const PostcardView = ({isFixedSize}) => {
       bgTexture.magFilter = THREE.LinearFilter;
 
       const bgMaterial = new THREE.MeshBasicMaterial({ map: bgTexture });
-      const bgMesh = new THREE.Mesh(new THREE.PlaneGeometry(frustumSize * (720 / 1280), frustumSize), bgMaterial);
+      const bgMesh = new THREE.Mesh(new THREE.PlaneGeometry(frustumSize * (1080 / 1920), frustumSize), bgMaterial);
       bgMesh.material.depthTest = false;
       bgMesh.material.depthWrite = false;
       bgMesh.renderOrder = -1;
@@ -395,8 +396,8 @@ const PostcardView = ({isFixedSize}) => {
       canvas.height = 512;
 
       const fontSize = size * 0.375;
-      // ctx.font = `bold ${fontSize*1}px Cafe24Simplehae`;
-      ctx.font = `${fontSize*1}px Cafe24Simplehae`;
+      ctx.font = `bold ${fontSize*1}px Cafe24Simplehae`;
+      // ctx.font = `${fontSize*1}px Cafe24Simplehae`;
       ctx.fillStyle = 'rgba(65, 40, 35, 1)'; 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -611,12 +612,12 @@ const PostcardView = ({isFixedSize}) => {
   const canvasStyle = {
     position: 'fixed',
     top: isFixedSize? '58px' : '58px',
-    transform: isFixedSize? `translate(0, -26.5%) scale(${
+    transform: isFixedSize? `translate(0, -34.4%) scale(${
       containerRef.current ? 
-      Math.min(containerRef.current.clientWidth / 720, containerRef.current.clientHeight / 1280) : 1
-    })` : `translate(0, -3%) scale(${
+      Math.min(containerRef.current.clientWidth / 1080, containerRef.current.clientHeight / 1920) : 1
+    })` : `translate(0, -38px) scale(${
       containerRef.current ? 
-      Math.min(window.innerWidth / 720, (window.innerHeight - 78) / 1280) : 1
+      Math.min(window.innerWidth / 1080, (window.innerHeight - 78) / 1920) : 1
     })`,
     transformOrigin: isFixedSize? 'center center': 'top center',
   };
@@ -632,8 +633,8 @@ const PostcardView = ({isFixedSize}) => {
     <div style={{ 
       backgroundImage: `url('/static/stockimages/background_paper.webp')`, 
       backgroundSize: 'contain',
-      width: '100vw', 
-      height: '100vh', 
+      width: '100%', 
+      height: '100%', 
       zIndex: '900',
       overflow: 'hidden' ,
       overflowY: 'hidden',  
@@ -702,6 +703,7 @@ const PostcardView = ({isFixedSize}) => {
         style={{
           position: 'fixed',
           bottom: '0',
+          left: '0',
           width: '100%',
           height: '60px',
           display: 'flex',

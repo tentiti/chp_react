@@ -141,9 +141,9 @@ function Invitation({ onBack, showbutton = false }) {
         alt="moon"
         style={{
           position: 'sticky',
-          left: '46.06%',
+          left: '40.06%',
           right: '6.62%',
-          top: '14.91%',
+          top: '8.91%',
           bottom: '64.08%',
           width: '47.33%',
           filter: 'blur(5px)',
@@ -170,6 +170,7 @@ function Invitation({ onBack, showbutton = false }) {
             width: '100%',
             height: '100%',
             objectFit: 'contain',
+            marginTop: '10%',
           }}
         />
       </div>

@@ -164,7 +164,9 @@ const PostcardCreation = ({isFixedSize}) => {
         <Header title="답신 보내기" onMenuClick={handleMenuClick} />
       </div>
 
-      <div className="postcard-container">
+      <div className="postcard-container" style={{
+        width: '100%',
+      }}>
         <div className="postcard-content" ref={postcardRef} style={{
           fontWeight: 'bold',
           fontSize: fontSize,
@@ -172,16 +174,13 @@ const PostcardCreation = ({isFixedSize}) => {
           letterSpacing: '-0.5px', /* 자간 -0.5px */
           fontFamily: 'Cafe24Simplehae',
           color:'#412823',
-          backgroundImage: "url('/static/stockimages/postcard_underlined.webp')" ,
+          // backgroundImage: "url('/static/stockimages/postcard_underlined.webp')" ,
           backgroundImage: isCommentEmpty? "url('/static/stockimages/postcard_underlined.webp')" : "url('/static/stockimages/postcard.webp')" ,
-          
+          backgroundSize: 'contain',
+          width: '85%',
           // color:'pink',
         }}>
           
-          {/* <div className="guide-text">
-            춤을 추실 준비가 되셨나요?<br />
-            마지막으로 이름과 한마디를 적어주세요.
-          </div> */}
           {selectedBackground && (
             <div className="background-container">
               <div 
@@ -235,8 +234,8 @@ const PostcardCreation = ({isFixedSize}) => {
                     onChange={handleCommentChange}
                     className={`lined-textarea ${isCommentEmpty ? 'empty' : ''}`}
                     style ={{          
-                      fontSize: isFixedSize? 'calc(1rem * 0.8)' : '3vw',
-                      lineHeight: isFixedSize? 'calc(1rem * 1.86)' : '6.6vw',
+                      fontSize: isFixedSize? 'calc(1rem * 0.8)' : '1.8vh',
+                      lineHeight: isFixedSize? 'calc(1rem * 1.86)' : '4.05vh',
                     }}
                   />
                 </div>
@@ -282,7 +281,7 @@ const PostcardCreation = ({isFixedSize}) => {
           font-family: 'Pretendard', sans-serif;
         }
         .postcard-container {
-          width: 100%;
+          // width: 100%;
           
           position: relative;
           display: flex;

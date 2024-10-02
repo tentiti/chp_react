@@ -6,6 +6,33 @@ import { isTablet, isDesktop } from 'react-device-detect';
 import { useLocation } from 'react-router-dom';
 
 function Home() {
+
+  //튜토리얼
+  const [tutorialVisible, setTutorialVisible] = useState(true); // 이미지 표시 여부를 결정하는 상태
+  
+  const closeOverlay = () => {
+    setTutorialVisible(false);
+  };
+  useEffect(() => {
+    if (tutorialVisible) {
+      const timer = setTimeout(() => {
+        closeOverlay();
+      }, 10000);
+
+      const handleClick = () => {
+        closeOverlay();
+      };
+
+      document.addEventListener('click', handleClick);
+
+      return () => {
+        clearTimeout(timer);
+        document.removeEventListener('click', handleClick);
+      };
+    }
+
+  }, [tutorialVisible]);
+
   const containerRef = useRef(null);
   const [postcards, setPostcards] = useState([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -196,7 +223,7 @@ function Home() {
       floatingButton.style.backgroundSize = 'cover';
       // floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
       floatingButton.style.display = 'block';
-      floatingButton.style.zIndex='99999999';
+      // floatingButton.style.zIndex='4000';
       
       // 초기 위치 설정
       posX = Math.random() * (maxX - buttonWidth - 2 * collisionMargin) + collisionMargin;
@@ -302,6 +329,27 @@ function Home() {
 
   return (
     <div  key={location.pathname} className="App" style={{height: '100%', width: '100%'}}>
+      
+      {tutorialVisible && <div className="tutorial-overlay" style={{
+        position: 'fixed',
+        top: '0px',
+        left: 0,
+        width: '100%',
+        height: '100%',
+        // backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: '3000',
+      }}>
+        <img src="/static/stockimages/tutorial.webp" alt="tutorial" style={{
+          width: '100%', 
+          height: '100%', 
+          objectFit: 'cover',
+          }} />
+
+        </div>}
+      
       {isFloatingVisible && <div ref={floatingButtonRef} className="floating" style={{
         left: '50px', // 초기 위치 설정
         top: '100px', // 초기 위치 설정
@@ -312,7 +360,7 @@ function Home() {
         left: '50%', 
         transform: 'translateX(-50%)',
          width: '100%', 
-         zIndex: '100', 
+        //  zIndex: '100', 
          border: 'none !important',
          display: 'flex',
           justifyContent: 'center',
@@ -400,7 +448,6 @@ function Home() {
 
       {isInvitationVisible && (
         <div className={`invitation-container ${isInvitationVisible ? 'visible' : ''}`}style={{
-          zIndex: '1000',
         }}>
           <Invitation onBack={handleBackClick} showbutton={true} />
         </div>

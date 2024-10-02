@@ -116,7 +116,7 @@ const CreateCharacter = ({isFixedSize}) => {
   const controlsRef = useRef(null); // OrbitControls를 위한 Ref 추가
 
   const [selectedColor, setSelectedColor] = useState('Black');
-  const [selectedFaceColor, setSelectedFaceColor] = useState('#F5F1F1');
+  const [selectedFaceColor, setSelectedFaceColor] = useState('#FFF2F2');
 
 
   // const [clickedIndex, setClickedIndex] = useState(null); // 클릭된 이미지의 인덱스를 저장하는 상태
@@ -276,8 +276,9 @@ const CreateCharacter = ({isFixedSize}) => {
     if (category.name === 'EXPRESSION') {
       const canvas = expressionCanvasRef.current;
       if (canvas) {
+        // alert('Expression category selected');
         const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#rgb(244, 241, 241)'; // 흰색으로 설정
+        ctx.fillStyle = selectedFaceColor; // 흰색으로 설정
         ctx.fillRect(0, 0, canvas.width, canvas.height); // 캔버스 전체를 흰색으로 채움
       }
     }
@@ -312,20 +313,19 @@ const CreateCharacter = ({isFixedSize}) => {
     { color: '#6B4311', bigColor: '#6B4311', smallColor: '#925E1D' }
   ];
   
-  const [expressionDrawingColor, setExpressionDrawingColor] = useState('#FFFFFF'); // 초기 색상: 검은색
   const [expressionIsErasing, setExpressionIsErasing] = useState(false); // 지우개 여부
   const expressionCanvasRef = useRef(null); // 표정을 그리는 캔버스  
 
-  const clearCanvasWithColor = (color = 'transparent') => {
+  const clearCanvasWithColor = (color) => {
     const canvasContainer = document.querySelector('#facedrawingContainer');
     canvasContainer.style.backgroundColor = color; // 배경색을 색상으로 설정
     const canvas = expressionCanvasRef.current;
     const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // 캔버스를 완전히 초기화
-    if (color !== 'transparent') { // 투명 색상이 아닌 경우에만 색상 채우기
-      ctx.fillStyle = color;
-      ctx.fillRect(0, 0, canvas.width, canvas.height); // 배경색을 채움
-    }
+    // ctx.clearRect(0, 0, canvas.width, canvas.height); // 캔버스를 완전히 초기화
+
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, canvas.width, canvas.height); // 배경색을 채움
+
     ctx.beginPath();  // 그리기 준비
   };
 
@@ -918,18 +918,12 @@ const uploadGif = async (gifBlob) => {
     if (expressionIsErasing) {
       // 지우개 모드일 때는 선택된 색상으로 그리고 굵기는 20
       ctx.lineWidth = 30;
-      ctx.strokeStyle = expressionDrawingColor;
+      ctx.strokeStyle = selectedFaceColor;
     } else {
-      // 그레이스케일 색상이 4, 5, 6번째일 때는 검정색으로 그리고 굵기는 5
-      const grayscaleIndex = GRAYSCALE_COLORS.findIndex(colorObj => colorObj.color === expressionDrawingColor);
-      if (grayscaleIndex >= 3 && grayscaleIndex <= 5) {
-        ctx.lineWidth = 10;
-        ctx.strokeStyle = '#000000'; // 검정색으로 그리기
-      } else {
         // 그 외의 경우 흰색으로 그리고 굵기는 5
         ctx.lineWidth = 10;
-        ctx.strokeStyle = '#000000'; // 흰색으로 그리기
-      }
+        ctx.strokeStyle = '#FFFFFF'; // 흰색으로 그리기
+
     }
   
     ctx.lineTo(x, y);
@@ -961,10 +955,9 @@ const uploadGif = async (gifBlob) => {
         if (child.name === 'head_1') {  // head_1에 텍스처 적용
           const mesh = child;
           if (mesh) {
-            const FACE_COLOR = ['#FBFBFB', '#FBEE9D', '#E3B692', '#AF816C', '#78584A', '#FB9DA6'];
   
             // 원래 컬러 적용
-            const originalColor = new THREE.Color(FACE_COLOR[selectedHeadIndex]);
+            const originalColor = selectedFaceColor;
             // originalColor.addScalar(0.2);  // 색을 밝게 만듦
   
             // 새로운 머티리얼 생성 및 적용
@@ -994,7 +987,7 @@ useEffect(() => {
   const canvas = expressionCanvasRef.current;
 
   if (canvas) {
-    clearCanvasWithColor('#F5F1F1');  // 기본 흰색 배경 설정
+    clearCanvasWithColor(selectedFaceColor);  // 기본 흰색 배경 설정
     
     // 터치 이벤트 리스너에 passive: false 옵션을 추가
     canvas.addEventListener('touchstart', startExpressionDrawing, { passive: false });
@@ -1014,14 +1007,14 @@ const clearExpressionCanvas = useCallback(() => {
   const canvas = expressionCanvasRef.current;
   if (canvas) {
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#F5F1F1'; // 흰색으로 설정
+    ctx.fillStyle = selectedFaceColor; // 흰색으로 설정
     ctx.fillRect(0, 0, canvas.width, canvas.height); // 캔버스 전체를 흰색으로 채움
   }
 }, []);
 
   useEffect(() => {
     if (selectedCategory === 'EXPRESSION') {
-      clearExpressionCanvas();
+      clearCanvasWithColor(selectedFaceColor);
     }
   }, [selectedCategory, clearExpressionCanvas]);
 
@@ -1030,20 +1023,34 @@ const clearExpressionCanvas = useCallback(() => {
     selectCategory(category);
   }, [selectCategory]);
 
-  const handleHeadSelection = (index) => {
-    setSelectedHeadIndex(index);  // 선택된 얼굴색 인덱스 상태 업데이트
+  //바디 모델 금쪽이 해결
+  const changeBaseModelColor = (colorHexString) => {
+    const colorHex = parseInt(colorHexString.replace('#', ''), 16);
+    
+    modelsRef.current.forEach(({ model, categoryName }) => {
+        // 'Base' 카테고리인 모델에만 색상을 변경하고 텍스처를 제거하도록 필터링
+        if (categoryName === 'Base') {
+            model.traverse((child) => {
+                if (child.isMesh) {
+                    // 텍스처 제거
+                    if (child.material.map) {
+                        child.material.map.dispose();  // 텍스처 메모리 해제
+                        child.material.map = null;  // 텍스처 참조 제거
+                    }
+                    // 새 색상 설정
+                    child.material.color.setHex(colorHex);
+                    child.material.needsUpdate = true;
+                }
+            });
+        }
+    });
+  
+    // 씬을 다시 렌더링
+    rendererRef.current.render(sceneRef.current, cameraRef.current);
+};
 
-    // 1. 베이직 모델 교체
-    const modelPath = `/static/models/animation_${index + 1}.glb`;  // 해당 인덱스에 맞는 모델 로드
-    loadModel(modelPath, 'Base', false);  // 모델 로드
 
-    // 2. 표정 캔버스 배경 이미지 교체
-    const faceBackground = `static/stockimages/facebackground_${index + 1}.webp`;  // 해당 인덱스에 맞는 배경 이미지 선택
-    const faceBackgroundImage = document.querySelector("#face-background");  // 배경 이미지를 가리키는 요소 선택
-    if (faceBackgroundImage) {
-      faceBackgroundImage.src = faceBackground;  // 표정 캔버스 배경 이미지 변경
-    }
-  };
+
 
   useEffect(() => {
     if (selectedCategory === 'EXPRESSION') {
@@ -1154,6 +1161,8 @@ const clearExpressionCanvas = useCallback(() => {
         window.removeEventListener('resize', setViewportHeight);
       };
     }, []);
+
+    
 
     //스크롤 무시
     useEffect(() => {
@@ -1425,10 +1434,9 @@ const clearExpressionCanvas = useCallback(() => {
                     <button
                       key={colorObj.color}
                       onClick={() => {
-                        setExpressionDrawingColor(colorObj.color);
-                        clearCanvasWithColor(colorObj.color);
-                        handleHeadSelection(index);
                         setSelectedFaceColor(colorObj.color);
+                        clearCanvasWithColor(colorObj.color);
+                        changeBaseModelColor(colorObj.color);
                       }}
                       style={{
                         display: "flex",
@@ -1599,7 +1607,7 @@ const clearExpressionCanvas = useCallback(() => {
                   width: "100%", // 너비를 고정된 크기로 설정
                   aspectRatio: "800 / 586", // 가로 세로 비율을 이미지에 맞춤
                   overflow: "hidden", // 초과된 부분을 숨기기
-                  background: "rgb(244, 241, 241)", // 배경을 투명하게 설정
+                  background: selectedFaceColor, // 배경을 투명하게 설정
                   height: '238px',
                   // display: "flex",
                   // justifyContent: "center",
@@ -1628,7 +1636,7 @@ const clearExpressionCanvas = useCallback(() => {
                   height={380} // 실제 캔버스의 고정된 해상도
                   style={{
                     position: "relative",
-                    background: "transparent", // 배경을 투명하게 설정clipPath: "inset(165px 550px 30px 80px)", // (80, 165)에서 (350, 350) 영역만 보이게 함
+                    background: selectedFaceColor, // 배경을 투명하게 설정clipPath: "inset(165px 550px 30px 80px)", // (80, 165)에서 (350, 350) 영역만 보이게 함
                     clipPath: "inset(165px 510px 30px 30px)", // (80, 165)에서 (350, 350) 영역만 보이게 함
                     // transform: "translate(0, 0)", // X축으로 -500px 이동하여 오른쪽을 보이게 함
                     zIndex: 2, // 캔버스가 이미지 위에 렌더링되도록 설정
