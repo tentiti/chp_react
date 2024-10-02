@@ -100,13 +100,13 @@ const PostcardView = ({isFixedSize}) => {
       type: 'video',
       mimeType: 'video/mp4',
       bitsPerSecond: 1500000,
-      video: {
-        codec: 'H264',  
-        width: 1280, 
-        height: 720,
-        frameRate: 30 
-      },
-      audioBitsPerSecond: 128000,  // 오디오 비트레이트를 510kbps로 설정
+      // video: {
+      //   codec: 'H264',  
+      //   width: 1280, 
+      //   height: 720,
+      //   frameRate: 30 
+      // },
+      // audioBitsPerSecond: 128000,  // 오디오 비트레이트를 510kbps로 설정
     });
 
     audioRef.current.play();
@@ -184,24 +184,14 @@ const PostcardView = ({isFixedSize}) => {
       const blob = await response.blob();
   
       // Blob을 File로 변환
-      const file = new File([blob], 'video.mp4', {
-        // type: 'video/mp4',
-        type: blob.type,
-        lastModified: new Date().getTime(),
-      });
+      const file = new File([blob], `${postcard?.name}의 춤사위.mp4`, { type: 'video/mp4' });
+      console.log(file)
 
-
-      console.log('File BLOB type:', blob.type);
-
-      console.log('File MIME type:', file.type);
-  
       // 파일을 공유할 수 있는지 확인한 후 공유
       if (navigator.canShare({ files: [file] })) {
         await navigator.share({
-          files: [file],  // File 객체 전달
-          // title: 'Dance Video',
-          // text: 'Check out this dance video!',
-          // url: blobUrl,
+          // title: 'Postcard Video',
+          files: [file],
         });
         console.log('Video shared successfully');
       } else {
