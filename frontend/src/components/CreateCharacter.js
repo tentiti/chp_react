@@ -152,6 +152,14 @@ const CreateCharacter = ({isFixedSize}) => {
         ? `/static/models/${category.toLowerCase()}_${index + 1}_${selectedColor || "Black"}.glb`
         : `/static/models/${category.toLowerCase()}_${index + 1}.glb`;
       loadModel(modelPath, category); // 새로운 모델 로드
+
+          // 상의(TOP) 중 19~24번 선택 시 하의를 제거하고 isDressSelected를 true로 설정
+    if (category === 'TOP' && index >= 18 && index <= 23) {
+      removeBottomModel(); // 하의 제거
+      setIsDressSelected(true); // 원피스 선택 상태 설정
+    } else if (category === 'TOP') {
+      setIsDressSelected(false); // 상의 중 원피스가 아닌 경우 원피스 상태 해제
+    }
   
       return {
         ...prevSelectedIndices,

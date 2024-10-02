@@ -125,7 +125,7 @@ body {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   background-color: #f8f6f1;
-  gap: 1px;
+  /* gap: 1px; */
 }
 
 .image-item {
@@ -134,11 +134,13 @@ body {
   background-color: #f8f6f1;
   display: block;
   margin: 1px;
+  width: 95%;
+  left: 2.5%;
 }
 
 .image-item img {
-  width: 100%;
-  height: 100%;
+  width: 33%;
+  height: 33%;
   object-fit: contain;
 }
 

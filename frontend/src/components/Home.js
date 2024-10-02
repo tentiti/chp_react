@@ -386,12 +386,17 @@ function Home() {
             color: '#412823',
             boxSizing: 'border-box',
             paddingTop: '20px',
-            paddingBottom: '100px',
+            marginBottom: '100px',
             bacjgroundColor: 'blue',
 
           }}>이제 댄스타임 : 평화의 나무에 달빛이 닿은 날, 반짝이는 춤결<br />
           춤판 이끔이 | 유채영 김휴초</div>
       </div>
+
+      <div style={{
+        width: '100%',
+        height: '100px',
+      }}></div>
 
       {isInvitationVisible && (
         <div className={`invitation-container ${isInvitationVisible ? 'visible' : ''}`}style={{

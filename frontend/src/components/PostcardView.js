@@ -100,13 +100,13 @@ const PostcardView = ({isFixedSize}) => {
       type: 'video',
       mimeType: 'video/mp4',
       bitsPerSecond: 1500000,
-      // video: {
-      //   codec: 'H264',  
-      //   width: 1280, 
-      //   height: 720,
-      //   frameRate: 30 
-      // },
-      // audioBitsPerSecond: 128000,  // 오디오 비트레이트를 510kbps로 설정
+      video: {
+        codec: 'H264',  
+        width: 1280, 
+        height: 720,
+        frameRate: 30 
+      },
+      audioBitsPerSecond: 128000,  // 오디오 비트레이트를 510kbps로 설정
     });
 
     audioRef.current.play();
