@@ -25,10 +25,10 @@ function App() {
         if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
           // window.location.href = "x-safari-https://christiantietze.de/posts/2023/05/safari-for-mac-url-scheme";
         } else {
-          window.location.href = `intent://${targetUrl.replace(
-            /https?:\/\//i,
-            ""
-          )}#Intent;scheme=http;package=com.android.chrome;end`;
+          // window.location.href = `intent://${targetUrl.replace(
+          //   /https?:\/\//i,
+          //   ""
+          // )}#Intent;scheme=http;package=com.android.chrome;end`;
         }
       };
   

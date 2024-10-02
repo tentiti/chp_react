@@ -93,13 +93,13 @@ const PostcardView = ({isFixedSize}) => {
       return;
     }
 
-    const canvasStream = canvasElement.captureStream(24);
+    const canvasStream = canvasElement.captureStream(30);
     const combinedStream = new MediaStream([...canvasStream.getTracks(), ...destination.stream.getTracks()]);
 
     const recorder = new RecordRTC(combinedStream, {
       type: 'video',
       mimeType: 'video/mp4',
-      bitsPerSecond: 1000000,
+      bitsPerSecond: 1500000,
       video: {
         codec: 'H264',  
         width: 1280, 
@@ -125,45 +125,23 @@ const PostcardView = ({isFixedSize}) => {
       return;
     }
   
-    recorderRef.current.stopRecording(async () => {
+    recorderRef.current.stopRecording(() => {
       const blob = recorderRef.current.getBlob();
   
       // MP4 Blob 생성
       const mp4Blob = new Blob([blob], { type: 'video/mp4' });
   
-      // 메타데이터 추가를 위한 File 객체로 변환
+      // File 객체로 변환
       const file = new File([mp4Blob], `dance.mp4`, { 
         type: 'video/mp4',
         lastModified: new Date().getTime()
       });
   
-      // 메타데이터 추가 로직 (exif 또는 custom metadata)
-      const newBlobWithMetadata = await addMetadataToBlob(file); // 메타데이터 추가 함수 호출
-  
-      const url = URL.createObjectURL(newBlobWithMetadata); // 새로운 Blob URL 생성
+      const url = URL.createObjectURL(file); // Blob URL 생성
       setBlobUrl(url); // Blob URL 설정
       setIsRecording(false);
       setIsRecordingDone(true);
     });
-  };
-
-  const addMetadataToBlob = async (file) => {
-    // 여기서는 단순히 Blob을 새로운 Blob으로 감싸는 예시입니다.
-    // 실제로는 EXIF 데이터 추가 등 더 복잡한 작업이 필요할 수 있습니다.
-  
-    // 간단한 메타데이터 예시
-    const metadata = {
-      title: 'Postcard Video',
-      author: postcard?.name,
-      description: 'This is a custom postcard video.'
-    };
-  
-    // 기존 Blob 데이터와 메타데이터를 조합하여 새로운 Blob 생성
-    const metadataBlob = new Blob([JSON.stringify(metadata)], { type: 'application/json' });
-  
-    const combinedBlob = new Blob([metadataBlob, file], { type: 'video/mp4' });
-  
-    return combinedBlob;
   };
   
   
@@ -180,47 +158,65 @@ const PostcardView = ({isFixedSize}) => {
   };
 
   const shareVideo = async () => {
-    if (hasShared || !blobUrl) return;
+    if (hasShared || !blobUrl) return; // 이미 공유되었거나 Blob URL이 없으면 중단
     setHasShared(true);
   
     try {
+      // 클립보드에 해시태그 복사
       if (navigator.clipboard) {
         await navigator.clipboard.writeText('@k.imhwasoon @kkot.pida.gallery');
         console.log('Text copied to clipboard');
       }
-
+  
       alert('해시태그가 복사되었습니다. 인스타그램 공유 (불가시 저장 후 수동 공유)시 텍스트를 붙여 넣어 주세요!');
-
-      if (navigator.canShare && blobUrl) {
-        const response = await fetch(blobUrl);
-        const blob = await response.blob();
-        
-        const safeFileName = `dance.mp4`;
-        
-        const file = new File([blob], safeFileName, { 
-          type: 'video/mp4',
-          lastModified: new Date().getTime()
-        });
-
-        if (navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: 'Postcard Dance Video',
-            text: 'Check out this dance video!',
-            files: [file],
-          });
-          console.log('Video shared successfully');
-        } else {
-          throw new Error('Sharing not supported on this device');
-        }
-      } else {
+  
+      // Blob URL을 사용하여 파일 공유
+      if (!navigator.canShare || !blobUrl) {
         throw new Error('Sharing not supported or no video recorded');
       }
+  
+      // blobUrl을 통해 Blob 가져오기
+      const response = await fetch(blobUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch the blob from URL: ${blobUrl}`);
+      }
+      
+      const blob = await response.blob();
+  
+      // Blob을 File로 변환
+      const file = new File([blob], 'video.mp4', {
+        // type: 'video/mp4',
+        type: blob.type,
+        lastModified: new Date().getTime(),
+      });
+
+
+      console.log('File BLOB type:', blob.type);
+
+      console.log('File MIME type:', file.type);
+  
+      // 파일을 공유할 수 있는지 확인한 후 공유
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],  // File 객체 전달
+          // title: 'Dance Video',
+          // text: 'Check out this dance video!',
+          // url: blobUrl,
+        });
+        console.log('Video shared successfully');
+      } else {
+        console.error('Sharing not supported on this device for files');
+      }
+
     } catch (error) {
-      console.error('Error sharing video:', error.message);
+      console.error('Error sharing video:', error);
     } finally {
+      // 에러 발생 여부에 관계없이 공유 상태 초기화
       setHasShared(false);
     }
   };
+  
+  
 
   useEffect(() => {
     const fallbackTimer = setTimeout(() => {
