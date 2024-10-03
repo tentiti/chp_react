@@ -618,15 +618,14 @@ const fixWebmMetadata = async (blob, duration) => {
   }, [isReadyToRecord]);
 
   useEffect(() => {
-    if (isRecordingDone) {
       resetAndPlayAnimations();
       const animationInterval = setInterval(() => {
         resetAndPlayAnimations();
       }, 18750);
 
       return () => clearInterval(animationInterval);
-    }
-  }, [isRecordingDone, resetAndPlayAnimations]);
+    
+  }, [isRecording, resetAndPlayAnimations]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {
