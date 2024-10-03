@@ -7,7 +7,6 @@ import './CreateCharacter.css';
 import Header from './Header.js';
 import { UseVideo } from './VideoContext.js'; // Context에서 가져옴
 import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
-import { isTablet, isDesktop } from 'react-device-detect';
 import { useScene } from './SceneContext'; // SceneContext 사용
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
@@ -27,7 +26,6 @@ function preloadImages(imageArray) {
 }
 
 const CreateCharacter = ({isFixedSize}) => {
-  const [loading, setLoading] = useState(true); // 로딩 상태 관리
 
   const dracoLoaderRef = useRef(null);
   const loaderRef = useRef(null);
@@ -44,13 +42,11 @@ const CreateCharacter = ({isFixedSize}) => {
     // 이미지 프리로딩 후 로딩 상태 업데이트
     preloadImages(allImages)
       .then(() => {
-        setLoading(false); // 이미지 로드가 완료되면 로딩 종료
       })
       .catch((error) => {
         console.error("Error preloading images:", error);
-        setLoading(false); // 에러 발생해도 로딩 종료
       });
-  }, []);
+  }, );
 
   useEffect(() => {
     if (!dracoLoaderRef.current) {
@@ -70,18 +66,15 @@ const CreateCharacter = ({isFixedSize}) => {
 
 
   const [isInvitationVisible, setIsInvitationVisible] = useState(false); // Invitation의 가시성을 관리하는 상태
-  const [isFloatingVisible, setIsFloatingVisible] = useState(true); // 플로팅 버튼 가시성 관리 상태
 
   // Invitation을 보이게 하는 함수 (메뉴 클릭 시 호출됨)
   const handleMenuClick = () => {
     setIsInvitationVisible(true);
-    // setIsFloatingVisible(false); // Invitation을 보이면 플로팅 버튼을 숨김
-  };
+ };
 
   // Invitation을 숨기고 원래 화면으로 돌아가는 함수 (뒤로가기 클릭 시 호출됨)
   const handleBackClick = () => {
     setIsInvitationVisible(false);
-    // setIsFloatingVisible(true); // Invitation을 숨기고 플로팅 버튼을 다시 보이게 함
   };
 
   const [gifUrl, setGifUrl] = useState(null);
@@ -922,7 +915,7 @@ const uploadGif = async (gifBlob) => {
     } else {
         // 그 외의 경우 흰색으로 그리고 굵기는 5
         ctx.lineWidth = 10;
-        ctx.strokeStyle = '#FFFFFF'; // 흰색으로 그리기
+        ctx.strokeStyle = '#00000'; // 흰색으로 그리기
 
     }
   

@@ -294,7 +294,7 @@ const PostcardCreation = ({isFixedSize}) => {
         }
 
         .postcard-content {
-          margin: 20px;
+          margin: 60px;
           box-sizing: border-box;
 
           background-size: contain; /* 이미지가 비율을 유지하며 축소/확대됨 */
@@ -318,12 +318,6 @@ const PostcardCreation = ({isFixedSize}) => {
           
           // box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
           // background-color: yellow; /* 이미지가 채워지지 않은 부분에 노란 배경 */
-        }
-
-        @media (min-width: 768px) {
-          .postcard-content {
-            width: 331px; /* Adjust for pc screens to fit better */
-          }
         }
 
         .guide-text {
@@ -390,7 +384,7 @@ const PostcardCreation = ({isFixedSize}) => {
         }
        #input-name input {
           position: absolute;
-          top: 1.5%;
+          top: 2%;
           right: 10%;
           width: 65%;
         

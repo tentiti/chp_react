@@ -2,140 +2,15 @@ import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react'
 import axios from 'axios';
 import Invitation from './Invitation';
 import './Home.css';
-import { isTablet, isDesktop } from 'react-device-detect';
 import { useLocation } from 'react-router-dom';
 
 function Home() {
 
   //튜토리얼
   const [tutorialVisible, setTutorialVisible] = useState(true); // 이미지 표시 여부를 결정하는 상태
-  
-  const closeOverlay = () => {
-    setTutorialVisible(false);
-  };
-  useEffect(() => {
-    if (tutorialVisible) {
-      const timer = setTimeout(() => {
-        closeOverlay();
-      }, 10000);
-
-      const handleClick = () => {
-        closeOverlay();
-      };
-
-      document.addEventListener('click', handleClick);
-
-      return () => {
-        clearTimeout(timer);
-        document.removeEventListener('click', handleClick);
-      };
-    }
-
-  }, [tutorialVisible]);
-
-  const containerRef = useRef(null);
-  const [postcards, setPostcards] = useState([]);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [fade, setFade] = useState(true);
-  const [isInvitationVisible, setIsInvitationVisible] = useState(false);
-  const [marginTop, setMarginTop] = useState(0);
-  const [isFloatingVisible, setIsFloatingVisible] = useState(true);
   const floatingButtonRef = useRef(null);
+  const [isFloatingVisible, setIsFloatingVisible] = useState(true);
 
-  const bannerImages = useMemo(() => [
-    '/static/stockimages/mainbanner1.webp',
-    '/static/stockimages/mainbanner2.webp',
-    '/static/stockimages/mainbanner3.webp'
-  ], []);
-
-  const buttonImages = useMemo(() => [
-    '/static/images/buttonImages/button1.webp',
-    '/static/images/buttonImages/button2.webp',
-    '/static/images/buttonImages/button3.webp',
-    '/static/images/buttonImages/button4.webp',
-    '/static/images/buttonImages/button5.webp',
-    '/static/images/buttonImages/button6.webp',
-    '/static/images/buttonImages/button7.webp',
-    '/static/images/buttonImages/button8.webp'
-  ], []);
-
-  const preloadedRef = useRef(false);
-
-  const preloadImages = useCallback((imageArray) => {
-    if (preloadedRef.current) return;
-
-    const preloadPromises = imageArray.map((imageSrc) => {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = resolve;
-        img.onerror = reject;
-        img.src = imageSrc;
-      });
-    });
-
-    Promise.all(preloadPromises)
-      .then(() => {
-        console.log('All images preloaded successfully');
-        preloadedRef.current = true;
-      })
-      .catch((error) => {
-        console.error('Error preloading images:', error);
-      });
-  }, []);
-  
-  useEffect(() => {
-    preloadImages([...bannerImages, ...buttonImages]);
-
-    // ... rest of the useEffect logic ...
-
-    const fetchPostcards = async () => {
-      try {
-        const response = await axios.get('/api/postcards');
-        setPostcards(response.data);
-      } catch (error) {
-        console.error("There was an error fetching the postcards!", error);
-      }
-    };
-
-    fetchPostcards();
-
-    const imageInterval = setInterval(() => {
-      setFade(false);
-      setTimeout(() => {
-        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % bannerImages.length);
-        setFade(true);
-      }, 500);
-    }, 3000);
-
-    return () => clearInterval(imageInterval);
-  },[bannerImages, buttonImages, preloadImages]);
-
-  const handleImageError = (e, num) => {
-    const fallbackSrc = `https://placehold.co/200x200?text=Image+${num}+Error`;
-    
-    // 이미지 로드 재시도 횟수 관리
-    if (!e.target.attemptedRetries) {
-      e.target.attemptedRetries = 0;
-    }
-    
-    // 최대 1회까지 재시도
-    if (e.target.attemptedRetries < 2) {
-      e.target.attemptedRetries += 1;
-      e.target.src = e.target.src + `?retry=${e.target.attemptedRetries}`; // 캐시 무효화
-    } else {
-      e.target.src = fallbackSrc; // 실패 시 대체 이미지로 설정
-    }
-  };
-  
-  const handleMenuClick = () => {
-    setIsInvitationVisible(true);
-    setIsFloatingVisible(false);
-  };
-
-  const handleBackClick = () => {
-    setIsInvitationVisible(false);
-    setIsFloatingVisible(true);
-  };
 
   useEffect(() => {
     const floatingButton = floatingButtonRef.current;
@@ -287,7 +162,133 @@ function Home() {
       window.removeEventListener('resize', adjustContainerHeight);
       container.removeEventListener('scroll', handleScroll);
     };
-  }, [isFloatingVisible, buttonImages]);
+  }, [isFloatingVisible]);
+
+  const closeOverlay = () => {
+    setTutorialVisible(false);
+  };
+  useEffect(() => {
+    if (tutorialVisible) {
+      const timer = setTimeout(() => {
+        closeOverlay();
+      }, 10000);
+
+      const handleClick = () => {
+        closeOverlay();
+      };
+
+      document.addEventListener('click', handleClick);
+
+      return () => {
+        clearTimeout(timer);
+        document.removeEventListener('click', handleClick);
+      };
+    }
+
+  }, [tutorialVisible]);
+
+  const containerRef = useRef(null);
+  const [postcards, setPostcards] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [fade, setFade] = useState(true);
+  const [isInvitationVisible, setIsInvitationVisible] = useState(false);
+  const [marginTop, setMarginTop] = useState(0);
+
+  const bannerImages = useMemo(() => [
+    '/static/stockimages/mainbanner1.webp',
+    '/static/stockimages/mainbanner2.webp',
+    '/static/stockimages/mainbanner3.webp'
+  ], []);
+
+  const buttonImages = useMemo(() => [
+    '/static/images/buttonImages/button1.webp',
+    '/static/images/buttonImages/button2.webp',
+    '/static/images/buttonImages/button3.webp',
+    '/static/images/buttonImages/button4.webp',
+    '/static/images/buttonImages/button5.webp',
+    '/static/images/buttonImages/button6.webp',
+    '/static/images/buttonImages/button7.webp',
+    '/static/images/buttonImages/button8.webp'
+  ], []);
+
+  const preloadedRef = useRef(false);
+
+  const preloadImages = useCallback((imageArray) => {
+    if (preloadedRef.current) return;
+
+    const preloadPromises = imageArray.map((imageSrc) => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = imageSrc;
+      });
+    });
+
+    Promise.all(preloadPromises)
+      .then(() => {
+        console.log('All images preloaded successfully');
+        preloadedRef.current = true;
+      })
+      .catch((error) => {
+        console.error('Error preloading images:', error);
+      });
+  }, []);
+  
+  useEffect(() => {
+    preloadImages([...bannerImages, ...buttonImages]);
+
+    // ... rest of the useEffect logic ...
+
+    const fetchPostcards = async () => {
+      try {
+        const response = await axios.get('/api/postcards');
+        setPostcards(response.data);
+      } catch (error) {
+        console.error("There was an error fetching the postcards!", error);
+      }
+    };
+
+    fetchPostcards();
+
+    const imageInterval = setInterval(() => {
+      setFade(false);
+      setTimeout(() => {
+        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % bannerImages.length);
+        setFade(true);
+      }, 500);
+    }, 3000);
+
+    return () => clearInterval(imageInterval);
+  },[bannerImages, buttonImages, preloadImages]);
+
+  const handleImageError = (e, num) => {
+    const fallbackSrc = `https://placehold.co/200x200?text=Image+${num}+Error`;
+    
+    // 이미지 로드 재시도 횟수 관리
+    if (!e.target.attemptedRetries) {
+      e.target.attemptedRetries = 0;
+    }
+    
+    // 최대 1회까지 재시도
+    if (e.target.attemptedRetries < 2) {
+      e.target.attemptedRetries += 1;
+      e.target.src = e.target.src + `?retry=${e.target.attemptedRetries}`; // 캐시 무효화
+    } else {
+      e.target.src = fallbackSrc; // 실패 시 대체 이미지로 설정
+    }
+  };
+  
+  const handleMenuClick = () => {
+    setIsInvitationVisible(true);
+    setIsFloatingVisible(false);
+  };
+
+  const handleBackClick = () => {
+    setIsInvitationVisible(false);
+    setIsFloatingVisible(true);
+  };
+
 
   useEffect(() => {
     const adjustFooterVisibility = () => {
@@ -336,16 +337,37 @@ function Home() {
         left: 0,
         width: '100%',
         height: '100%',
-        // backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'rgba(129, 126, 114, 0.8)',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: '3000',
       }}>
+        <div
+      style={{
+        position: 'absolute',
+        top: '12px',
+        right: '17px',
+        width: '40px', // Diameter of the circle
+        height: '40px', // Diameter of the circle
+        borderRadius: '50%', // Makes it circular
+        backgroundColor: '#F8F6F1', // Same as overlay background
+        clipPath: 'circle(30px at 50% 50%)', // Circle cutout
+        zIndex: '3001', // Ensure it's above the background but below the tutorial image
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <img src="/static/icons/hamburger.webp" alt="menu" id="menu-button" style={{width: '30px'}}/>
+              
+    </div>
         <img src="/static/stockimages/tutorial.webp" alt="tutorial" style={{
-          width: '100%', 
-          height: '100%', 
-          objectFit: 'cover',
+          position: 'absolute',
+          top: '55px',
+          width: '90%', 
+          // height: '100%', 
+          objectFit: 'contain',
           }} />
 
         </div>}

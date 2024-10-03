@@ -35,7 +35,7 @@ function Invitation({ onBack, showbutton = false }) {
       .catch((error) => {
         console.error('Error loading images:', error);
       });
-  }, []);
+  }, );
 
   const handleBack = () => {
     setIsSlideIn(false);

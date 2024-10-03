@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import RecordRTC from 'recordrtc';
+import RecordRTC, { MediaStreamRecorder } from 'recordrtc';
 import Credit from './Credit';
 import { useScene } from './SceneContext';
 import './PostcardView.css';
@@ -71,6 +71,33 @@ const PostcardView = ({isFixedSize}) => {
     }
   };
 
+  const initRecorder = (combinedStream) => {
+    const recorder = new RecordRTC(combinedStream, {
+      type: 'video',
+      mimeType: 'video/webm;codecs=vp8,opus', // 명시적으로 코덱 지정
+      timeSlice: 1000, // 1초마다 데이터 조각
+      bitsPerSecond: 2500000, // 비디오 비트레이트
+      frameInterval: 30,
+      video: {
+        width: 1280,
+        height: 720,
+        frameRate: 30
+      },
+      audioBitsPerSecond: 128000,
+      // 안드로이드 WebM 메타데이터 수정을 위한 설정
+      recorderType: MediaStreamRecorder,
+      // 녹화 시작 시간 기록
+      numberOfAudioChannels: 2,
+      desiredSampRate: 16000,
+      checkForInactiveTracks: true,
+      onTimeStamp: (timestamp) => {
+        recorder._recordingDuration = timestamp;
+      }
+    });
+  
+    return recorder;
+  };
+
   const startRecording = () => {
     if (isRecording || !isReadyToRecord) return;
 
@@ -98,19 +125,24 @@ const PostcardView = ({isFixedSize}) => {
 
     const recorder = new RecordRTC(combinedStream, {
       type: 'video',
-      mimeType: 'video/mp4',
-      bitsPerSecond: 2500000,
+      // mimeType: 'video/mp4', // H.264 비디오 코덱과 AAC 오디오 코덱을 사용
+      mimeType: 'video/webm; codecs=vp8', // H.264 대신 VP8 사용
       video: {
-        codec: 'H264',  
-        width: 1920, 
-        height: 1080,
-        frameRate: 30 
+          width: 1280,
+          height: 720,
+          frameRate: 30
       },
-      audioBitsPerSecond: 128000,  // 오디오 비트레이트를 510kbps로 설정
+      audioBitsPerSecond: 128000, // 오디오 비트레이트를 510kbps로 설정
       videoBitsPerSecond: 2500000, // 비디오 비트레이트 명시적 설정
-    });
+  });
+  
 
     audioRef.current.play();
+
+    recorder.onError = (error) => {
+      console.error('Recording error:', error);
+    };
+  
 
     recorder.startRecording();
     recorderRef.current = recorder;
@@ -122,29 +154,69 @@ const PostcardView = ({isFixedSize}) => {
   
   const stopRecording = () => {
     if (!recorderRef.current) {
-      console.warn('Recorder reference is not set');
-      return;
+        console.warn('Recorder reference is not set');
+        return;
     }
-  
-    recorderRef.current.stopRecording(() => {
+
+    recorderRef.current.stopRecording(async () => {
       const blob = recorderRef.current.getBlob();
-  
-      // MP4 Blob 생성
-      const mp4Blob = new Blob([blob], { type: 'video/mp4' });
-  
-      // File 객체로 변환
-      const file = new File([mp4Blob], `dance.mp4`, { 
-        type: 'video/mp4',
+      
+      // 녹화 duration 확인 및 수정
+      const duration = recorderRef.current._recordingDuration || 18750;
+      
+      // WebM 메타데이터에 duration 추가
+      const modifiedBlob = await fixWebmMetadata(blob, duration);
+      
+      const file = new File([modifiedBlob], `dance.webm`, { 
+        type: 'video/webm',
         lastModified: new Date().getTime()
       });
   
-      const url = URL.createObjectURL(file); // Blob URL 생성
-      setBlobUrl(url); // Blob URL 설정
-      setIsRecording(false);
-      setIsRecordingDone(true);
+      const url = URL.createObjectURL(file);
+      
+      // 메타데이터 확인
+      const videoElement = document.createElement('video');
+      videoElement.src = url;
+      videoElement.onloadedmetadata = () => {
+        console.log(`Video duration: ${videoElement.duration}`);
+        if (!videoElement.duration || videoElement.duration === Infinity) {
+          console.warn('Video duration is invalid, using fallback duration');
+          // 필요한 경우 여기서 추가적인 메타데이터 수정 처리
+        }
+      };
+
+        setBlobUrl(url); // Blob URL 설정
+        setIsRecording(false);
+        setIsRecordingDone(true);
     });
-  };
+};
+
+// WebM 메타데이터 수정 함수
+const fixWebmMetadata = async (blob, duration) => {
+  // 안드로이드에서만 메타데이터 수정
+  if (!/Android/.test(navigator.userAgent)) return blob;
   
+  try {
+    const arrayBuffer = await blob.arrayBuffer();
+    const view = new DataView(arrayBuffer);
+    
+    // WebM 헤더에서 duration 정보가 있는 위치 찾기
+    let position = 0;
+    while (position < view.byteLength - 4) {
+      if (view.getUint32(position) === 0x44899) { // Duration element ID
+        // duration 값 수정
+        view.setFloat64(position + 4, duration / 1000); // 밀리초를 초로 변환
+        break;
+      }
+      position++;
+    }
+
+    return new Blob([arrayBuffer], { type: 'video/webm' });
+  } catch (error) {
+    console.error('Error fixing WebM metadata:', error);
+    return blob;
+  }
+};
   
 
   const downloadVideo = () => {
@@ -152,17 +224,17 @@ const PostcardView = ({isFixedSize}) => {
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = blobUrl;
-      a.download = `${postcard?.name}의 춤사위.mp4`;
+      a.download = `${postcard?.name}의 춤사위.webm`;
       document.body.appendChild(a);
       a.click();
     }
   };
 
-  const shareVideo = async () => {
+  const shareVideo = async (alertNeeded = true) => {
     if (hasShared || !blobUrl) return; // 이미 공유되었거나 Blob URL이 없으면 중단
     setHasShared(true);
   
-    try {
+    if (alertNeeded){
       // 클립보드에 해시태그 복사
       if (navigator.clipboard) {
         await navigator.clipboard.writeText('@k.imhwasoon @kkot.pida.gallery');
@@ -171,6 +243,9 @@ const PostcardView = ({isFixedSize}) => {
   
       alert('해시태그가 복사되었습니다. 인스타그램 공유 (불가시 저장 후 수동 공유)시 텍스트를 붙여 넣어 주세요!');
   
+    }
+    try {
+
       // Blob URL을 사용하여 파일 공유
       if (!navigator.canShare || !blobUrl) {
         throw new Error('Sharing not supported or no video recorded');
@@ -273,6 +348,7 @@ const PostcardView = ({isFixedSize}) => {
     });
   };
 
+
   const initThreeJS = async () => {
     if (!sceneData.mixer || !postcard) return <div>필요한 정보 로딩중...</div>;  
 
@@ -324,8 +400,8 @@ const PostcardView = ({isFixedSize}) => {
       console.warn('sceneData.mixer is not an array or it is empty');
     }
 
-    const width = 1080;
-    const height = 1920;
+    const width = 720;
+    const height = 1280;
 
     rendererRef.current = new THREE.WebGLRenderer({ 
       canvas: canvasRef.current, 
@@ -342,8 +418,8 @@ const PostcardView = ({isFixedSize}) => {
 
     const frustumSize = 40;
     cameraRef.current = new THREE.OrthographicCamera(
-      (frustumSize * 1080) / 1920 / -2,
-      (frustumSize * 1080) / 1920 / 2,
+      (frustumSize * 720) / 1280 / -2,
+      (frustumSize * 720) / 1280 / 2,
       frustumSize / 2,
       frustumSize / -2,
       0.1,
@@ -367,8 +443,8 @@ const PostcardView = ({isFixedSize}) => {
 
     moveAndScaleModels(xOffset, yOffset, zOffset, scaleFactor); 
 
-    console.log(window.innerWidth / 1080);
-    console.log((window.innerHeight - 60) / 1920);
+    console.log(window.innerWidth / 720);
+    console.log((window.innerHeight - 60) / 1280);
     
     const loader = new THREE.TextureLoader();
     loader.load(`/static/stockimages/postcardfinal_${postcard?.number}.png`, (bgTexture) => {
@@ -378,7 +454,7 @@ const PostcardView = ({isFixedSize}) => {
       bgTexture.magFilter = THREE.LinearFilter;
 
       const bgMaterial = new THREE.MeshBasicMaterial({ map: bgTexture });
-      const bgMesh = new THREE.Mesh(new THREE.PlaneGeometry(frustumSize * (1080 / 1920), frustumSize), bgMaterial);
+      const bgMesh = new THREE.Mesh(new THREE.PlaneGeometry(frustumSize * (720 / 1280), frustumSize), bgMaterial);
       bgMesh.material.depthTest = false;
       bgMesh.material.depthWrite = false;
       bgMesh.renderOrder = -1;
@@ -612,12 +688,12 @@ const PostcardView = ({isFixedSize}) => {
   const canvasStyle = {
     position: 'fixed',
     top: isFixedSize? '58px' : '58px',
-    transform: isFixedSize? `translate(0, -34.4%) scale(${
+    transform: isFixedSize? `translate(0, -26.4%) scale(${
       containerRef.current ? 
-      Math.min(containerRef.current.clientWidth / 1080, containerRef.current.clientHeight / 1920) : 1
+      Math.min(containerRef.current.clientWidth / 720, containerRef.current.clientHeight / 1280) : 1
     })` : `translate(0, -38px) scale(${
       containerRef.current ? 
-      Math.min(window.innerWidth / 1080, (window.innerHeight - 78) / 1920) : 1
+      Math.min(window.innerWidth / 720, (window.innerHeight - 78) / 1280) : 1
     })`,
     transformOrigin: isFixedSize? 'center center': 'top center',
   };
@@ -629,11 +705,25 @@ const PostcardView = ({isFixedSize}) => {
     };
   };
 
+  const downloadOrShareVideo = () => {
+    // User Agent를 사용하여 iOS 장치인지 확인
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  
+    if (isIOS) {
+      // iOS에서는 공유 기능 호출
+      alert('비디오 저장 버튼을 누르면 사진첩에 춤사위가 저장됩니다.');
+      shareVideo(false);
+    } else {
+      // 그 외 장치에서는 비디오 다운로드
+      downloadVideo();
+    }
+  };
+
   return (
     <div style={{ 
       backgroundImage: `url('/static/stockimages/background_paper.webp')`, 
       backgroundSize: 'contain',
-      width: '100%', 
+      width: '100vw', 
       height: '100%', 
       zIndex: '900',
       overflow: 'hidden' ,
@@ -647,7 +737,6 @@ const PostcardView = ({isFixedSize}) => {
           justifyContent: 'space-between',
           alignItems: 'center',
           width: '100%',
-          backgroundColor: 'transparent',
           height: '58px',
           backgroundColor: '#F8F6F1',
           position: 'fixed',
@@ -741,7 +830,7 @@ const PostcardView = ({isFixedSize}) => {
 
       {isRecordingDone && (
         <>
-          <button className="upbutton" onClick={downloadVideo} disabled={!blobUrl}>
+          <button className="upbutton" onClick={downloadOrShareVideo} disabled={!blobUrl}>
             저장하기
           </button>
           <button className="upbutton" onClick={shareVideo} disabled={!blobUrl}>
