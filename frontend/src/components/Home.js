@@ -171,7 +171,7 @@ function Home() {
     if (tutorialVisible) {
       const timer = setTimeout(() => {
         closeOverlay();
-      }, 10000);
+      }, 1000000);
 
       const handleClick = () => {
         closeOverlay();

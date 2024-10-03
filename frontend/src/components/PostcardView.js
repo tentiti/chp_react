@@ -23,6 +23,8 @@ const PostcardView = ({isFixedSize}) => {
 
   const [hasShared, setHasShared] = useState(false);
 
+  const [recordingBlob, setRecordingBlob] = useState(null);
+
   useEffect(() => {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     setAudioContext(ctx);
@@ -74,32 +76,7 @@ const PostcardView = ({isFixedSize}) => {
     }
   };
 
-  const initRecorder = (combinedStream) => {
-    const recorder = new RecordRTC(combinedStream, {
-      type: 'video',
-      mimeType: 'video/webm;codecs=vp8,opus', // 명시적으로 코덱 지정
-      timeSlice: 1000, // 1초마다 데이터 조각
-      bitsPerSecond: 2500000, // 비디오 비트레이트
-      frameInterval: 30,
-      video: {
-        width: 1280,
-        height: 720,
-        frameRate: 30
-      },
-      audioBitsPerSecond: 128000,
-      // 안드로이드 WebM 메타데이터 수정을 위한 설정
-      recorderType: MediaStreamRecorder,
-      // 녹화 시작 시간 기록
-      numberOfAudioChannels: 2,
-      desiredSampRate: 16000,
-      checkForInactiveTracks: true,
-      onTimeStamp: (timestamp) => {
-        recorder._recordingDuration = timestamp;
-      }
-    });
-  
-    return recorder;
-  };
+
 
   const RECORDING_DURATION_MS = 18750; // 녹화 시간 상수
 
@@ -113,16 +90,22 @@ const PostcardView = ({isFixedSize}) => {
   
   // 녹음과 관련된 설정을 초기화하는 함수
   const initializeRecorder = (combinedStream) => {
+    // const recorder = new RecordRTC(combinedStream, {
+    //   type: 'video',
+    //   mimeType: 'video/webm; codecs=vp8', // VP8 비디오 코덱 사용
+    //   video: {
+    //     width: 1280,
+    //     height: 720,
+    //     frameRate: 30,
+    //   },
+    //   audioBitsPerSecond: 128000,
+    //   videoBitsPerSecond: 2500000,
+    // });
+
     const recorder = new RecordRTC(combinedStream, {
       type: 'video',
-      mimeType: 'video/webm; codecs=vp8', // VP8 비디오 코덱 사용
-      video: {
-        width: 1280,
-        height: 720,
-        frameRate: 30,
-      },
-      audioBitsPerSecond: 128000,
-      videoBitsPerSecond: 2500000,
+      mimeType: 'video/mp4',
+      bitsPerSecond: 800000  
     });
   
     recorder.onError = (error) => {
@@ -179,35 +162,37 @@ const PostcardView = ({isFixedSize}) => {
   
     recorderRef.current.stopRecording(async () => {
       const blob = recorderRef.current.getBlob();
-  
-      // Create FFmpeg instance
-      const ffmpeg = new FFmpeg();
-      await ffmpeg.load();
-  
-      // Write the WebM file to FFmpeg's virtual file system
-      await ffmpeg.writeFile('input.webm', await fetchFile(blob));
-  
-      // Run FFmpeg command
-      await ffmpeg.exec(['-i', 'input.webm', '-c', 'copy', '-fflags', '+genpts', 'output.webm']);
 
-      // Read the output file from FFmpeg's virtual file system
-      const data = await ffmpeg.readFile('output.webm');
+      setRecordingBlob(blob);
   
-      // Create a Blob from the output data
-      const videoBlob = new Blob([data.buffer], { type: 'video/webm' });
+      // // Create FFmpeg instance
+      // const ffmpeg = new FFmpeg();
+      // await ffmpeg.load();
   
-      // Create a Blob URL
-      const url = URL.createObjectURL(videoBlob);
+      // // Write the WebM file to FFmpeg's virtual file system
+      // await ffmpeg.writeFile('input.webm', await fetchFile(blob));
   
-      // Check metadata
-      const videoElement = document.createElement('video');
-      videoElement.src = url;
-      videoElement.onloadedmetadata = () => {
-        console.log(`Video duration: ${videoElement.duration}`);
-        if (!videoElement.duration || videoElement.duration === Infinity) {
-          console.warn('Video duration is invalid, using fallback duration');
-        }
-      };
+      // // Run FFmpeg command
+      // await ffmpeg.exec(['-i', 'input.webm', '-c', 'copy', '-fflags', '+genpts', 'output.webm']);
+
+      // // Read the output file from FFmpeg's virtual file system
+      // const data = await ffmpeg.readFile('output.webm');
+  
+      // // // Create a Blob from the output data
+      // const videoBlob = new Blob([data.buffer], { type: 'video/mp4' });
+  
+      // // Create a Blob URL
+      const url = URL.createObjectURL(blob);
+  
+      // // Check metadata
+      // const videoElement = document.createElement('video');
+      // videoElement.src = url;
+      // videoElement.onloadedmetadata = () => {
+      //   console.log(`Video duration: ${videoElement.duration}`);
+      //   if (!videoElement.duration || videoElement.duration === Infinity) {
+      //     console.warn('Video duration is invalid, using fallback duration');
+      //   }
+      // };
   
       setBlobUrl(url);
       setIsRecording(false);
@@ -221,7 +206,7 @@ const PostcardView = ({isFixedSize}) => {
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = blobUrl;
-      a.download = `${postcard?.name}의 춤사위.webm`;
+      a.download = `${postcard?.name}의 춤사위.mp4`;
       document.body.appendChild(a);
       a.click();
     }
@@ -257,7 +242,9 @@ const PostcardView = ({isFixedSize}) => {
       const blob = await response.blob();
   
       // Blob을 File로 변환
-      const file = new File([blob], `${postcard?.name}의 춤사위.webm`, { type: 'video/webm' });
+      // const file = new File([blob], `${postcard?.name}의 춤사위.webm`, { type: 'video/webm' });
+      const file = new File([recordingBlob], 'animation.mp4', { type: 'video/mp4' });
+
       console.log(file)
 
       // 파일을 공유할 수 있는지 확인한 후 공유
@@ -265,6 +252,8 @@ const PostcardView = ({isFixedSize}) => {
         await navigator.share({
           // title: 'Postcard Video',
           files: [file],
+          title: 'My Animation',
+          text: 'Check out this animation I created!',
         });
         console.log('Video shared successfully');
       } else {
@@ -377,6 +366,7 @@ const PostcardView = ({isFixedSize}) => {
           if (mixer && action) {
             action.reset();
             action.stop();
+            mixer.update(0);
           }
 
           addedCategories.add(categoryName);
@@ -597,14 +587,15 @@ const PostcardView = ({isFixedSize}) => {
   }, [isReadyToRecord]);
 
   useEffect(() => {
+    if (isRecordingDone) {
       resetAndPlayAnimations();
       const animationInterval = setInterval(() => {
         resetAndPlayAnimations();
       }, 18750); 
-
+  
       return () => clearInterval(animationInterval);
-    
-  }, [isRecording, resetAndPlayAnimations]);
+    }
+  }, [isRecordingDone, resetAndPlayAnimations]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {
