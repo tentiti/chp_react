@@ -58,6 +58,7 @@ function Invitation({ onBack, showbutton = false }) {
         backgroundColor: '#412823 !important',
         overflow: 'hidden',
         zIndex: '99999999',
+        pointerEvents: 'none',
       }}
     >
       <div

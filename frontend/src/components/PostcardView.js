@@ -17,7 +17,6 @@ const PostcardView = ({isFixedSize}) => {
   const audioContextRef = useRef(null);
   const audioSourceRef = useRef(null);
   const audioRef = useRef(null);
-  const [isFallbackVisible, setIsFallbackVisible] = useState(false);  // Track fallback visibility
 
   const [audioContext, setAudioContext] = useState(null);
   const [audioSource, setAudioSource] = useState(null);
@@ -200,31 +199,7 @@ const PostcardView = ({isFixedSize}) => {
       setIsRecordingDone(true);
     });
   };
-// WebM 메타데이터 수정 함수
-const fixWebmMetadata = async (blob, duration) => {
-    try {
-        const arrayBuffer = await blob.arrayBuffer();
-        const view = new DataView(arrayBuffer);
-        
-        // WebM 헤더에서 duration 정보가 있는 위치 찾기
-        let position = 0;
-        while (position < view.byteLength - 4) {
-            if (view.getUint32(position) === 0x4489) {  // Duration element ID
-                // duration 값 수정
-                view.setFloat64(position + 4, duration / 1000);  // 밀리초를 초로 변환
-                break;
-            }
-            position++;
-        }
 
-        return new Blob([arrayBuffer], { type: 'video/webm' });
-    } catch (error) {
-        console.error('Error fixing WebM metadata:', error);
-        return blob;
-    }
-};
-
-  
 
   const downloadVideo = () => {
     if (blobUrl) {
@@ -288,18 +263,7 @@ const fixWebmMetadata = async (blob, duration) => {
       setHasShared(false);
     }
   };
-  
-  
 
-  useEffect(() => {
-    const fallbackTimer = setTimeout(() => {
-      if (!isRecording) {
-        setIsFallbackVisible(true); 
-      }
-    }, 5000); 
-
-    return () => clearTimeout(fallbackTimer); 
-  }, [isRecording]);
 
   useEffect(() => {
     const fetchPostcard = async () => {
@@ -621,7 +585,7 @@ const fixWebmMetadata = async (blob, duration) => {
       resetAndPlayAnimations();
       const animationInterval = setInterval(() => {
         resetAndPlayAnimations();
-      }, 18750);
+      }, 18750); 
 
       return () => clearInterval(animationInterval);
     

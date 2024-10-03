@@ -183,7 +183,7 @@ const PostcardShareView = ({isFixedSize}) => {
 
       <div id="createdImages" ref={divRef} style={{
         position: 'fixed',
-        top: '53px',
+        top: isFixedSize? '68px': '58px',
         // width: '100vw', // 창의 전체 너비를 차지
         // height: 'calc(100vw * (15/9))', // 9:16 비율을 맞추기 위해 너비에 따른 높이 설정
         width: isFixedSize? '390px': 'calc((100dvh - 108px) * (720/1197))', // 높이에 맞춘 비율을 유지한 최대 너비

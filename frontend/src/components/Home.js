@@ -368,6 +368,7 @@ function Home() {
           width: '90%', 
           // height: '100%', 
           objectFit: 'contain',
+          pointerEvents: 'none',
           }} />
 
         </div>}
@@ -418,7 +419,9 @@ function Home() {
         </div>
       <div className="container" id="content" ref={containerRef}>
         <div id="ajax-content">
-          <div className="mainImage" style={{ marginTop: `${marginTop}px`}}>
+          <div className="mainImage" style={{ 
+            marginTop: `${marginTop}px`,
+            pointerEvents: 'none',}}>
             <img 
               id="mainBanner" 
               src={bannerImages[currentImageIndex]} 
