@@ -6,18 +6,99 @@ import { useLocation } from 'react-router-dom';
 
 function Home() {
 
-  //튜토리얼
-  const [tutorialVisible, setTutorialVisible] = useState(true); // 이미지 표시 여부를 결정하는 상태
+  // Tutorial State
+  const [tutorialVisible, setTutorialVisible] = useState(true);
+  
+  // Floating Button State
   const floatingButtonRef = useRef(null);
-  const [isFloatingVisible, setIsFloatingVisible] = useState(true);
+  const [isFloatingVisible, setIsFloatingVisible] = useState(false); // Initially false
+  const [buttonImagesLoaded, setButtonImagesLoaded] = useState(false); // Track button images loading
 
+  // Container Ref
+  const containerRef = useRef(null);
 
+  // Postcards State
+  const [postcards, setPostcards] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [fade, setFade] = useState(true);
+  const [isInvitationVisible, setIsInvitationVisible] = useState(false);
+  const [marginTop, setMarginTop] = useState(0);
+
+  // Banner and Button Images
+  const bannerImages = useMemo(() => [
+    '/static/stockimages/mainbanner1.webp',
+    '/static/stockimages/mainbanner2.webp',
+    '/static/stockimages/mainbanner3.webp'
+  ], []);
+
+  const buttonImages = useMemo(() => [
+    '/static/images/buttonImages/button1.webp',
+    '/static/images/buttonImages/button2.webp',
+    '/static/images/buttonImages/button3.webp',
+    '/static/images/buttonImages/button4.webp',
+    '/static/images/buttonImages/button5.webp',
+    '/static/images/buttonImages/button6.webp',
+    '/static/images/buttonImages/button7.webp',
+    '/static/images/buttonImages/button8.webp'
+  ], []);
+
+  // Refs to prevent multiple preloads
+  const preloadedButtonImagesRef = useRef(false);
+  const preloadedBannerImagesRef = useRef(false);
+
+  // Preload Images Function
+  const preloadImages = useCallback((imageArray) => {
+    return Promise.all(
+      imageArray.map((imageSrc) => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = resolve;
+          img.onerror = reject;
+          img.src = imageSrc;
+        });
+      })
+    );
+  }, []);
+
+  // Preload Button Images First
   useEffect(() => {
+    if (!preloadedButtonImagesRef.current) {
+      preloadImages(buttonImages)
+        .then(() => {
+          console.log('Button images preloaded successfully');
+          preloadedButtonImagesRef.current = true;
+          setButtonImagesLoaded(true); // Set button images loaded
+        })
+        .catch((error) => {
+          console.error('Error preloading button images:', error);
+        });
+    }
+  }, [buttonImages, preloadImages]);
+
+  // Preload Banner Images After Button Images
+  useEffect(() => {
+    if (buttonImagesLoaded && !preloadedBannerImagesRef.current) {
+      preloadImages(bannerImages)
+        .then(() => {
+          console.log('Banner images preloaded successfully');
+          preloadedBannerImagesRef.current = true;
+        })
+        .catch((error) => {
+          console.error('Error preloading banner images:', error);
+        });
+    }
+  }, [buttonImagesLoaded, bannerImages, preloadImages]);
+
+  // Floating Button Logic
+  useEffect(() => {
+    if (!buttonImagesLoaded) return; // Do not execute until button images are loaded
+
+    setIsFloatingVisible(true); // Now floating button can be visible
+
     const floatingButton = floatingButtonRef.current;
     const container = containerRef.current;
     
     if (floatingButton && container && isFloatingVisible) {
-
 
       const buttonWidth = 70;
       const buttonHeight = 70;
@@ -28,8 +109,8 @@ function Home() {
 
       const updateContainerDimensions = () => {
         const containerRect = container.getBoundingClientRect();
-        const maxX = Math.min(containerRect.width - buttonWidth/2, 390 - buttonWidth /2);
-        const maxY = Math.min(containerRect.height - buttonHeight/2, 780 - buttonHeight/2);
+        const maxX = Math.min(containerRect.width - buttonWidth / 2, 390 - buttonWidth / 2);
+        const maxY = Math.min(containerRect.height - buttonHeight / 2, 780 - buttonHeight / 2);
         return { maxX, maxY };
       };
   
@@ -38,7 +119,6 @@ function Home() {
       let posX = Math.random() * maxX;
       let posY = Math.random() * maxY;
       let angle = Math.random() * 2 * Math.PI;
-  
   
       function getRandomButtonImage() {
         const currentImage = floatingButton.style.backgroundImage;
@@ -51,7 +131,7 @@ function Home() {
   
       function moveFloatingButton() {
         if (!isFloatingVisible) {
-         return;
+          return;
         }
         const now = Date.now();
         ({ maxX, maxY } = updateContainerDimensions());
@@ -62,7 +142,6 @@ function Home() {
          // Reduce speed to make the movement slower
         posX += Math.cos(angle) * (3 * 0.2);  // Speed reduced
         posY += Math.sin(angle) * (3 * 0.2);  // Speed reduced
-
     
         let collision = false;
       
@@ -91,19 +170,23 @@ function Home() {
         requestAnimationFrame(moveFloatingButton);
       }
       
-      // 초기 설정
+      // Initial Setup
       floatingButton.style.position = 'absolute';
       floatingButton.style.width = `${buttonWidth}px`;
       floatingButton.style.height = `${buttonHeight}px`;
       floatingButton.style.backgroundSize = 'cover';
-      // floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
       floatingButton.style.display = 'block';
-      // floatingButton.style.zIndex='4000';
       
-      // 초기 위치 설정
+      // Set initial background image
+      floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
+
+      // Initial Position
       posX = Math.random() * (maxX - buttonWidth - 2 * collisionMargin) + collisionMargin;
       posY = Math.random() * (maxY - buttonHeight - 2 * collisionMargin) + collisionMargin + 58;
       
+      floatingButton.style.left = `${posX}px`;
+      floatingButton.style.top = `${posY}px`;
+
       requestAnimationFrame(moveFloatingButton);
       
       floatingButton.addEventListener('click', () => {
@@ -112,11 +195,14 @@ function Home() {
 
       window.addEventListener('resize', updateContainerDimensions);
 
-    } else {
-      // console.log("Floating button or container not found, or isFloatingVisible is false:", 
-        // { floatingButton: !!floatingButton, container: !!container, isFloatingVisible });
+      return () => {
+        window.removeEventListener('resize', updateContainerDimensions);
+      };
     }
 
+
+
+    // Initialize AJAX Links
     function initializeAjaxLinks() {
       document.body.addEventListener('click', function (event) {
         const ajaxLink = event.target.closest('.ajax-link');
@@ -134,6 +220,7 @@ function Home() {
 
     initializeAjaxLinks();
 
+    // Adjust Container Height
     function adjustContainerHeight() {
       const header = document.querySelector('#header');
       const footer = document.querySelector('footer');
@@ -148,25 +235,34 @@ function Home() {
       }
     }
 
+    // Handle Scroll (Placeholder)
     function handleScroll(e) {
-      // console.log('Scroll event:', e.target.scrollTop);
+      // Handle scroll events if needed
     }
 
     adjustContainerHeight();
     window.addEventListener('resize', adjustContainerHeight);
 
     // const container = containerRef.current;
-    container.addEventListener('scroll', handleScroll);
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+    }
 
     return () => {
       window.removeEventListener('resize', adjustContainerHeight);
-      container.removeEventListener('scroll', handleScroll);
+      if (container) {
+        container.removeEventListener('scroll', handleScroll);
+      }
     };
-  }, [isFloatingVisible]);
+  }, [buttonImagesLoaded, isFloatingVisible, buttonImages]);
 
+  
+
+  // Tutorial Overlay Logic
   const closeOverlay = () => {
     setTutorialVisible(false);
   };
+  
   useEffect(() => {
     if (tutorialVisible) {
       const timer = setTimeout(() => {
@@ -187,59 +283,14 @@ function Home() {
 
   }, [tutorialVisible]);
 
-  const containerRef = useRef(null);
-  const [postcards, setPostcards] = useState([]);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [fade, setFade] = useState(true);
-  const [isInvitationVisible, setIsInvitationVisible] = useState(false);
-  const [marginTop, setMarginTop] = useState(0);
-
-  const bannerImages = useMemo(() => [
-    '/static/stockimages/mainbanner1.webp',
-    '/static/stockimages/mainbanner2.webp',
-    '/static/stockimages/mainbanner3.webp'
-  ], []);
-
-  const buttonImages = useMemo(() => [
-    '/static/images/buttonImages/button1.webp',
-    '/static/images/buttonImages/button2.webp',
-    '/static/images/buttonImages/button3.webp',
-    '/static/images/buttonImages/button4.webp',
-    '/static/images/buttonImages/button5.webp',
-    '/static/images/buttonImages/button6.webp',
-    '/static/images/buttonImages/button7.webp',
-    '/static/images/buttonImages/button8.webp'
-  ], []);
-
-  const preloadedRef = useRef(false);
-
-  const preloadImages = useCallback((imageArray) => {
-    if (preloadedRef.current) return;
-
-    const preloadPromises = imageArray.map((imageSrc) => {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = resolve;
-        img.onerror = reject;
-        img.src = imageSrc;
-      });
-    });
-
-    Promise.all(preloadPromises)
-      .then(() => {
-        console.log('All images preloaded successfully');
-        preloadedRef.current = true;
-      })
-      .catch((error) => {
-        console.error('Error preloading images:', error);
-      });
-  }, []);
-  
+  // Preload All Images After Button and Banner Images
   useEffect(() => {
-    preloadImages([...bannerImages, ...buttonImages]);
+    if (!buttonImagesLoaded) return; // Ensure button images are loaded first
 
-    // ... rest of the useEffect logic ...
+    // Preload any additional images if needed
+    // preloadImages([...additionalImages]);
 
+    // Fetch Postcards
     const fetchPostcards = async () => {
       try {
         const response = await axios.get('/api/postcards');
@@ -251,6 +302,7 @@ function Home() {
 
     fetchPostcards();
 
+    // Banner Image Slider
     const imageInterval = setInterval(() => {
       setFade(false);
       setTimeout(() => {
@@ -260,36 +312,39 @@ function Home() {
     }, 3000);
 
     return () => clearInterval(imageInterval);
-  },[bannerImages, buttonImages, preloadImages]);
+  }, [buttonImagesLoaded, bannerImages]);
 
+  // Handle Image Errors with Retry Logic
   const handleImageError = (e, num) => {
     const fallbackSrc = `https://placehold.co/200x200?text=Image+${num}+Error`;
     
-    // 이미지 로드 재시도 횟수 관리
+    // Manage retry attempts
     if (!e.target.attemptedRetries) {
       e.target.attemptedRetries = 0;
     }
     
-    // 최대 1회까지 재시도
-    if (e.target.attemptedRetries < 2) {
+    // Retry once
+    if (e.target.attemptedRetries < 1) {
       e.target.attemptedRetries += 1;
-      e.target.src = e.target.src + `?retry=${e.target.attemptedRetries}`; // 캐시 무효화
+      e.target.src = e.target.src.split('?')[0] + `?retry=${e.target.attemptedRetries}`; // Invalidate cache
     } else {
-      e.target.src = fallbackSrc; // 실패 시 대체 이미지로 설정
+      e.target.src = fallbackSrc; // Set fallback image on failure
     }
   };
   
+  // Handle Menu Click to Show Invitation
   const handleMenuClick = () => {
     setIsInvitationVisible(true);
     setIsFloatingVisible(false);
   };
 
+  // Handle Back Click to Hide Invitation
   const handleBackClick = () => {
     setIsInvitationVisible(false);
     setIsFloatingVisible(true);
   };
 
-
+  // Adjust Footer Visibility Based on Scroll
   useEffect(() => {
     const adjustFooterVisibility = () => {
       const footer = document.querySelector('footer');
@@ -309,14 +364,15 @@ function Home() {
   
     return () => window.removeEventListener('resize', adjustFooterVisibility);
   }, []);
-  
+
+  // Ensure Footer is Visible on Resize
   const location = useLocation();
 
   useEffect(() => {
     const handleResize = () => {
       const footer = document.querySelector('footer');
       if (footer) {
-        footer.style.visibility = 'visible';  // 푸터를 강제로 보이도록 설정
+        footer.style.visibility = 'visible';  // Force footer to be visible
       }
     };
   
@@ -326,11 +382,11 @@ function Home() {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
-  
 
   return (
-    <div  key={location.pathname} className="App" style={{height: '100%', width: '100%'}}>
+    <div key={location.pathname} className="App" style={{height: '100%', width: '100%'}}>
       
+      {/* Tutorial Overlay */}
       {tutorialVisible && <div className="tutorial-overlay" style={{
         position: 'fixed',
         top: '0px',
@@ -346,8 +402,8 @@ function Home() {
         <div
       style={{
         position: 'absolute',
-        top: '12px',
-        right: '17px',
+        top: '10px',
+        right: '13px',
         width: '40px', // Diameter of the circle
         height: '40px', // Diameter of the circle
         borderRadius: '50%', // Makes it circular
@@ -366,59 +422,59 @@ function Home() {
           position: 'absolute',
           top: '55px',
           width: '90%', 
-          // height: '100%', 
           objectFit: 'contain',
           pointerEvents: 'none',
           }} />
 
         </div>}
       
-      {isFloatingVisible && <div ref={floatingButtonRef} className="floating" style={{
-        left: '100px', // 초기 위치 설정
-        top: '300px', // 초기 위치 설정
+      {/* Floating Button - Render Only After Button Images are Loaded */}
+      {buttonImagesLoaded && isFloatingVisible && <div ref={floatingButtonRef} className="floating" style={{
+
       }}></div>}
       
+      {/* Header Loader */}
       <div id="headerLoader" style={{ 
         backgroundColor: isInvitationVisible ? 'transparent' : '#f8f6f1', 
         left: '50%', 
         transform: 'translateX(-50%)',
-         width: '100%', 
-        //  zIndex: '100', 
-         border: 'none !important',
-         display: 'flex',
+        width: '100%', 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center',
+      }}>
+        <div id="header" style={{ 
+          backgroundColor: 'transparent', 
+          position:'absolute', 
+          width:"100%", 
+          height:"100%",
+          display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-         }}>
-          <div id="header" style={{ 
-            backgroundColor: 'transparent', 
-            position:'absolute', 
-            width:"100%", 
-            height:"100%",
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-            <div className="titleArea" style={{ width: '100%' }}>
-              <div style={{  flexGrow: 0, textAlign: 'left' }}  onClick={() => window.location.reload()}>
-                <span style={{ fontFamily: "ClimateCrisisKR-1979", fontWeight: 200, fontSize: '15px', color: '#412823', lineHeight: '0.9', display: 'block' }}>이제</span>
-                <span style={{ fontFamily: "ClimateCrisisKR-1979", fontWeight: 400, fontSize: '24px', color: '#412823', lineHeight: '0.9', display: 'block' }}>댄스타임</span>
-              </div>
-        
-              <div onClick={handleMenuClick} style={{ 
-                cursor: 'pointer', 
-                display:'flex', 
-                justifyContent:'center', 
-                alignItems:"center",
-                // marginLeft: 'auto'
-              }}>
-                <img src="/static/icons/hamburger.webp" alt="menu" id="menu-button" style={{width: '30px'}}/>
-              </div>
+        }}>
+          <div className="titleArea" style={{ width: '100%' }}>
+            <div style={{  flexGrow: 0, textAlign: 'left' }}  onClick={() => window.location.reload()}>
+              <span style={{ fontFamily: "ClimateCrisisKR-1979", fontWeight: 200, fontSize: '15px', color: '#412823', lineHeight: '0.9', display: 'block' }}>이제</span>
+              <span style={{ fontFamily: "ClimateCrisisKR-1979", fontWeight: 400, fontSize: '24px', color: '#412823', lineHeight: '0.9', display: 'block' }}>댄스타임</span>
+            </div>
+      
+            <div onClick={handleMenuClick} style={{ 
+              cursor: 'pointer', 
+              display:'flex', 
+              justifyContent:'center', 
+              alignItems:"center",
+            }}>
+              <img src="/static/icons/hamburger.webp" alt="menu" id="menu-button" style={{width: '30px'}}/>
             </div>
           </div>
-          
         </div>
+        
+      </div>
+
+      {/* Main Content Container */}
       <div className="container" id="content" ref={containerRef}>
         <div id="ajax-content">
+          {/* Main Banner Image */}
           <div className="mainImage" style={{ 
             marginTop: `${marginTop}px`,
             pointerEvents: 'none',}}>
@@ -427,9 +483,11 @@ function Home() {
               src={bannerImages[currentImageIndex]} 
               alt="main" 
               className={`slider-image ${fade ? 'fade-in' : 'fade-out'}`} 
+              onError={(e) => handleImageError(e, 'banner')}
             />
           </div>
 
+          {/* Image Grid */}
           <div className="image-grid">
             {postcards.map((postcard) => (
               <div className="image-item" key={postcard.id} style={{
@@ -437,21 +495,18 @@ function Home() {
               }}>
                 <img
                   style={{width:'100%', height:'100%'}}
-                  // src={`/api/uploads/${postcard.png_name}?t=${new Date().getTime()}`} 
                   src={`/api/uploads/${postcard.png_name}`} 
                   alt={`grid ${postcard.id}`}
                   onError={(e) => handleImageError(e, postcard.id)} 
                   onClick={() => window.location.href = `/postcardshareview/${postcard.id}`} 
-                  loading="lazy"  // lazy loading 적용
+                  loading="lazy"  // Apply lazy loading
                 />
               </div>
             ))}
-
-            
           </div>
-
-          
         </div>
+
+        {/* Footer Note */}
         <div style={{
             fontFamily: 'Pretendard-Regular',
             fontSize: '9px',
@@ -460,24 +515,26 @@ function Home() {
             boxSizing: 'border-box',
             paddingTop: '20px',
             marginBottom: '100px',
-            bacjgroundColor: 'blue',
-
-          }}>이제 댄스타임 : 평화의 나무에 달빛이 닿은 날, 반짝이는 춤결<br />
-          춤판 이끔이 | 유채영 김휴초</div>
+          }}>
+          이제 댄스타임 : 평화의 나무에 달빛이 닿은 날, 반짝이는 춤결<br />
+          춤판 이끔이 | 유채영 김휴초
+        </div>
       </div>
 
+      {/* Spacer to Ensure Footer Visibility */}
       <div style={{
-        width: '100%',
-        height: '100px',
-      }}></div>
+          width: '100%',
+          height: '100px',
+        }}></div>
 
+      {/* Invitation Overlay */}
       {isInvitationVisible && (
-        <div className={`invitation-container ${isInvitationVisible ? 'visible' : ''}`}style={{
-        }}>
+        <div className={`invitation-container ${isInvitationVisible ? 'visible' : ''}`} style={{}}>
           <Invitation onBack={handleBackClick} showbutton={true} />
         </div>
       )}
 
+      {/* Footer */}
       <footer style={{letterSpacing:'-0.025em'}}>
         <div>2024. 10. 12 - 11. 3.</div>
         <div className="footerBorder">|</div>
