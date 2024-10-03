@@ -77,20 +77,11 @@ const CreateCharacter = ({isFixedSize}) => {
     setIsInvitationVisible(false);
   };
 
-  const [gifUrl, setGifUrl] = useState(null);
-  const [videoFiles, setVideoFiles] = useState([]);
   const { addVideoFile } = UseVideo(); // UseVideo를 컴포넌트 내부에서 호출
 
   const navigate = useNavigate();
 
   //초대장 이미지 표시 관련
-  const [showImage, setShowImage] = useState(false); // 이미지 표시 여부를 결정하는 상태
-  // const handleMenuClick = () => {
-  //   setShowImage(true); // 메뉴 버튼 클릭 시 이미지 보이게 설정
-  // };
-  const handleCloseImage = () => {
-    setShowImage(false); // 화면을 클릭하면 이미지 사라지게 설정
-  };
 
   const [isSplashVisible, setIsSplashVisible] = useState(false);
   const [overlayVisible, setOverlayVisible] = useState(true);
@@ -915,7 +906,7 @@ const uploadGif = async (gifBlob) => {
     } else {
         // 그 외의 경우 흰색으로 그리고 굵기는 5
         ctx.lineWidth = 10;
-        ctx.strokeStyle = '#00000'; // 흰색으로 그리기
+        ctx.strokeStyle = '#000000'; // 검은색으로 그리기
 
     }
   
@@ -1219,7 +1210,9 @@ const clearExpressionCanvas = useCallback(() => {
 
   {/* 처음 초대장 */}
   {overlayVisible && (
-    <div id="overlay" className="overlay">
+    <div id="overlay" className="overlay" style={{
+      pointerEvents: 'none',
+    }}>
       <div className="overlay-content">
         <img
           src="../static/stockimages/maker_invitation.webp"
@@ -1256,6 +1249,7 @@ const clearExpressionCanvas = useCallback(() => {
           top: "0",
           left: "0",
           zIndex: "999999999",
+          pointerEvents: 'none',
         }}
       />
 

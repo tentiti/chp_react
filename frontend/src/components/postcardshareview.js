@@ -232,6 +232,7 @@ const PostcardShareView = ({isFixedSize}) => {
             verticalAlign: 'top',
             lineHeight: '2.4',
             fontFamily: 'Cafe24Simplehae, sans-serif',
+            fontWeight: 'bold',
             wordWrap: 'break-word',
             overflowWrap: 'break-word',
             whiteSpace: 'normal',
@@ -258,6 +259,7 @@ const PostcardShareView = ({isFixedSize}) => {
             fontFamily: 'Cafe24Simplehae, sans-serif',
             wordWrap: 'break-word',
             overflow: 'hidden',
+            fontWeight: 'bold',
           }}
         >
           {postcard.timestamp}
@@ -277,6 +279,7 @@ const PostcardShareView = ({isFixedSize}) => {
             textAlign: 'center',
             verticalAlign: 'middle',
             overflow: 'hidden',
+            fontWeight: 'bold',
           }}
         >
           {postcard.name}

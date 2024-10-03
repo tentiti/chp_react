@@ -18,20 +18,6 @@ function App() {
     //카카오 인앱
     useEffect(() => {
   
-      const redirectToExternalBrowser = () => {
-        const targetUrl = window.location.href;
-        // copyToClipboard(targetUrl);
-  
-        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-          // window.location.href = "x-safari-https://christiantietze.de/posts/2023/05/safari-for-mac-url-scheme";
-        } else {
-          // window.location.href = `intent://${targetUrl.replace(
-          //   /https?:\/\//i,
-          //   ""
-          // )}#Intent;scheme=http;package=com.android.chrome;end`;
-        }
-      };
-  
       const userAgent = navigator.userAgent.toLowerCase();
       if (/kakaotalk/i.test(userAgent)) {
         window.location.href = `kakaotalk://web/openExternal?url=${encodeURIComponent(
@@ -47,34 +33,33 @@ function App() {
           userAgent
         )
       ) {
-        redirectToExternalBrowser();
+        // redirectToExternalBrowser();
       }
     }, []);
     
   const [isFixedSize, setIsFixedSize] = useState(false);
   const [showSizeInfo, setShowSizeInfo] = useState(false);
-  const [isResponsiveScale, setIsResponsiveScale] = useState(false);
   const [showInstaInfo, setShowInstaInfo] = useState(false); // 추가된 상태
   const [showKakaoInfo, setShowKakaoInfo] = useState(false); // 추가된 상태 
   const [isSizeChecked, setIsSizeChecked] = useState(false);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);  // 실시간 창 높이 상태 관리
 
-  const getDeviceType = () => {
-    const userAgent = navigator.userAgent.toLowerCase();
-    if (/mobile/i.test(userAgent)) return 'mobile';
-    if (/tablet|ipad|playbook|silk/i.test(userAgent)) return 'tablet';
-    return 'desktop';
-  };
-
-  const checkBrowser = () => {
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    return {
-      isInstagram: userAgent.includes("Instagram"),
-      isKakao: userAgent.includes("Kakao")
-    };
-  };
-
   const checkWindowSize = useCallback(() => {
+    const getDeviceType = () => {
+      const userAgent = navigator.userAgent.toLowerCase();
+      if (/mobile/i.test(userAgent)) return 'mobile';
+      if (/tablet|ipad|playbook|silk/i.test(userAgent)) return 'tablet';
+      return 'desktop';
+    };
+  
+    const checkBrowser = () => {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      return {
+        isInstagram: userAgent.includes("Instagram"),
+        isKakao: userAgent.includes("Kakao")
+      };
+    };
+
     const width = window.innerWidth;
     const height = window.innerHeight;
     const deviceType = getDeviceType();
@@ -83,11 +68,10 @@ function App() {
     setWindowHeight(height);  // 창 높이 상태 업데이트
     setShowSizeInfo((deviceType === 'tablet' || deviceType === 'desktop') && (width < 500 || height < 500));
     setIsFixedSize((deviceType === 'tablet' || deviceType === 'desktop') && (width >= 500 && height >= 500));
-    setIsResponsiveScale((deviceType === 'tablet' || deviceType === 'desktop') && (width >= 500 && height >= 500));
     setShowInstaInfo(isInstagram);
     setShowKakaoInfo(isKakao);
     setIsSizeChecked(true);
-  }, [getDeviceType, checkBrowser]);
+  }, []);
 
   useEffect(() => {
     checkWindowSize();

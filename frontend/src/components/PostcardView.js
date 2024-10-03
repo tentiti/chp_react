@@ -101,58 +101,73 @@ const PostcardView = ({isFixedSize}) => {
     return recorder;
   };
 
-  const startRecording = () => {
-    if (isRecording || !isReadyToRecord) return;
+  const RECORDING_DURATION_MS = 18750; // 녹화 시간 상수
 
-    setIsRecording(true); 
-
+  // AudioContext 및 MediaElementSource 초기화 함수
+  const initializeAudioContext = () => {
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
       audioSourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current);
     }
-
-    const destination = audioContextRef.current.createMediaStreamDestination();
-    audioSourceRef.current.connect(destination);
-    audioSourceRef.current.connect(audioContextRef.current.destination);
-
-    resetAndPlayAnimations();  
-
-    const canvasElement = rendererRef.current.domElement;
-    if (!canvasElement.captureStream) {
-      console.warn('captureStream is not supported in this browser.');
-      return;
-    }
-
-    const canvasStream = canvasElement.captureStream(30);
-    const combinedStream = new MediaStream([...canvasStream.getTracks(), ...destination.stream.getTracks()]);
-
+  };
+  
+  // 녹음과 관련된 설정을 초기화하는 함수
+  const initializeRecorder = (combinedStream) => {
     const recorder = new RecordRTC(combinedStream, {
       type: 'video',
-      // mimeType: 'video/mp4', // H.264 비디오 코덱과 AAC 오디오 코덱을 사용
-      mimeType: 'video/webm; codecs=vp8', // H.264 대신 VP8 사용
+      mimeType: 'video/webm; codecs=vp8', // VP8 비디오 코덱 사용
       video: {
-          width: 1280,
-          height: 720,
-          frameRate: 30
+        width: 1280,
+        height: 720,
+        frameRate: 30,
       },
-      audioBitsPerSecond: 128000, // 오디오 비트레이트를 510kbps로 설정
-      videoBitsPerSecond: 2500000, // 비디오 비트레이트 명시적 설정
-  });
+      audioBitsPerSecond: 128000,
+      videoBitsPerSecond: 2500000,
+    });
   
-
-    audioRef.current.play();
-
     recorder.onError = (error) => {
       console.error('Recording error:', error);
     };
   
-
+    return recorder;
+  };
+  
+  // 녹화 시작 함수
+  const startRecording = () => {
+    if (isRecording || !isReadyToRecord) return;
+  
+    setIsRecording(true); 
+  
+    initializeAudioContext();
+  
+    const destination = audioContextRef.current.createMediaStreamDestination();
+    audioSourceRef.current.connect(destination);
+    audioSourceRef.current.connect(audioContextRef.current.destination); 
+  
+    resetAndPlayAnimations(); // 애니메이션 리셋 및 재생
+  
+    const canvasElement = rendererRef.current.domElement;
+    if (!canvasElement.captureStream) {
+      console.warn('captureStream is not supported in this browser.');
+      setIsRecording(false);
+      return;
+    }
+  
+    const canvasStream = canvasElement.captureStream(30);
+    const combinedStream = new MediaStream([
+      ...canvasStream.getTracks(),
+      ...destination.stream.getTracks(),
+    ]);
+  
+    // 레코더 초기화 및 녹화 시작
+    const recorder = initializeRecorder(combinedStream);
     recorder.startRecording();
     recorderRef.current = recorder;
-
-    setTimeout(() => {
-      stopRecording();
-    }, 18750);  
+  
+    audioRef.current.play(); // 오디오 재생
+  
+    // 일정 시간 후 녹화 중지
+    setTimeout(stopRecording, RECORDING_DURATION_MS);
   };
   
 
@@ -206,7 +221,7 @@ const PostcardView = ({isFixedSize}) => {
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = blobUrl;
-      a.download = `${postcard?.name}의 춤사위.mp4`;
+      a.download = `${postcard?.name}의 춤사위.webm`;
       document.body.appendChild(a);
       a.click();
     }
@@ -242,7 +257,7 @@ const PostcardView = ({isFixedSize}) => {
       const blob = await response.blob();
   
       // Blob을 File로 변환
-      const file = new File([blob], `${postcard?.name}의 춤사위.mp4`, { type: 'video/mp4' });
+      const file = new File([blob], `${postcard?.name}의 춤사위.webm`, { type: 'video/webm' });
       console.log(file)
 
       // 파일을 공유할 수 있는지 확인한 후 공유
@@ -448,7 +463,7 @@ const PostcardView = ({isFixedSize}) => {
       ctx.fillStyle = 'rgba(65, 40, 35, 1)'; 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-    
+
       const maxLineLength = 38; 
       const words = text.split(' ');
       const lines = [];
@@ -658,7 +673,7 @@ const PostcardView = ({isFixedSize}) => {
   const canvasStyle = {
     position: 'fixed',
     top: isFixedSize? '58px' : '58px',
-    transform: isFixedSize? `translate(0, -26.4%) scale(${
+    transform: isFixedSize? `translate(0, -25.8%) scale(${
       containerRef.current ? 
       Math.min(containerRef.current.clientWidth / 720, containerRef.current.clientHeight / 1280) : 1
     })` : `translate(0, -38px) scale(${
@@ -794,7 +809,7 @@ const PostcardView = ({isFixedSize}) => {
 
       {isRecording && !isRecordingDone &&(
            <button className="upbutton" disabled={true} >
-                  영상 녹화 중..
+                  영상 준비 중..
           </button>
       )}
 

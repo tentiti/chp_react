@@ -374,8 +374,8 @@ function Home() {
         </div>}
       
       {isFloatingVisible && <div ref={floatingButtonRef} className="floating" style={{
-        left: '50px', // 초기 위치 설정
-        top: '100px', // 초기 위치 설정
+        left: '100px', // 초기 위치 설정
+        top: '300px', // 초기 위치 설정
       }}></div>}
       
       <div id="headerLoader" style={{ 

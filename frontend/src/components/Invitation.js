@@ -35,11 +35,14 @@ function Invitation({ onBack, showbutton = false }) {
       .catch((error) => {
         console.error('Error loading images:', error);
       });
-  }, );
+  }, []);
 
   const handleBack = () => {
-    setIsSlideIn(false);
-    setTimeout(() => onBack(), 700);
+    setIsSlideIn(false); // 슬라이드 아웃 시작
+    // 애니메이션이 완료된 후 컴포넌트를 제거
+    setTimeout(() => {
+      onBack(); // 애니메이션이 완료된 후 onBack 호출
+    }, 700); // 애니메이션 시간이 0.7초이므로 700ms 후에 실행
   };
 
   if (!isImagesLoaded) {
@@ -51,14 +54,13 @@ function Invitation({ onBack, showbutton = false }) {
       style={{
         position: 'fixed',
         top: 0,
-        right: isSlideIn ? '0' : '-100%',
+        right: isSlideIn ? '0' : '-100%', // 슬라이드 인/아웃 상태에 따라 right값 변경
         width: '100%',
         height: '100%',
-        transition: 'right 0.7s ease',
+        transition: 'right 0.7s ease', // 애니메이션 시간 설정
         backgroundColor: '#412823 !important',
         overflow: 'hidden',
         zIndex: '99999999',
-        pointerEvents: 'none',
       }}
     >
       <div
@@ -69,7 +71,6 @@ function Invitation({ onBack, showbutton = false }) {
           left: 0,
           width: '100%',
           height: '100%',
-          backgroundColor: '#red !important',
           overflow: 'hidden',
           zIndex: '999999 !important',
           opacity: 1,
@@ -82,6 +83,7 @@ function Invitation({ onBack, showbutton = false }) {
             width: '100%',
             height: '100%',
             objectFit: 'cover',
+            pointerEvents: 'none',
           }}
         />
       </div>
@@ -149,6 +151,7 @@ function Invitation({ onBack, showbutton = false }) {
           width: '47.33%',
           filter: 'blur(5px)',
           zIndex: 1,
+          pointerEvents: 'none',
         }}
       />
 
@@ -172,6 +175,7 @@ function Invitation({ onBack, showbutton = false }) {
             height: '100%',
             objectFit: 'contain',
             marginTop: '10%',
+            pointerEvents: 'none',
           }}
         />
       </div>
