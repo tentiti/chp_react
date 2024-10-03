@@ -8,6 +8,10 @@ import { useScene } from './SceneContext';
 import './PostcardView.css';
 import Invitation from './Invitation';
 
+//파일 금쪽이
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile } from '@ffmpeg/util';
+
 
 const PostcardView = ({isFixedSize}) => {
   const audioContextRef = useRef(null);
@@ -152,71 +156,74 @@ const PostcardView = ({isFixedSize}) => {
     }, 18750);  
   };
   
-  const stopRecording = () => {
-    if (!recorderRef.current) {
-        console.warn('Recorder reference is not set');
-        return;
-    }
 
+  const stopRecording = async () => {
+    if (!recorderRef.current) {
+      console.warn('Recorder reference is not set');
+      return;
+    }
+  
     recorderRef.current.stopRecording(async () => {
       const blob = recorderRef.current.getBlob();
-      
-      // 녹화 duration 확인 및 수정
-      const duration = recorderRef.current._recordingDuration || 18750;
-      
-      // WebM 메타데이터에 duration 추가
-      const modifiedBlob = await fixWebmMetadata(blob, duration);
-      
-      const file = new File([modifiedBlob], `dance.webm`, { 
-        type: 'video/webm',
-        lastModified: new Date().getTime()
-      });
   
-      const url = URL.createObjectURL(file);
-      
-      // 메타데이터 확인
+      // Create FFmpeg instance
+      const ffmpeg = new FFmpeg();
+      await ffmpeg.load();
+  
+      // Write the WebM file to FFmpeg's virtual file system
+      await ffmpeg.writeFile('input.webm', await fetchFile(blob));
+  
+      // Run FFmpeg command
+      await ffmpeg.exec(['-i', 'input.webm', '-c', 'copy', '-fflags', '+genpts', 'output.webm']);
+
+      // Read the output file from FFmpeg's virtual file system
+      const data = await ffmpeg.readFile('output.webm');
+  
+      // Create a Blob from the output data
+      const videoBlob = new Blob([data.buffer], { type: 'video/webm' });
+  
+      // Create a Blob URL
+      const url = URL.createObjectURL(videoBlob);
+  
+      // Check metadata
       const videoElement = document.createElement('video');
       videoElement.src = url;
       videoElement.onloadedmetadata = () => {
         console.log(`Video duration: ${videoElement.duration}`);
         if (!videoElement.duration || videoElement.duration === Infinity) {
           console.warn('Video duration is invalid, using fallback duration');
-          // 필요한 경우 여기서 추가적인 메타데이터 수정 처리
         }
       };
-
-        setBlobUrl(url); // Blob URL 설정
-        setIsRecording(false);
-        setIsRecordingDone(true);
+  
+      setBlobUrl(url);
+      setIsRecording(false);
+      setIsRecordingDone(true);
     });
-};
-
+  };
 // WebM 메타데이터 수정 함수
 const fixWebmMetadata = async (blob, duration) => {
-  // 안드로이드에서만 메타데이터 수정
-  if (!/Android/.test(navigator.userAgent)) return blob;
-  
-  try {
-    const arrayBuffer = await blob.arrayBuffer();
-    const view = new DataView(arrayBuffer);
-    
-    // WebM 헤더에서 duration 정보가 있는 위치 찾기
-    let position = 0;
-    while (position < view.byteLength - 4) {
-      if (view.getUint32(position) === 0x44899) { // Duration element ID
-        // duration 값 수정
-        view.setFloat64(position + 4, duration / 1000); // 밀리초를 초로 변환
-        break;
-      }
-      position++;
-    }
+    try {
+        const arrayBuffer = await blob.arrayBuffer();
+        const view = new DataView(arrayBuffer);
+        
+        // WebM 헤더에서 duration 정보가 있는 위치 찾기
+        let position = 0;
+        while (position < view.byteLength - 4) {
+            if (view.getUint32(position) === 0x4489) {  // Duration element ID
+                // duration 값 수정
+                view.setFloat64(position + 4, duration / 1000);  // 밀리초를 초로 변환
+                break;
+            }
+            position++;
+        }
 
-    return new Blob([arrayBuffer], { type: 'video/webm' });
-  } catch (error) {
-    console.error('Error fixing WebM metadata:', error);
-    return blob;
-  }
+        return new Blob([arrayBuffer], { type: 'video/webm' });
+    } catch (error) {
+        console.error('Error fixing WebM metadata:', error);
+        return blob;
+    }
 };
+
   
 
   const downloadVideo = () => {
@@ -224,7 +231,7 @@ const fixWebmMetadata = async (blob, duration) => {
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = blobUrl;
-      a.download = `${postcard?.name}의 춤사위.webm`;
+      a.download = `${postcard?.name}의 춤사위.mp4`;
       document.body.appendChild(a);
       a.click();
     }
