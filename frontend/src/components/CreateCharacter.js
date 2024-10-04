@@ -95,58 +95,57 @@ const CreateCharacter = ({isFixedSize}) => {
     ACCESSORY: null,
   });
 
-  const handleAssetSelection = (category, index, modelPath) => {
-    setSelectedIndices((prevSelectedIndices) => {
-      const isSameModelSelected = prevSelectedIndices[category] === index;
-      const isDress = /19|20|21|22|23|24/.test(modelPath);
+  const handleAssetSelection = async (category, index, modelPath) => {
+    const isSameModelSelected = selectedIndices[category] === index;
+    const isDress = /19|20|21|22|23|24/.test(modelPath);
   
-      // 이미 선택된 모델을 다시 클릭한 경우: 모델을 제거하고 해제
-      if (isSameModelSelected) {
-        console.log(`Deselecting model in category ${category}`);
-        removeModel(category); // 선택된 모델 제거
-        return {
-          ...prevSelectedIndices,
-          [category]: null, // 선택 해제
-        };
-      }
-  
-      // 새로운 모델을 선택한 경우
-      console.log(`Selecting new model in category ${category}, index: ${index}`);
-      
-      // 이미 선택된 모델이 있다면 해당 카테고리 모델을 먼저 제거
-      if (prevSelectedIndices[category] !== null) {
-        removeModel(category);
-      }
-  
-      // 모델 로드
-      loadModel(modelPath, category);
-  
-      // 드레스를 입자! 드레스 누르면 하의 제거
-      if (category === 'TOP' && isDress) {
-        removeBottomModel(); // 하의 제거
-        setIsDressSelected(true); // 드레스 선택
-        return {
-          ...prevSelectedIndices,
-          [category]: index, // 상의 선택
-          'BOTTOM': null, // 하의 선택 해제
-        };
-      } else if (category === 'BOTTOM' && isDressSelected) {
-        // 원피스 상태에서 하의를 선택한 경우 상의를 제거
-        removeModel('TOP');
-        setIsDressSelected(false); // 원피스 상태 해제
-        return {
-          ...prevSelectedIndices,
-          [category]: index, // 하의 선택
-          'TOP': null, // 상의 선택 해제
-        };
-      }
-  
-      return {
+    // 이미 선택된 모델을 다시 클릭한 경우: 모델을 제거하고 해제
+    if (isSameModelSelected) {
+      console.log(`Deselecting model in category ${category}`);
+      await removeModel(category); // 선택된 모델 제거
+      setSelectedIndices((prevSelectedIndices) => ({
         ...prevSelectedIndices,
-        [category]: index, // 새로운 모델 인덱스 선택
-      };
-    });
+        [category]: null, // 선택 해제
+      }));
+      return;
+    }
+  
+    // 이미 선택된 모델이 있다면 해당 카테고리 모델을 먼저 제거
+    if (selectedIndices[category] !== null) {
+      await removeModel(category); // 이전 모델 제거 대기
+    }
+  
+    // 모델 로드
+    loadModel(modelPath, category);
+  
+    // 드레스를 입자! 드레스 누르면 하의 제거
+    if (category === 'TOP' && isDress) {
+      await removeBottomModel(); // 하의 제거
+      setIsDressSelected(true); // 드레스 선택
+      setSelectedIndices((prevSelectedIndices) => ({
+        ...prevSelectedIndices,
+        [category]: index, // 상의 선택
+        'BOTTOM': null, // 하의 선택 해제
+      }));
+      return;
+    } else if (category === 'BOTTOM' && isDressSelected) {
+      await removeModel('TOP'); // 상의 제거
+      setIsDressSelected(false); // 원피스 상태 해제
+      setSelectedIndices((prevSelectedIndices) => ({
+        ...prevSelectedIndices,
+        [category]: index, // 하의 선택
+        'TOP': null, // 상의 선택 해제
+      }));
+      return;
+    }
+  
+    // 새로운 모델을 선택한 경우
+    setSelectedIndices((prevSelectedIndices) => ({
+      ...prevSelectedIndices,
+      [category]: index, // 새로운 모델 인덱스 선택
+    }));
   };
+  
   
   
   // 모델을 씬에서 제거하는 함수 최적화// 모델을 씬에서 제거하는 함수 최적화
@@ -158,6 +157,7 @@ const CreateCharacter = ({isFixedSize}) => {
   };
   
   const removeModel = (category) => {
+    return new Promise((resolve) => {
     modelsRef.current = modelsRef.current.filter((item) => {
       if (item.categoryName !== category) {
         return true;  // 다른 카테고리의 모델은 유지
@@ -203,6 +203,9 @@ const CreateCharacter = ({isFixedSize}) => {
   
     // 씬을 다시 렌더링
     rendererRef.current.render(sceneRef.current, cameraRef.current);
+
+    resolve();
+  });
   };
   
   

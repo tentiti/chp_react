@@ -461,9 +461,10 @@ function Home( {isFixedSize}) {
 
       {/* Main Content Container */}
       <div className="container" id="content" ref={containerRef} style={{
-        // flexGrow: 1,
+        flexGrow: 1,
         zIndex: 1500,
         overflowY: 'auto',
+        height: '100%',
       }}>
         <div id="ajax-content">
           {/* Main Banner Image */}
@@ -506,18 +507,13 @@ function Home( {isFixedSize}) {
             color: '#412823',
             boxSizing: 'border-box',
             paddingTop: '3vh',
-            marginBottom: 'calc(60px + 7vh)',
+            height: '150px',
+            marginBottom: 'calc(60px)',
           }}>
           이제 댄스타임 : 평화의 나무에 달빛이 닿은 날, 반짝이는 춤결<br />
           춤판 이끔이 | 유채영 김휴초
         </div>
       </div>
-
-      {/* Spacer to Ensure Footer Visibility */}
-      <div style={{
-          width: '100%',
-          height: '50dvh',
-        }}></div>
 
       {/* Invitation Overlay */}
       {isInvitationVisible && (

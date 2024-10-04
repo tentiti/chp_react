@@ -216,6 +216,8 @@ const PostcardView = ({isFixedSize}) => {
         await navigator.clipboard.writeText('@k.imhwasoon @kkot.pida.gallery');
         console.log('Text copied to clipboard');
       }
+      alert('해시태그가 복사되었습니다. 인스타그램 공유 (불가시 저장 후 수동 공유)시 텍스트를 붙여 넣어 주세요!');
+  
   
     }
     try {
@@ -247,9 +249,6 @@ const PostcardView = ({isFixedSize}) => {
         navigate(`/postcardsafeview/${id}`);
         return;
       }
-    
-      alert('해시태그가 복사되었습니다. 인스타그램 공유 (불가시 저장 후 수동 공유)시 텍스트를 붙여 넣어 주세요!');
-  
   
 
       // 파일을 공유할 수 있는지 확인한 후 공유
@@ -302,7 +301,7 @@ const PostcardView = ({isFixedSize}) => {
   useEffect(() => {
     if (!postcard) return;
 
-    const imageUrl = `/static/stockimages/postcardfinal_${postcard?.number}.png`;
+    const imageUrl = `/static/stockimages/postcardfinal_${postcard?.number}.webp`;
 
     // 이미지 프리로딩
     preloadImage(imageUrl, () => {
@@ -428,7 +427,7 @@ const PostcardView = ({isFixedSize}) => {
     console.log((window.innerHeight - 60) / 1280);
     
     const loader = new THREE.TextureLoader();
-    loader.load(`/static/stockimages/postcardfinal_${postcard?.number}.png`, (bgTexture) => {
+    loader.load(`/static/stockimages/postcardfinal_${postcard?.number}.webp`, (bgTexture) => {
       bgTexture.colorSpace = THREE.SRGBColorSpace;
       bgTexture.anisotropy = rendererRef.current.capabilities.getMaxAnisotropy();
       bgTexture.minFilter = THREE.LinearFilter;

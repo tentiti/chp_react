@@ -75,7 +75,6 @@ const PostcardSafeView = ({ isFixedSize }) => {
         console.error("Audio playback failed:", err);
       });
     }
-
     // Update the state to trigger a re-render
     setGifKey(prevKey => prevKey + 1);
 
@@ -137,10 +136,10 @@ const PostcardSafeView = ({ isFixedSize }) => {
     }}>
       <div id="createdImages" ref={divRef} style={{
         position: 'fixed',
-        top: isFixedSize ? '68px' : '8dvh',
-        aspectRatio: '390 / 650', // 가로 세로 비율
-        width: isFixedSize ? '390px' : 'auto', // 높이에 맞춘 비율을 유지한 최대 너비
-        height: isFixedSize ? '650px' : 'calc(90dvh - 50px)', // 동적 뷰포트에서 108px을 뺀 값만큼 최대 높이를 제한
+        top: isFixedSize ? '68px' : '45px',
+        aspectRatio: '3 / 5', // 가로 세로 비율
+        width: isFixedSize ? '390px' : '100%', // 높이에 맞춘 비율을 유지한 최대 너비
+        maxHeight: isFixedSize ? '650px' : 'calc(100dvh - 58px)', // 동적 뷰포트에서 108px을 뺀 값만큼 최대 높이를 제한
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -235,13 +234,14 @@ const PostcardSafeView = ({ isFixedSize }) => {
       {isButtonVisible && (
         <div id='buttoncontainer' style={{
           position: 'fixed',
-          width: '100%',
-          height: '70px',
+          width: '90%',
+          height: '100px',
           bottom: '0',
           backgroundColor: 'transparent',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          zIndex: '10000'
         }}>
           <button
             onClick={handlePlayAudioAndRestartGIF}
@@ -250,7 +250,7 @@ const PostcardSafeView = ({ isFixedSize }) => {
               zIndex: '200000',
               cursor: 'pointer',
               overflow: 'hidden',
-              width: '80dvw',
+              width: '80%',
               height: '35px',
               background: '#F8F6F1',
               border: '1px solid #E6E1DC',
