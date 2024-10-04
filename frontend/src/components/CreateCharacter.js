@@ -30,23 +30,6 @@ const CreateCharacter = ({isFixedSize}) => {
   const dracoLoaderRef = useRef(null);
   const loaderRef = useRef(null);
 
-  useEffect(() => {
-    // 프리로딩할 이미지 리스트 구성
-    const allImages = CATEGORIES.flatMap((category) =>
-      category.assets.map((asset) => `/static/assetImages/${asset}`)
-    );
-
-    // 프리로딩할 overlay 이미지 추가
-    allImages.push('../static/stockimages/maker_invitation.webp');
-
-    // 이미지 프리로딩 후 로딩 상태 업데이트
-    preloadImages(allImages)
-      .then(() => {
-      })
-      .catch((error) => {
-        console.error("Error preloading images:", error);
-      });
-  }, );
 
   useEffect(() => {
     if (!dracoLoaderRef.current) {
@@ -112,7 +95,7 @@ const CreateCharacter = ({isFixedSize}) => {
     ACCESSORY: null,
   });
 
-  const handleAssetSelection = (category, index) => {
+  const handleAssetSelection = (category, index, modelPath) => {
     setSelectedIndices((prevSelectedIndices) => {
       // 이미 선택된 모델을 다시 클릭한 경우: 모델을 제거하고 해제
       if (prevSelectedIndices[category] === index) {
@@ -132,15 +115,15 @@ const CreateCharacter = ({isFixedSize}) => {
         removeModel(category); // 기존 모델이 있을 경우 제거
       }
   
-      const modelPath = CATEGORIES.find(cat => cat.name === category)?.useColor
-        ? `/static/models/${category.toLowerCase()}_${index + 1}_${selectedColor || "Black"}.glb`
-        : `/static/models/${category.toLowerCase()}_${index + 1}.glb`;
       loadModel(modelPath, category); // 새로운 모델 로드
 
           // 상의(TOP) 중 19~24번 선택 시 하의를 제거하고 isDressSelected를 true로 설정
-    if (category === 'TOP' && index >= 18 && index <= 23) {
+          const regex = /19|20|21|22|23|24/;  // 19~24의 숫자를 포함한 정규식
+
+    if (category === 'TOP' && (regex.test(modelPath))) {
       removeBottomModel(); // 하의 제거
       setIsDressSelected(true); // 원피스 선택 상태 설정
+      // alert('드레스');
     } else if (category === 'TOP') {
       setIsDressSelected(false); // 상의 중 원피스가 아닌 경우 원피스 상태 해제
     }
@@ -231,11 +214,12 @@ const CreateCharacter = ({isFixedSize}) => {
   };
 
   const CATEGORIES = [
-    { name: 'HEAD', assets: ['head_1.webp', 'head_2.webp', 'head_3.webp', 'head_4.webp', 'head_5.webp', 'head_6.webp', 'head_7.webp', 'head_8.webp', 'head_9.webp', 'head_10.webp', 'head_11.webp', 'head_12.webp'], useColor: true }, // 12개
-    { name: 'TOP', assets: ['top_1.webp', 'top_2.webp', 'top_3.webp', 'top_4.webp', 'top_5.webp', 'top_6.webp', 'top_7.webp', 'top_8.webp', 'top_9.webp', 'top_10.webp', 'top_11.webp', 'top_12.webp', 'top_13.webp', 'top_14.webp', 'top_15.webp', 'top_16.webp', 'top_17.webp', 'top_18.webp', 'top_19.webp', 'top_20.webp', 'top_21.webp', 'top_22.webp', 'top_23.webp', 'top_24.webp'], useColor: false }, // 24개
-    { name: 'BOTTOM', assets: ['bottom_1.webp', 'bottom_2.webp', 'bottom_3.webp', 'bottom_4.webp', 'bottom_5.webp', 'bottom_6.webp', 'bottom_7.webp', 'bottom_8.webp', 'bottom_9.webp', 'bottom_10.webp', 'bottom_11.webp', 'bottom_12.webp', 'bottom_13.webp', 'bottom_14.webp', 'bottom_15.webp', 'bottom_16.webp', 'bottom_17.webp', 'bottom_18.webp', 'bottom_19.webp', 'bottom_20.webp', 'bottom_21.webp', 'bottom_22.webp'], useColor: false }, // 22개
-    { name: 'SHOES', assets: ['shoes_1.webp', 'shoes_2.webp', 'shoes_3.webp', 'shoes_4.webp', 'shoes_5.webp', 'shoes_6.webp', 'shoes_7.webp', 'shoes_8.webp', 'shoes_9.webp', 'shoes_10.webp', 'shoes_11.webp', 'shoes_12.webp'], useColor: false }, // 8개
-    { name: 'ACCESSORY', assets: ['accessory_1.webp', 'accessory_2.webp', 'accessory_3.webp', 'accessory_4.webp', 'accessory_5.webp', 'accessory_6.webp', 'accessory_7.webp', 'accessory_8.webp', 'accessory_9.webp', 'accessory_10.webp', 'accessory_11.webp', 'accessory_12.webp', 'accessory_13.webp', 'accessory_14.webp', 'accessory_15.webp', 'accessory_16.webp', 'accessory_17.webp', 'accessory_18.webp'], useColor: false }, // 18개
+    { name: 'HEAD', assets: ['head_9', 'head_10', 'head_11', 'head_12', 'head_1', 'head_2', 'head_3', 'head_4', 'head_5', 'head_6', 'head_7', 'head_8'], useColor: true }, // 12개
+    // { name: 'TOP', assets: ['top_1', 'top_2', 'top_3', 'top_4', 'top_5', 'top_6', 'top_7', 'top_8', 'top_9', 'top_10', 'top_11', 'top_12', 'top_13', 'top_14', 'top_15', 'top_16', 'top_17', 'top_18', 'top_19', 'top_20', 'top_21', 'top_22', 'top_23', 'top_24'], useColor: false }, // 24개
+    { name: 'TOP', assets: ['top_1', 'top_2', 'top_3', 'top_4', 'top_5', 'top_7', 'top_8', 'top_9', 'top_10', 'top_11', 'top_12', 'top_13', 'top_14', 'top_15', 'top_16', 'top_17', 'top_18', 'top_19', 'top_24'], useColor: false }, // 24개
+    { name: 'BOTTOM', assets: ['bottom_1', 'bottom_2', 'bottom_3', 'bottom_4', 'bottom_5', 'bottom_6', 'bottom_7', 'bottom_8', 'bottom_9', 'bottom_10', 'bottom_11', 'bottom_12', 'bottom_13', 'bottom_14', 'bottom_15', 'bottom_16', 'bottom_17', 'bottom_18', 'bottom_19', 'bottom_20', 'bottom_21', 'bottom_22'], useColor: false }, // 22개
+    { name: 'SHOES', assets: ['shoes_1', 'shoes_2', 'shoes_3', 'shoes_4', 'shoes_5', 'shoes_6', 'shoes_7', 'shoes_8', 'shoes_9', 'shoes_10', 'shoes_11', 'shoes_12'], useColor: false }, // 8개
+    { name: 'ACCESSORY', assets: ['accessory_1', 'accessory_2', 'accessory_3', 'accessory_4', 'accessory_5', 'accessory_6', 'accessory_7', 'accessory_8', 'accessory_9', 'accessory_10', 'accessory_11', 'accessory_12', 'accessory_13', 'accessory_14', 'accessory_15', 'accessory_16', 'accessory_17', 'accessory_18'], useColor: false }, // 18개
     { name: 'EXPRESSION', assets: [], useColor: false },
   ];
   
@@ -1004,8 +988,15 @@ const clearExpressionCanvas = useCallback(() => {
 
   const handleCategorySelection = useCallback((category) => {
     setSelectedCategory(category.name);
+    // alert(isDressSelected);
+    if (category.name === 'BOTTOM' && isDressSelected) {
+      // alert('드레스 지우기');
+      removeModel('TOP');  // 상의 모델 제거
+      setIsDressSelected(false);  // 원피스 선택 상태 해제
+    }
+
     selectCategory(category);
-  }, [selectCategory]);
+  }, [isDressSelected, selectCategory]);
 
   //바디 모델 금쪽이 해결
   const changeBaseModelColor = (colorHexString) => {
@@ -1308,7 +1299,7 @@ const clearExpressionCanvas = useCallback(() => {
                 className={`color-button ${
                   selectedCategory === category.name ? "selected" : ""
                 }`}
-                disabled={category.name === "BOTTOM" && isDressSelected} // Disable button based on conditions
+                // Disable button based on conditions
                 style={{
                   display: "flex",
                   justifyContent: "center",
@@ -1668,32 +1659,19 @@ const clearExpressionCanvas = useCallback(() => {
                 : "#EDECE7", // 선택된 항목에 배경색 추가
           }}
           onClick={() => {
-            handleAssetSelection(activeCategory.name, index); // 카테고리별 선택된 인덱스 업데이트
-            const modelPath = activeCategory.useColor
-              ? `/static/models/${activeCategory.name.toLowerCase()}_${
-                  index + 1
-                }_${selectedColor || "Black"}.glb`
-              : `/static/models/${activeCategory.name.toLowerCase()}_${
-                  index + 1
-                }.glb`;
-
-            // 모델 로드 코드가 주석 처리되어 있어서, 필요 시 여기에 추가
-            // loadModel(
-            //   modelPath,
-            //   activeCategory.name,
-            //   activeCategory.useColor
-            // );
+            const modelPath = activeCategory.useColor ? `/static/models/${asset}_${selectedColor|| "Black"}.glb` : `/static/models/${asset}.glb`;
+            // alert(modelPath);
+            handleAssetSelection(activeCategory.name, index, modelPath); // 카테고리별 선택된 인덱스 업데이트
+            
           }}
         >
           <img
             src={`/static/assetImages/${
               activeCategory.useColor
-                ? `${activeCategory.name.toLowerCase()}_${
-                    index + 1
-                  }_${selectedColor}`
-                : `${activeCategory.name.toLowerCase()}_${index + 1}`
+                ? `${asset}_${selectedColor}`
+                : `${asset}`
             }.webp`}
-            alt={`Asset ${index}`}
+            alt={`${asset}`}
             style={{
               width: "100%",
               aspectRatio: "1 / 1",

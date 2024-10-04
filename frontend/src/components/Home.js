@@ -342,7 +342,7 @@ function Home( {isFixedSize}) {
         if (footerTop < windowHeight) {
           footer.style.visibility = 'visible';
         } else {
-          footer.style.visibility = 'hidden';
+          footer.style.visibility = 'visible';
         }
       }
     };
