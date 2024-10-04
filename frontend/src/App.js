@@ -7,6 +7,7 @@ import PlaceSelection from './components/PlaceSelection';
 import PostcardCreation from './components/PostcardCreation';
 import PostcardView from './components/PostcardView';
 import PostcardShareView from './components/PostcardShareView';
+import PostcardSafeView from './components/PostcardSafeView';
 import Credit from './components/Credit';
 import { VideoProvider } from './components/VideoContext';
 import { SceneProvider } from './components/SceneContext'; // SceneProvider import
@@ -125,7 +126,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/Home" element={<Home />} />
-                <Route path="/undefined" element={<Home />} />
+                <Route path="/undefined" element={<Home isFixedSize={isFixedSize} />} />
                 <Route path="/invitation" element={<Invitation />} />
                 <Route path="/postcardview/:id" element={<PostcardView isFixedSize={isFixedSize}/>} />
                 <Route path="/CreateCharacter" element={<CreateCharacter isFixedSize={isFixedSize} />} />
@@ -133,6 +134,7 @@ function App() {
                 <Route path="/postcardcreation" element={<PostcardCreation isFixedSize={isFixedSize}/>} />
                 <Route path="/credit/:id" element={<Credit />} />
                 <Route path="/postcardshareview/:id" element={<PostcardShareView isFixedSize={isFixedSize} />} />
+                <Route path="/postcardsafeview/:id" element={<PostcardSafeView isFixedSize={isFixedSize} />} />
               </Routes>
             </Router>
           </VideoProvider>

@@ -153,7 +153,6 @@ const PostcardView = ({isFixedSize}) => {
     setTimeout(stopRecording, RECORDING_DURATION_MS);
   };
   
-
   const stopRecording = async () => {
     if (!recorderRef.current) {
       console.warn('Recorder reference is not set');
@@ -162,43 +161,38 @@ const PostcardView = ({isFixedSize}) => {
   
     recorderRef.current.stopRecording(async () => {
       const blob = recorderRef.current.getBlob();
-
       setRecordingBlob(blob);
   
       // // Create FFmpeg instance
       // const ffmpeg = new FFmpeg();
-      // await ffmpeg.load();
+      // await ffmpeg.load();  // Load FFmpeg
   
-      // // Write the WebM file to FFmpeg's virtual file system
-      // await ffmpeg.writeFile('input.webm', await fetchFile(blob));
+      // // Write the input file to FFmpeg's virtual file system
+      // await ffmpeg.writeFile('input.mp4', await fetchFile(blob));
   
-      // // Run FFmpeg command
-      // await ffmpeg.exec(['-i', 'input.webm', '-c', 'copy', '-fflags', '+genpts', 'output.webm']);
-
+      // // Example of setting new metadata without re-encoding
+      // await ffmpeg.exec([
+      //   '-i', 'input.mp4',
+      //   '-c', 'copy',          // Copy streams without re-encoding
+      //   '-metadata', 'title=New Title',  // Add or modify metadata
+      //   '-metadata', 'comment=Recorded using my app',  // Custom metadata
+      //   'output.mp4'           // Output file
+      // ]);
       // // Read the output file from FFmpeg's virtual file system
-      // const data = await ffmpeg.readFile('output.webm');
+      // const data = await ffmpeg.readFile('output.mp4');
   
-      // // // Create a Blob from the output data
+      // // Create a Blob from the output data
       // const videoBlob = new Blob([data.buffer], { type: 'video/mp4' });
   
-      // // Create a Blob URL
+      // Create a URL from the Blob and set it to state
       const url = URL.createObjectURL(blob);
-  
-      // // Check metadata
-      // const videoElement = document.createElement('video');
-      // videoElement.src = url;
-      // videoElement.onloadedmetadata = () => {
-      //   console.log(`Video duration: ${videoElement.duration}`);
-      //   if (!videoElement.duration || videoElement.duration === Infinity) {
-      //     console.warn('Video duration is invalid, using fallback duration');
-      //   }
-      // };
   
       setBlobUrl(url);
       setIsRecording(false);
       setIsRecordingDone(true);
     });
   };
+  
 
 
   const downloadVideo = () => {
@@ -223,8 +217,6 @@ const PostcardView = ({isFixedSize}) => {
         console.log('Text copied to clipboard');
       }
   
-      alert('해시태그가 복사되었습니다. 인스타그램 공유 (불가시 저장 후 수동 공유)시 텍스트를 붙여 넣어 주세요!');
-  
     }
     try {
 
@@ -246,6 +238,19 @@ const PostcardView = ({isFixedSize}) => {
       const file = new File([recordingBlob], 'animation.mp4', { type: 'video/mp4' });
 
       console.log(file)
+
+      const isAndroid = /Android/i.test(navigator.userAgent);
+
+      if (isAndroid) {
+        alert('안드로이드에서는 자동 공유 기능이 지원되지 않습니다. 화면을 캡쳐한 후 직접 공유해 주세요. 수동 녹화 화면으로 이동합니다. 인스타그램 공유시 복사된 텍스트를 붙여 넣어 주세요.');
+        setHasShared(false); // 상태 초기화
+        navigate(`/postcardsafeview/${id}`);
+        return;
+      }
+    
+      alert('해시태그가 복사되었습니다. 인스타그램 공유 (불가시 저장 후 수동 공유)시 텍스트를 붙여 넣어 주세요!');
+  
+  
 
       // 파일을 공유할 수 있는지 확인한 후 공유
       if (navigator.canShare({ files: [file] })) {
@@ -792,7 +797,7 @@ const PostcardView = ({isFixedSize}) => {
           </button>
 
           {/* 두 번째 버튼: 특정 페이지로 이동 */}
-          <button className="upbutton" onClick={() => window.location.href = `/postcardshareview/${id}`}>
+          <button className="upbutton" onClick={() => window.location.href = `/postcardsafeview/${id}`}>
             춤사위가 보이지 않나요? <br></br>수동 녹화하기
           </button>
         </>

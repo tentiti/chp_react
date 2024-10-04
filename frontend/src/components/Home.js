@@ -4,7 +4,7 @@ import Invitation from './Invitation';
 import './Home.css';
 import { useLocation } from 'react-router-dom';
 
-function Home() {
+function Home( {isFixedSize}) {
 
   // Tutorial State
   const [tutorialVisible, setTutorialVisible] = useState(true);
@@ -221,27 +221,15 @@ function Home() {
     initializeAjaxLinks();
 
     // Adjust Container Height
-    function adjustContainerHeight() {
-      const header = document.querySelector('#header');
-      const footer = document.querySelector('footer');
 
-      if (header && footer && container) {
-        const windowHeight = window.innerHeight;
-        const headerHeight = header.offsetHeight;
-        const footerHeight = footer.offsetHeight;
-        const containerHeight = windowHeight - headerHeight - footerHeight;
-
-        container.style.height = `${containerHeight}px`;
-      }
-    }
 
     // Handle Scroll (Placeholder)
     function handleScroll(e) {
       // Handle scroll events if needed
     }
 
-    adjustContainerHeight();
-    window.addEventListener('resize', adjustContainerHeight);
+    // adjustContainerHeight();
+    // window.addEventListener('resize', adjustContainerHeight);
 
     // const container = containerRef.current;
     if (container) {
@@ -249,7 +237,7 @@ function Home() {
     }
 
     return () => {
-      window.removeEventListener('resize', adjustContainerHeight);
+      // window.removeEventListener('resize', adjustContainerHeight);
       if (container) {
         container.removeEventListener('scroll', handleScroll);
       }
@@ -472,7 +460,11 @@ function Home() {
       </div>
 
       {/* Main Content Container */}
-      <div className="container" id="content" ref={containerRef}>
+      <div className="container" id="content" ref={containerRef} style={{
+        // flexGrow: 1,
+        zIndex: 1500,
+        overflowY: 'auto',
+      }}>
         <div id="ajax-content">
           {/* Main Banner Image */}
           <div className="mainImage" style={{ 
