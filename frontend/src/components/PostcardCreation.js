@@ -384,7 +384,7 @@ const PostcardCreation = ({isFixedSize}) => {
         }
        #input-name input {
           position: absolute;
-          top: 2%;
+          top: 1.7%;
           right: 10%;
           width: 65%;
         

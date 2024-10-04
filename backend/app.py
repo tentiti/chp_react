@@ -45,7 +45,7 @@ class Postcard(db.Model):
     number = db.Column(db.String(50), nullable=True)
 
     def __repr__(self):
-        return f"<Postcard {self.name}>"
+        return f"<Postcard id={self.id}, gif_name={self.gif_name}, name={self.name}, comment={self.comment}, timestamp={self.timestamp}, number={self.number}>"
 
 
 socketio = SocketIO(app)
@@ -205,9 +205,10 @@ def submit_postcard():
             gif_name=gif_filename,
             name=name,
             comment=comment,
-            timestamp=datetime.fromisoformat(timestamp),
+            timestamp=datetime.fromisoformat(timestamp.replace("Z", "+09:00")),
             number=number,
         )
+        print(new_postcard)
         db.session.add(new_postcard)
         db.session.commit()
 

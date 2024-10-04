@@ -268,13 +268,13 @@ const PostcardShareView = ({isFixedSize}) => {
         <div
           style={{
             position: 'absolute',
-            top: isFixedSize? '86%' : '85.6%',
+            top: isFixedSize? '85.6%' : '85.6%',
             zIndex: '900',
             width: '20%',
             color: '#412823',
             // border: '1px solid #412823',
             fontSize: '0.6em',
-            fontFamily: 'pretandard, sans-serif',
+            fontFamily: 'Pretendard-Regular, sans-serif',
             left: '67%',
             textAlign: 'center',
             verticalAlign: 'middle',

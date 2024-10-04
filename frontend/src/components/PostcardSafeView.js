@@ -138,7 +138,8 @@ const PostcardSafeView = ({ isFixedSize }) => {
       <div id="createdImages" ref={divRef} style={{
         position: 'fixed',
         top: isFixedSize ? '68px' : '8dvh',
-        width: isFixedSize ? '390px' : '100dvw', // 높이에 맞춘 비율을 유지한 최대 너비
+        aspectRatio: '390 / 650', // 가로 세로 비율
+        width: isFixedSize ? '390px' : 'auto', // 높이에 맞춘 비율을 유지한 최대 너비
         height: isFixedSize ? '650px' : 'calc(90dvh - 50px)', // 동적 뷰포트에서 108px을 뺀 값만큼 최대 높이를 제한
         display: 'flex',
         flexDirection: 'column',
@@ -162,7 +163,7 @@ const PostcardSafeView = ({ isFixedSize }) => {
             position: 'absolute',
             overflow: 'hidden',
             zIndex: '900',
-            top: `calc(${modelPositions[postcard.number - 1].y}% - 6%)`,
+            top: `calc(${modelPositions[postcard.number - 1].y}% - 2%)`,
             left: `calc(${modelPositions[postcard.number - 1].x}% + 1%)`,
             width: `calc(${modelPositions[postcard.number - 1].width}% + 7%)`,
             height: 'auto',
@@ -194,13 +195,14 @@ const PostcardSafeView = ({ isFixedSize }) => {
         <div
           style={{
             position: 'absolute',
-            top: '80.5%',
+            top: '81%',
             zIndex: '900',
             width: '100%',
             color: '#412823',
             marginTop: '5px',
             fontSize: '8px',
             textAlign: 'center',
+            verticalAlign: 'center',
             lineHeight: '2',
             fontFamily: 'Cafe24Simplehae, sans-serif',
             fontWeight: 'bold',
@@ -212,15 +214,16 @@ const PostcardSafeView = ({ isFixedSize }) => {
         <div
           style={{
             position: 'absolute',
-            top: isFixedSize ? '86%' : '85.6%',
+            top: isFixedSize ? '85.5%' : '85.6%',
             zIndex: '900',
             width: '20%',
             color: '#412823',
             fontSize: '0.6em',
-            fontFamily: 'pretandard, sans-serif',
+            fontFamily: 'Pretendard-Regular, sans-serif',
             left: '67%',
             textAlign: 'center',
             fontWeight: 'bold',
+            
           }}
         >
           {postcard.name}

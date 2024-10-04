@@ -97,8 +97,11 @@ const CreateCharacter = ({isFixedSize}) => {
 
   const handleAssetSelection = (category, index, modelPath) => {
     setSelectedIndices((prevSelectedIndices) => {
+      const isSameModelSelected = prevSelectedIndices[category] === index;
+      const isDress = /19|20|21|22|23|24/.test(modelPath);
+  
       // 이미 선택된 모델을 다시 클릭한 경우: 모델을 제거하고 해제
-      if (prevSelectedIndices[category] === index) {
+      if (isSameModelSelected) {
         console.log(`Deselecting model in category ${category}`);
         removeModel(category); // 선택된 모델 제거
         return {
@@ -110,30 +113,41 @@ const CreateCharacter = ({isFixedSize}) => {
       // 새로운 모델을 선택한 경우
       console.log(`Selecting new model in category ${category}, index: ${index}`);
       
-      // 모델이 중복해서 로드되는 문제를 방지
+      // 이미 선택된 모델이 있다면 해당 카테고리 모델을 먼저 제거
       if (prevSelectedIndices[category] !== null) {
-        removeModel(category); // 기존 모델이 있을 경우 제거
+        removeModel(category);
       }
   
-      loadModel(modelPath, category); // 새로운 모델 로드
-
-          // 상의(TOP) 중 19~24번 선택 시 하의를 제거하고 isDressSelected를 true로 설정
-          const regex = /19|20|21|22|23|24/;  // 19~24의 숫자를 포함한 정규식
-
-    if (category === 'TOP' && (regex.test(modelPath))) {
-      removeBottomModel(); // 하의 제거
-      setIsDressSelected(true); // 원피스 선택 상태 설정
-      // alert('드레스');
-    } else if (category === 'TOP') {
-      setIsDressSelected(false); // 상의 중 원피스가 아닌 경우 원피스 상태 해제
-    }
+      // 모델 로드
+      loadModel(modelPath, category);
+  
+      // 드레스를 입자! 드레스 누르면 하의 제거
+      if (category === 'TOP' && isDress) {
+        removeBottomModel(); // 하의 제거
+        setIsDressSelected(true); // 드레스 선택
+        return {
+          ...prevSelectedIndices,
+          [category]: index, // 상의 선택
+          'BOTTOM': null, // 하의 선택 해제
+        };
+      } else if (category === 'BOTTOM' && isDressSelected) {
+        // 원피스 상태에서 하의를 선택한 경우 상의를 제거
+        removeModel('TOP');
+        setIsDressSelected(false); // 원피스 상태 해제
+        return {
+          ...prevSelectedIndices,
+          [category]: index, // 하의 선택
+          'TOP': null, // 상의 선택 해제
+        };
+      }
   
       return {
         ...prevSelectedIndices,
-        [category]: index, // 새로운 인덱스 저장
+        [category]: index, // 새로운 모델 인덱스 선택
       };
     });
   };
+  
   
   // 모델을 씬에서 제거하는 함수 최적화// 모델을 씬에서 제거하는 함수 최적화
   const disposeMaterial = (material) => {
@@ -989,11 +1003,11 @@ const clearExpressionCanvas = useCallback(() => {
   const handleCategorySelection = useCallback((category) => {
     setSelectedCategory(category.name);
     // alert(isDressSelected);
-    if (category.name === 'BOTTOM' && isDressSelected) {
-      // alert('드레스 지우기');
-      removeModel('TOP');  // 상의 모델 제거
-      setIsDressSelected(false);  // 원피스 선택 상태 해제
-    }
+    // if (category.name === 'BOTTOM' && isDressSelected) {
+    //   // alert('드레스 지우기');
+    //   removeModel('TOP');  // 상의 모델 제거
+    //   setIsDressSelected(false);  // 원피스 선택 상태 해제
+    // }
 
     selectCategory(category);
   }, [isDressSelected, selectCategory]);

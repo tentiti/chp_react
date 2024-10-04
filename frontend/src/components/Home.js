@@ -505,8 +505,8 @@ function Home( {isFixedSize}) {
             textAlign: 'center',
             color: '#412823',
             boxSizing: 'border-box',
-            paddingTop: '20px',
-            marginBottom: '100px',
+            paddingTop: '3vh',
+            marginBottom: 'calc(60px + 7vh)',
           }}>
           이제 댄스타임 : 평화의 나무에 달빛이 닿은 날, 반짝이는 춤결<br />
           춤판 이끔이 | 유채영 김휴초
@@ -516,7 +516,7 @@ function Home( {isFixedSize}) {
       {/* Spacer to Ensure Footer Visibility */}
       <div style={{
           width: '100%',
-          height: '100px',
+          height: '50dvh',
         }}></div>
 
       {/* Invitation Overlay */}
