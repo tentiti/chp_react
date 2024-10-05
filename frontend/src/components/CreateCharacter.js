@@ -27,9 +27,26 @@ function preloadImages(imageArray) {
 
 const CreateCharacter = ({isFixedSize}) => {
 
+  useEffect(() => {
+    // 프리로딩할 이미지 리스트 구성
+    const allImages = CATEGORIES.flatMap((category) =>
+      category.assets.map((asset) => `/static/assetImages/${asset}.webp`)
+    );
+
+    // 프리로딩할 overlay 이미지 추가
+    allImages.push('../static/stockimages/maker_invitation.webp');
+
+    // 이미지 프리로딩 후 로딩 상태 업데이트
+    preloadImages(allImages)
+      .then(() => {
+      })
+      .catch((error) => {
+        console.error("Error preloading images:", error);
+      });
+  }, );
+
   const dracoLoaderRef = useRef(null);
   const loaderRef = useRef(null);
-
 
   useEffect(() => {
     if (!dracoLoaderRef.current) {
@@ -46,7 +63,6 @@ const CreateCharacter = ({isFixedSize}) => {
   }, []);  
 
   const { updateSceneData } = useScene(); // SceneContext의 업데이트 함수 사용
-
 
   const [isInvitationVisible, setIsInvitationVisible] = useState(false); // Invitation의 가시성을 관리하는 상태
 
@@ -65,28 +81,18 @@ const CreateCharacter = ({isFixedSize}) => {
   const navigate = useNavigate();
 
   //초대장 이미지 표시 관련
-
-  const [isSplashVisible, setIsSplashVisible] = useState(false);
   const [overlayVisible, setOverlayVisible] = useState(true);
 
-
-
-  const [isDressSelected, setIsDressSelected] = useState(false); // 원피스가 선택되었는지 여부
   const canvasRef = useRef(null);
-  // const hiddenCanvasRef = useRef(null);
   const rendererRef = useRef(null);
-  // const hiddenRendererRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
   const clockRef = useRef(new THREE.Clock());
   const modelsRef = useRef([]);
-  const controlsRef = useRef(null); // OrbitControls를 위한 Ref 추가
 
   const [selectedColor, setSelectedColor] = useState('Black');
   const [selectedFaceColor, setSelectedFaceColor] = useState('#FFF2F2');
-
-
-  // const [clickedIndex, setClickedIndex] = useState(null); // 클릭된 이미지의 인덱스를 저장하는 상태
+  
   const [selectedIndices, setSelectedIndices] = useState({
     HEAD: null,
     TOP: null,
@@ -101,52 +107,45 @@ const CreateCharacter = ({isFixedSize}) => {
   
     // 이미 선택된 모델을 다시 클릭한 경우: 모델을 제거하고 해제
     if (isSameModelSelected) {
-      console.log(`Deselecting model in category ${category}`);
-      await removeModel(category); // 선택된 모델 제거
-      setSelectedIndices((prevSelectedIndices) => ({
-        ...prevSelectedIndices,
-        [category]: null, // 선택 해제
-      }));
+      await removeModel(category); // 사이드 이펙트는 여기서 처리
+      setSelectedIndices( prev=>({...prev, [category]: null}));
       return;
     }
   
     // 이미 선택된 모델이 있다면 해당 카테고리 모델을 먼저 제거
     if (selectedIndices[category] !== null) {
-      await removeModel(category); // 이전 모델 제거 대기
+      await removeModel(category); // 사이드 이펙트는 setter 함수 외부에서
     }
   
     // 모델 로드
     loadModel(modelPath, category);
   
-    // 드레스를 입자! 드레스 누르면 하의 제거
+    // 드레스인지 여부를 체크하고, 드레스면 하의를 제거하는 로직
     if (category === 'TOP' && isDress) {
-      await removeBottomModel(); // 하의 제거
-      setIsDressSelected(true); // 드레스 선택
+
+      await removeBottomModel(); // 사이드 이펙트는 여기서 처리
       setSelectedIndices((prevSelectedIndices) => ({
         ...prevSelectedIndices,
-        [category]: index, // 상의 선택
+        [category]: index,
         'BOTTOM': null, // 하의 선택 해제
       }));
       return;
-    } else if (category === 'BOTTOM' && isDressSelected) {
-      await removeModel('TOP'); // 상의 제거
-      setIsDressSelected(false); // 원피스 상태 해제
+    } else if (category === 'BOTTOM' && isDress) {
+      await removeModel('TOP'); // 사이드 이펙트
       setSelectedIndices((prevSelectedIndices) => ({
         ...prevSelectedIndices,
-        [category]: index, // 하의 선택
+        [category]: index,
         'TOP': null, // 상의 선택 해제
       }));
       return;
     }
   
-    // 새로운 모델을 선택한 경우
+    // 새로운 모델 선택
     setSelectedIndices((prevSelectedIndices) => ({
       ...prevSelectedIndices,
-      [category]: index, // 새로운 모델 인덱스 선택
+      [category]: index,
     }));
   };
-  
-  
   
   // 모델을 씬에서 제거하는 함수 최적화// 모델을 씬에서 제거하는 함수 최적화
   const disposeMaterial = (material) => {
@@ -208,7 +207,6 @@ const CreateCharacter = ({isFixedSize}) => {
   });
   };
   
-  
 
   const [loadingStatus, setLoadingStatus] = useState('Loading...');
   const [activeCategory, setActiveCategory] = useState(null);
@@ -261,7 +259,6 @@ const CreateCharacter = ({isFixedSize}) => {
     if (category.name === 'EXPRESSION') {
       const canvas = expressionCanvasRef.current;
       if (canvas) {
-        // alert('Expression category selected');
         const ctx = canvas.getContext('2d');
         ctx.fillStyle = selectedFaceColor; // 흰색으로 설정
         ctx.fillRect(0, 0, canvas.width, canvas.height); // 캔버스 전체를 흰색으로 채움
@@ -275,19 +272,14 @@ const CreateCharacter = ({isFixedSize}) => {
     console.log('Selected color:', color);
   
     // alert로 정보 표시 (필요한 경우)
-    // alert(`Category: ${categoryName}, Color: ${color}`);
   
     setSelectedColors((prevColors) => ({
       ...prevColors,
       [categoryName]: color, // color 객체 전체를 저장
     }));
 
-    // alert(JSON.stringify(selectedColors));
   };
   
-  
-  const [initialCameraPosition, setInitialCameraPosition] = useState(null);
-
   //표정 그리기 관련
   const GRAYSCALE_COLORS = [
     { color: '#FFF2F2', bigColor: '#EFE8E8', smallColor: '#F8F6F1' },
@@ -306,7 +298,6 @@ const CreateCharacter = ({isFixedSize}) => {
     canvasContainer.style.backgroundColor = color; // 배경색을 색상으로 설정
     const canvas = expressionCanvasRef.current;
     const ctx = canvas.getContext('2d');
-    // ctx.clearRect(0, 0, canvas.width, canvas.height); // 캔버스를 완전히 초기화
 
     ctx.fillStyle = color;
     ctx.fillRect(0, 0, canvas.width, canvas.height); // 배경색을 채움
@@ -627,24 +618,8 @@ function disposeModel(model) {
     animate();
 
     return () => {
-      if (rendererRef.current) {
-        rendererRef.current.dispose();
-      }
-      // if (hiddenRendererRef.current) {
-      //   hiddenRendererRef.current.dispose();
-      // }
-      // modelsRef.current.forEach(({ model }) => {
-      //   if (model) {
-      //     model.traverse((child) => {
-      //       if (child instanceof THREE.Mesh) {
-      //         child.geometry.dispose();
-      //         if (child.material.isMaterial) {
-      //           child.material.dispose();
-      //         }
-      //       }
-      //     });
-      //   }
-      // });
+      rendererRef.current?.dispose();
+      // cancelAnimationFrame(animateRef.current);
     };
     
   }, [loadModel, updateCameraView]);
@@ -942,8 +917,7 @@ const uploadGif = async (gifBlob) => {
           if (mesh) {
   
             // 원래 컬러 적용
-            const originalColor = selectedFaceColor;
-            // originalColor.addScalar(0.2);  // 색을 밝게 만듦
+            const originalColor = new THREE.Color(selectedFaceColor);
   
             // 새로운 머티리얼 생성 및 적용
             mesh.material = new THREE.MeshStandardMaterial({
@@ -1005,15 +979,8 @@ const clearExpressionCanvas = useCallback(() => {
 
   const handleCategorySelection = useCallback((category) => {
     setSelectedCategory(category.name);
-    // alert(isDressSelected);
-    // if (category.name === 'BOTTOM' && isDressSelected) {
-    //   // alert('드레스 지우기');
-    //   removeModel('TOP');  // 상의 모델 제거
-    //   setIsDressSelected(false);  // 원피스 선택 상태 해제
-    // }
-
     selectCategory(category);
-  }, [isDressSelected, selectCategory]);
+  }, [selectCategory]);
 
   //바디 모델 금쪽이 해결
   const changeBaseModelColor = (colorHexString) => {
@@ -1257,7 +1224,6 @@ const clearExpressionCanvas = useCallback(() => {
           top: "0",
           left: "0",
           zIndex: "999999999",
-          pointerEvents: 'none',
         }}
       />
 

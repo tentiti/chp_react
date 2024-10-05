@@ -33,6 +33,17 @@ body {
   font-size: 12px;
 }
 
+.upbutton:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+button:active:not(:disabled) {
+  background: #e9a7a7;
+  color: #e6e1dc;
+  border-color: #e6e1dc;
+}
+
 button:active {
   background: #e9a7a7 !important; /* 우선순위 강제 */
   color: #e6e1dc !important;

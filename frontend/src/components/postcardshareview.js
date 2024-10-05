@@ -63,7 +63,7 @@ const PostcardShareView = ({isFixedSize}) => {
       void gifElement.offsetWidth;
       
       // Set the new src with the timestamp to force a reload
-      gifElement.src = `/api/uploads/${postcard.gif_name}?t=${timestamp}`;
+      gifElement.src = `/api/uploads/${postcard.gif_name}`;
     }
     
     // Play the audio
