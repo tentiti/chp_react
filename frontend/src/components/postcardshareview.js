@@ -25,29 +25,11 @@ const PostcardShareView = ({isFixedSize}) => {
   const [gifKey, setGifKey] = useState(0); // Add state for gif reload
   // const [isFixedSize, setIsFixedSize] = useState(false); // 화면 고정 여부 상태
   const audioRef = useRef(null);
+  const [isAudioLoaded, setIsAudioLoaded] = useState(false); // 오디오 로딩 상태
+  
   const canvasRef = useRef(null);
 
-  // // 화면 크기 설정
-  // useEffect(() => {
-  //   const handleResize = () => {
-  //     const width = window.innerWidth;
-  //     const height = window.innerHeight;
 
-  //     // 화면이 390 * 840보다 크면 고정 크기로 설정
-  //     if (isTablet || isDesktop) {
-  //       setIsFixedSize(true);
-  //     } else {
-  //       setIsFixedSize(false);
-  //     }
-  //   };
-
-  //   window.addEventListener('resize', handleResize);
-  //   handleResize(); // 초기 실행
-
-  //   return () => {
-  //     window.removeEventListener('resize', handleResize);
-  //   };
-  // }, []);
 
   useEffect(() => {
     const fetchPostcard = async () => {
@@ -94,6 +76,10 @@ const PostcardShareView = ({isFixedSize}) => {
     
     // Update the state to trigger a re-render
     setGifKey(prevKey => prevKey + 1);
+  };
+
+  const handleAudioLoaded = () => {
+    setIsAudioLoaded(true);
   };
 
 
@@ -216,7 +202,9 @@ const PostcardShareView = ({isFixedSize}) => {
               left: `calc(${modelPositions[postcard.number-1].x}% + 1%)`,
               width: `calc(${modelPositions[postcard.number-1].width}% + 7%)`,
               height:'auto',
+              display:'none',
             }}
+            onLoad={(e) => e.target.style.display = 'block'} // GIF가 로드되면 표시
           />
   
 
@@ -316,8 +304,9 @@ const PostcardShareView = ({isFixedSize}) => {
             boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.25)',
             color: '#412823',
           }}
+          disabled={!isAudioLoaded} // 오디오 로드되기 전까지 버튼 비활성화
         >
-          음악과 함께 춤추기
+          {isAudioLoaded? '음악과 함께 춤추기' : '로딩 중..'}
         </button>
 
       </div>
@@ -337,7 +326,7 @@ const PostcardShareView = ({isFixedSize}) => {
         </footer> */}
 
       {/* Add the audio element for test.mp3 */}
-      <audio ref={audioRef} loop>
+      <audio ref={audioRef} loop onCanPlayThrough={handleAudioLoaded}>
         <source src="/static/test_short.mp3" type="audio/wav" />
         Your browser does not support the audio element.
       </audio>
