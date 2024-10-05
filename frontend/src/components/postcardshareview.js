@@ -25,7 +25,7 @@ const PostcardShareView = ({isFixedSize}) => {
   const [gifKey, setGifKey] = useState(0); // Add state for gif reload
   // const [isFixedSize, setIsFixedSize] = useState(false); // 화면 고정 여부 상태
   const audioRef = useRef(null);
-  const [isAudioLoaded, setIsAudioLoaded] = useState(false); // 오디오 로딩 상태
+  const [isAudioLoaded, setIsAudioLoaded] = useState(true); // 오디오 로딩 상태
   
   const canvasRef = useRef(null);
 
@@ -326,7 +326,8 @@ const PostcardShareView = ({isFixedSize}) => {
         </footer> */}
 
       {/* Add the audio element for test.mp3 */}
-      <audio ref={audioRef} loop onCanPlayThrough={handleAudioLoaded}>
+      {/* <audio ref={audioRef} loop onCanPlayThrough={handleAudioLoaded}> */}
+      <audio ref={audioRef} loop>
         <source src="/static/test_short.mp3" type="audio/wav" />
         Your browser does not support the audio element.
       </audio>
