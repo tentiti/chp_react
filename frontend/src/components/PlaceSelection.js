@@ -152,10 +152,12 @@ const PlaceSelection = ({isFixedSize}) => {
     }, []);
 
     const scrollToBottom = () => {
+        // eslint-disable-next-line no-unused-expressions
         containerRef.current?.scrollTo({ top: containerRef.current.scrollHeight, behavior: 'smooth' });
     };
       
     const scrollToTop = () => {
+        // eslint-disable-next-line no-unused-expressions
         containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     };
 

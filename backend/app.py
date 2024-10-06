@@ -134,6 +134,20 @@ def upload_file():
     return jsonify({"filename": unique_filename, "stillfilename": still_filename}), 200
 
 
+@app.route("/api/map")
+def map_view():
+    # return render_template("map.html")
+    try:
+        # Postcard 데이터를 DB에서 불러옴
+        postcards = Postcard.query.order_by(Postcard.timestamp.desc()).all()
+
+        # 템플릿으로 데이터 전달하여 렌더링
+        return render_template("map.html", postcards=postcards)
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": "Failed to load map data"}), 500
+
+
 @app.route("/api/comment", methods=["POST"])
 def post_comment():
     data = request.get_json()

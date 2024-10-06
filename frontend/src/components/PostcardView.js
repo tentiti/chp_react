@@ -252,17 +252,34 @@ function useThree()
       animate();
     }
   , [mixer]);
-  const disposeThree = useCallback( ()=>{
+
+  const disposeThree = useCallback(() => {
     cancelAnimationFrame(animateRef.current);
-    sceneRef.current?.traverse((object) => {
-      object.geometry?.dispose();
-      if (object.material) {
-        object.material.map?.dispose();
-        object.material.dispose();
-      }
-    });
-    rendererRef.current?.dispose();
-  }, [] );
+  
+    // sceneRef가 있는지 확인
+    if (sceneRef.current) {
+      sceneRef.current.traverse((object) => {
+        // object.geometry가 있는지 확인 후 dispose 호출
+        if (object.geometry) {
+          object.geometry.dispose();
+        }
+  
+        // object.material이 있는지 확인 후 map 및 material dispose 호출
+        if (object.material) {
+          if (object.material.map) {
+            object.material.map.dispose();
+          }
+          object.material.dispose();
+        }
+      });
+    }
+  
+    // rendererRef가 있는지 확인 후 dispose 호출
+    if (rendererRef.current) {
+      rendererRef.current.dispose();
+    }
+  }, []);
+  
 
   return {initThree, disposeThree};
 }
@@ -407,7 +424,10 @@ function useRecord(canvasRef, isReadyToRecord = true)
       setRecordingBlob(blob);
       setIsRecording(false);
       setIsRecordingDone(true);
-      recorderRef.current?.destroy();
+      if (recorderRef.current) {
+        recorderRef.current.destroy();
+      }
+      
     });
   }
 

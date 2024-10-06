@@ -9,7 +9,6 @@ import { UseVideo } from './VideoContext.js'; // Context에서 가져옴
 import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
 import { useScene } from './SceneContext'; // SceneContext 사용
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
-import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 
 function preloadImages(imageArray) {
   // 이미지 로드를 Promise로 처리
@@ -59,8 +58,8 @@ const CreateCharacter = ({isFixedSize}) => {
     if (!loaderRef.current) {
       const loader = new GLTFLoader();
       loader.setDRACOLoader(dracoLoaderRef.current);
-      loader.setMeshoptDecoder(MeshoptDecoder);
       loaderRef.current = loader;
+      
     }
   }, []);  
 
@@ -105,7 +104,7 @@ const CreateCharacter = ({isFixedSize}) => {
 
   const handleAssetSelection = async (category, index, modelPath) => {
     const isSameModelSelected = selectedIndices[category] === index;
-    const isDress = /19|20|21|22|23|24/.test(modelPath);
+    const isDress = (/19|20|21|22|23|24/.test(modelPath)) && category === 'TOP';
   
     // 이미 선택된 모델을 다시 클릭한 경우: 모델을 제거하고 해제
     if (isSameModelSelected) {
@@ -132,7 +131,7 @@ const CreateCharacter = ({isFixedSize}) => {
         'BOTTOM': null, // 하의 선택 해제
       }));
       return;
-    } else if (category === 'BOTTOM' && isDress) {
+    } else if (category === 'BOTTOM' && selectedIndices['TOP'] >= 17) {
       await removeModel('TOP'); // 사이드 이펙트
       setSelectedIndices((prevSelectedIndices) => ({
         ...prevSelectedIndices,
@@ -626,7 +625,10 @@ function disposeModel(model) {
     animate();
 
     return () => {
-      rendererRef.current?.dispose();
+      if (rendererRef.current) {
+        rendererRef.current.dispose();
+    }
+    
       // cancelAnimationFrame(animateRef.current);
     };
     
