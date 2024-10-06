@@ -65,7 +65,7 @@ function Home( {isFixedSize}) {
     if (!preloadedButtonImagesRef.current) {
       preloadImages(buttonImages)
         .then(() => {
-          console.log('Button images preloaded successfully');
+          console.log('CHP_react: FE and BE by Hyungyu Lee');
           preloadedButtonImagesRef.current = true;
           setButtonImagesLoaded(true); // Set button images loaded
         })
@@ -80,7 +80,7 @@ function Home( {isFixedSize}) {
     if (buttonImagesLoaded && !preloadedBannerImagesRef.current) {
       preloadImages(bannerImages)
         .then(() => {
-          console.log('Banner images preloaded successfully');
+          // console.log('Banner images preloaded successfully');
           preloadedBannerImagesRef.current = true;
         })
         .catch((error) => {
@@ -161,7 +161,7 @@ function Home( {isFixedSize}) {
 
          // Smooth change in direction instead of random large changes
           if (collision && now - lastCollisionTime > collisionCooldown) {
-            console.log("Collision detected, changing image", now, lastCollisionTime);
+            // console.log("Collision detected, changing image", now, lastCollisionTime);
             lastCollisionTime = now;
             floatingButton.style.backgroundImage = `url(${getRandomButtonImage()})`;
             collision = false;
@@ -497,9 +497,6 @@ function Home( {isFixedSize}) {
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Footer Note */}
         <div style={{
             fontFamily: 'Pretendard-Regular',
             fontSize: '9px',
@@ -513,6 +510,9 @@ function Home( {isFixedSize}) {
           이제 댄스타임 : 평화의 나무에 달빛이 닿은 날, 반짝이는 춤결<br />
           춤판 이끔이 | 유채영 김휴초
         </div>
+        </div>
+
+        {/* Footer Note */}
       </div>
 
       {/* Invitation Overlay */}
