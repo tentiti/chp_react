@@ -320,7 +320,11 @@ function initializeRecorder(combinedStream){
   const recorder = new RecordRTC(combinedStream, {
     type: 'video',
     mimeType: 'video/mp4',
-    bitsPerSecond: 800000  
+    video: {
+      width: 1280,     // 해상도 설정: 너비 1280
+      height: 720,     // 해상도 설정: 높이 720
+    },
+    bitsPerSecond: 2500000,  // 비트레이트를 2.5Mbps로 설정
   });
   recorder.onError = (error) => {
     console.error('Recording error:', error);
@@ -427,7 +431,7 @@ const PostcardView = ({isFixedSize}) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const postcard = usePreload(canvasRef);
-  const [ isReadyToRecord, setIsReadyToRecord ] = useState(false);
+  const [ isReadyToRecord, setIsReadyToRecord ] = useState(true);
   const { audioRef, startRecording, isRecording, isRecordingDone, recordingBlob } = useRecord(canvasRef, isReadyToRecord);
   const resetAndPlayAnimations = useAnimationPlay();
   const [ hasShared, setHasShared ] = useState(false);
@@ -611,7 +615,7 @@ const PostcardView = ({isFixedSize}) => {
         </div>
       </header>
 
-      <audio ref={audioRef} src="/static/test.mp3" loop onCanPlayThrough={()=>setIsReadyToRecord(true)} ></audio>
+      <audio ref={audioRef} src="/static/test.mp3" loop ></audio>
 
       <div ref={containerRef} style={containerStyle}>
         <canvas ref={canvasRef} style={canvasStyle} />

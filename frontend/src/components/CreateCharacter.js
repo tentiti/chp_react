@@ -9,6 +9,7 @@ import { UseVideo } from './VideoContext.js'; // Context에서 가져옴
 import Invitation from './Invitation'; // Invitation 컴포넌트 임포트
 import { useScene } from './SceneContext'; // SceneContext 사용
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 
 function preloadImages(imageArray) {
   // 이미지 로드를 Promise로 처리
@@ -58,6 +59,7 @@ const CreateCharacter = ({isFixedSize}) => {
     if (!loaderRef.current) {
       const loader = new GLTFLoader();
       loader.setDRACOLoader(dracoLoaderRef.current);
+      loader.setMeshoptDecoder(MeshoptDecoder);
       loaderRef.current = loader;
     }
   }, []);  
@@ -364,7 +366,13 @@ const CreateCharacter = ({isFixedSize}) => {
       (gltf) => {
         const model = gltf.scene;
         sceneRef.current.add(model);
-  
+
+        model.traverse((child) => {
+          if (child.isMesh) {
+            // child.material.depthTest = false;  // 깊이 버퍼에 쓰지 않음
+          }
+        });
+        
         setRenderOrder(model, categoryName);
   
         // HEAD 카테고리의 경우 텍스처 복원
@@ -696,6 +704,7 @@ function disposeModel(model) {
           addVideoFile(pngBlob);  // VideoContext에 첫 프레임 저장
         }
   
+
         frameCount++;
         delta += frameDuration;
       }
