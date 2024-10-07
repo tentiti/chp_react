@@ -344,6 +344,74 @@ def get_postcards():
         return jsonify({"error": "Failed to fetch postcards"}), 500
 
 
+# 영상 변환 함수
+import subprocess
+
+
+@app.route("/api/upload-video", methods=["POST"])
+def upload_and_convert_video():
+    if "file" not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files["file"]
+    if file.filename == "":
+        return jsonify({"error": "No selected file"}), 400
+
+    # Secure the filename
+    filename = secure_filename(file.filename)
+    file_ext = os.path.splitext(filename)[1].lower()
+
+    # Save the uploaded file temporarily
+    original_filename = f"{uuid.uuid4()}{file_ext}"
+    original_filepath = os.path.join(app.config["UPLOAD_FOLDER"], original_filename)
+    file.save(original_filepath)
+
+    # Define the converted file path
+    converted_filename = f"{uuid.uuid4()}.mp4"
+    converted_filepath = os.path.join(app.config["UPLOAD_FOLDER"], converted_filename)
+
+    # Use FFmpeg to convert the video file to MP4
+    try:
+        # Run FFmpeg command to convert to mp4 format
+        ffmpeg_command = [
+            "ffmpeg",
+            "-i",
+            original_filepath,
+            "-c:v",
+            "libx264",
+            "-preset",
+            "fast",
+            "-crf",
+            "22",  # video codec settings
+            "-c:a",
+            "aac",
+            "-b:a",
+            "128k",  # audio codec settings
+            converted_filepath,
+        ]
+        subprocess.run(ffmpeg_command, check=True)
+
+        # After successful conversion, delete the original file
+        os.remove(original_filepath)
+
+        # Return the URL of the converted MP4 file
+        return (
+            jsonify(
+                {
+                    "message": "Video uploaded and converted successfully",
+                    "file_url": url_for(
+                        "get_video", filename=converted_filename, _external=True
+                    ),
+                }
+            ),
+            200,
+        )
+
+    except subprocess.CalledProcessError as e:
+        print(f"FFmpeg error: {e}")
+        return jsonify({"error": "Failed to convert video"}), 500
+
+
 if __name__ == "__main__":
     socketio.run(
         app,

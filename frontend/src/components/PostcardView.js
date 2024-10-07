@@ -14,6 +14,10 @@ import Invitation from './Invitation';
 
 const RECORDING_DURATION_MS = 18750; // 녹화 시간 상수
 
+// 안드로이드 기기 확인 함수
+// const isAndroidDevice = () => /Android/i.test(navigator.userAgent);
+const isAndroidDevice = () => true;
+
 /***
  * three.js 시작 및 세팅 관련 함수
  ***/
@@ -462,71 +466,126 @@ const PostcardView = ({isFixedSize}) => {
   const handleMenuClick = () => setIsInvitationVisible(true);
   const handleBackClick = () => setIsInvitationVisible(false);
   
-  const downloadVideo = () => {
-    if(!recordingBlob) return;
+  // 변환된 Mp4 파일 url
+  const [isDownloadReady, setIsDownloadReady] = useState(false); // 다운로드 버튼 활성화 상태
+  const [uploadedFileUrl, setUploadedFileUrl] = useState(null); // 업로드된 파일 URL 저장
 
-    const a = document.createElement('a');
-    const blobUrl = URL.createObjectURL(recordingBlob);
-    a.href = blobUrl;
-    a.download = `${postcard?.name}의 춤사위.mp4`;
-    a.click();
-    URL.revokeObjectURL(blobUrl);
+  const uploadVideoToServer = async (videoBlob) => {
+    
+    if (!isAndroidDevice()) {
+      setIsDownloadReady(true); // 업로드 완료 후 버튼 활성화
+      return; 
+    }
+ 
+    if (uploadedFileUrl) return;
+    try {
+      const formData = new FormData();
+      formData.append('file', videoBlob, 'video.mp4');
+  
+      const response = await axios.post('/api/upload-video', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+  
+      if (response.status === 200) {
+        const { file_url } = response.data;
+        console.log(`동영상이 성공적으로 업로드 및 변환되었습니다! 다운로드 링크: ${file_url}`);
+        setUploadedFileUrl(file_url); // 업로드된 URL 상태에 저장
+        setIsDownloadReady(true); // 업로드 완료 후 버튼 활성화
+    
+        return file_url;
+      }
+    } catch (error) {
+      console.error('동영상 업로드 중 오류 발생:', error);
+    }
+  };
+
+  // 다운로드 및 공유 버튼에서 업로드된 파일 URL 또는 로컬 recordingBlob을 사용
+  const downloadVideo = async() => {
+    if (uploadedFileUrl) {
+      console.log('변환된 영상을 가져옵니다...');
+      try {
+        console.log(uploadedFileUrl);
+        const response = await axios.get(uploadedFileUrl, { responseType: 'blob' });
+        const blob = response.data; // Blob 데이터는 response.data에 저장됨
+        const blobUrl = URL.createObjectURL(blob);
+    
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = `${postcard?.name}의 춤사위_변환.mp4`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    
+        URL.revokeObjectURL(blobUrl); // 사용 후 메모리에서 해제
+      } catch (error) {
+        console.error('파일 다운로드 오류:', error);
+      }
+    }
+     else if (recordingBlob) {
+      // 다른 기기에서는 로컬 recordingBlob 사용
+      const a = document.createElement('a');
+      const blobUrl = URL.createObjectURL(recordingBlob);
+      a.href = blobUrl;
+      a.download = `${postcard?.name}의 춤사위.mp4`;
+      a.click();
+      URL.revokeObjectURL(blobUrl);
+    }
   };
 
   const shareVideo = async (alertNeeded = true) => {
-    if (hasShared || !recordingBlob) return; // 이미 공유되었거나 Blob URL이 없으면 중단
+    if (hasShared || (!uploadedFileUrl && isAndroidDevice()) || (!recordingBlob && !isAndroidDevice())) return;
     setHasShared(true);
   
-    if (alertNeeded){
-      // 클립보드에 해시태그 복사
+    if (alertNeeded) {
       if (navigator.clipboard) {
         await navigator.clipboard.writeText('@k.imhwasoon @kkot.pida.gallery');
         console.log('Text copied to clipboard');
       }
-  
     }
+  
     try {
-      // Blob을 사용하여 파일 공유
-      if (!navigator.canShare || !recordingBlob) {
-        throw new Error('Sharing not supported or no video recorded');
+      // 안드로이드 기기에서 업로드된 파일을 다운로드하여 Blob으로 변환
+      if (uploadedFileUrl) {
+        const response = await axios.get(uploadedFileUrl, { responseType: 'blob' });
+        const blob = response.data; // Blob 데이터는 response.data에 저장됨\
+  
+        const file = new File([blob], `${postcard?.name}의 춤사위_변환.mp4`, { type: 'video/mp4' });
+  
+        // 파일을 공유할 수 있는지 확인 후 공유
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: 'My Animation',
+            text: 'Check out this animation I created!',
+          });
+          console.log('Video shared successfully');
+        } else {
+          alert('이 장치에서는 파일 공유가 지원되지 않습니다. 다운로드하여 수동으로 공유해 주세요.');
+        }
+      } else if (recordingBlob) {
+        // 다른 기기에서는 로컬 recordingBlob을 사용하여 공유
+        const file = new File([recordingBlob], `${postcard?.name}의 춤사위.mp4`, { type: 'video/mp4' });
+  
+        alert('해시태그가 복사되었습니다. 인스타그램 공유 (불가시 저장 후 수동 공유)시 텍스트를 붙여 넣어 주세요!');
+  
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: 'My Animation',
+            text: 'Check out this animation I created!',
+          });
+          console.log('Video shared successfully');
+        } else {
+          console.error('Sharing not supported on this device for files');
+        }
       }
-
-      // Blob을 File로 변환
-      const file = new File([recordingBlob], 'animation.mp4', { type: 'video/mp4' });
-
-      console.log(file)
-
-      const isAndroid = /Android/i.test(navigator.userAgent);
-
-      if (isAndroid) {
-        alert('안드로이드에서는 자동 공유 기능이 지원되지 않습니다. 화면을 캡쳐한 후 직접 공유해 주세요. 수동 녹화 화면으로 이동합니다. 인스타그램 공유시 복사된 텍스트를 붙여 넣어 주세요.');
-        setHasShared(false); // 상태 초기화
-        navigate(`/postcardsafeview/${id}`);
-        return;
-      }
-    
-      alert('해시태그가 복사되었습니다. 인스타그램 공유 (불가시 저장 후 수동 공유)시 텍스트를 붙여 넣어 주세요!');
-
-      // 파일을 공유할 수 있는지 확인한 후 공유
-      if (navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          // title: 'Postcard Video',
-          files: [file],
-          title: 'My Animation',
-          text: 'Check out this animation I created!',
-        });
-        console.log('Video shared successfully');
-      } else {
-        console.error('Sharing not supported on this device for files');
-      }
-
     } catch (error) {
       console.error('Error sharing video:', error);
     } finally {
-      // 에러 발생 여부에 관계없이 공유 상태 초기화
-      setHasShared(false);
+      setHasShared(false); // 상태 초기화
     }
   };
+  
 
   useEffect(() => {
     if (isRecordingDone) {
@@ -534,7 +593,8 @@ const PostcardView = ({isFixedSize}) => {
       const animationInterval = setInterval(() => {
         resetAndPlayAnimations();
       }, 18750); 
-  
+      uploadVideoToServer(recordingBlob); // 업로드 호출
+      
       return () => clearInterval(animationInterval);
     }
   }, [isRecordingDone, resetAndPlayAnimations]);
@@ -689,18 +749,18 @@ const PostcardView = ({isFixedSize}) => {
         </>
       )}
 
-      {isRecording && !isRecordingDone &&(
+      {isRecording && !isDownloadReady && (
            <button className="upbutton" disabled={true} >
                   영상 준비 중..
           </button>
       )}
 
-      {isRecordingDone && (
+      { isDownloadReady && (
         <>
-          <button className="upbutton" onClick={downloadOrShareVideo} disabled={!recordingBlob}>
+          <button className="upbutton" onClick={downloadOrShareVideo} disabled={!isDownloadReady}>
             저장하기
           </button>
-          <button className="upbutton" onClick={shareVideo} disabled={!recordingBlob}>
+          <button className="upbutton" onClick={shareVideo} disabled={!isDownloadReady}>
            인스타그램 공유하기
           </button>
         </>
