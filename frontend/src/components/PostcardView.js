@@ -15,8 +15,8 @@ import Invitation from './Invitation';
 const RECORDING_DURATION_MS = 18750; // 녹화 시간 상수
 
 // 안드로이드 기기 확인 함수
-// const isAndroidDevice = () => /Android/i.test(navigator.userAgent);
-const isAndroidDevice = () => true;
+const isAndroidDevice = () => /Android/i.test(navigator.userAgent);
+// const isAndroidDevice = () => true;
 
 /***
  * three.js 시작 및 세팅 관련 함수
@@ -238,7 +238,7 @@ function useThree()
       rendererRef.current = initRenderer(canvasRef.current);
       const camera = initCamera();
       sceneRef.current.add(camera);
-      makeBackgroundMesh(`/static/stockimages/postcardfinal_${postcard?.number}.png`, rendererRef.current).then( bg=>sceneRef.current.add(bg) );
+      makeBackgroundMesh(`/static/stockimages/postcardfinal_${postcard?.number}.webp`, rendererRef.current).then( bg=>sceneRef.current.add(bg) );
       const commentMesh = makeText(postcard.comment, 0, -12.2, 94, true);
       const timestampMesh = makeText(postcard.timestamp, 0, -14, 60);
       const nameMesh = makeText(postcard.name, 6, -15.8, 80);
@@ -749,7 +749,7 @@ const PostcardView = ({isFixedSize}) => {
         </>
       )}
 
-      {isRecording && !isDownloadReady && (
+      {(isRecording || isRecordingDone) && !isDownloadReady && (
            <button className="upbutton" disabled={true} >
                   영상 준비 중..
           </button>

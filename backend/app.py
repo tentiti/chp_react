@@ -374,21 +374,33 @@ def upload_and_convert_video():
     try:
         # Run FFmpeg command to convert to mp4 format
         ffmpeg_command = [
-            "ffmpeg",
+            "/usr/bin/ffmpeg",
+            "-err_detect",
+            "ignore_err",  # 오류를 무시하고 계속 진행
+            "-fflags",
+            "+genpts+igndts+discardcorrupt",
             "-i",
             original_filepath,
             "-c:v",
-            "libx264",
+            "libx264",  # 비디오를 H.264로 변환
             "-preset",
-            "fast",
+            "ultrafast",  # 빠른 인코딩 (품질은 낮아질 수 있음)
             "-crf",
-            "22",  # video codec settings
+            "23",  # 적절한 품질과 파일 크기의 균형
             "-c:a",
-            "aac",
+            "aac",  # 오디오를 AAC로 변환
             "-b:a",
-            "128k",  # audio codec settings
+            "128k",  # 오디오 비트레이트 설정
+            "-strict",
+            "experimental",  # AAC를 실험적 지원으로 허용
+            "-movflags",
+            "+faststart",  # moov atom을 시작 부분으로 이동
+            "-max_muxing_queue_size",
+            "1024",  # 큰 파일 처리를 위한 큐 크기 증가
+            "-y",  # 출력 파일을 덮어쓰기 허용
             converted_filepath,
         ]
+
         subprocess.run(ffmpeg_command, check=True)
 
         # After successful conversion, delete the original file

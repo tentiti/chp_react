@@ -372,14 +372,22 @@
       });
 
       // AJAX로 60초마다 새로운 포스트카드 가져오기
+      let loadedPostcards = []; // 이미 로드된 포스트카드 ID 저장
+
+      // AJAX로 60초마다 새로운 포스트카드 가져오기
       function fetchNewPostcards() {
-        fetch(`/api/postcards/new?last_timestamp=${lastTimestamp}`)
+        fetch(`/api/postcards/`)
           .then((response) => response.json())
           .then((data) => {
+            data.new_postcards.forEach((postcard) => {
+              if (!loadedPostcards.includes(postcard.id)) {
+                // 중복 체크
+                addPostcardToMap(postcard); // 중복이 아닐 경우 포스트카드 추가
+                loadedPostcards.push(postcard.id); // 새로운 포스트카드의 ID 저장
+              }
+            });
+
             if (data.new_postcards.length > 0) {
-              data.new_postcards.forEach((postcard) => {
-                addPostcardToMap(postcard); // 새로운 포스트카드를 지도에 추가
-              });
               lastTimestamp = data.new_postcards[0].timestamp; // 타임스탬프 업데이트
             }
           })
