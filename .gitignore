@@ -33,7 +33,7 @@ certs/*
 
 # production
 /build
-*.glb
+# *.glb
 *.db
 *.mp4
 *.gif
