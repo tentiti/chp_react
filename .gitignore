@@ -22,7 +22,14 @@ npm-debug.log*
 /coverage
 
 #certs
-certs/
+# Ignore everything in certs/ directory
+certs/*
+
+# Except server.crt and server.key
+!certs/
+!certs/server.crt
+!certs/server.key
+
 
 # production
 /build
