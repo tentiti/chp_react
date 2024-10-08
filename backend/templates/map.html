@@ -7,6 +7,8 @@
     <style>
       body {
         background-color: salmon;
+        width: 320vw;
+        height: calc(300vw + 20vh);
         position: relative;
         overflow: hidden;
         display: flex;
@@ -14,18 +16,18 @@
 
       #map-container {
         position: absolute;
-        width: 300vw;
-        height: 300vh;
+        width: 320vw;
+        height: calc(300vw + 20vh);
         background-color: rgba(255, 255, 0, 0.2);
-        top: -400px;
-        left: -400px;
+        top: 0;
+        left: 0;
         transition: transform 0.5s ease-in-out;
       }
 
       .postcard {
         position: absolute;
-        width: 100px;
-        height: 100px;
+        width: 150px;
+        height: 150px;
         transition: transform 2s ease-in-out;
       }
 
@@ -51,7 +53,7 @@
       }
 
       #top-zone {
-        background-color: #66a7b2;
+        background-color: rgba(255, 255, 255, 0.5);
         top: 0;
         left: 25vw;
         width: 50vw;
@@ -59,7 +61,7 @@
       }
 
       #bottom-zone {
-        background-color: #66a7b2;
+        background-color: rgba(255, 255, 255, 0.5);
         bottom: 0;
         left: 25vw;
         width: 50vw;
@@ -67,7 +69,7 @@
       }
 
       #left-zone {
-        background-color: #66a7b2;
+        background-color: rgba(255, 255, 255, 0.5);
         top: 25vh;
         left: 0;
         width: 100px;
@@ -75,7 +77,7 @@
       }
 
       #right-zone {
-        background-color: #66a7b2;
+        background-color: rgba(255, 255, 255, 0.5);
         top: 25vh;
         right: 0;
         width: 100px;
@@ -90,7 +92,7 @@
         height: 150px;
         background-color: rgba(255, 255, 255, 0.8);
         border: 1px solid #ccc;
-        z-index: 100;
+        z-index: 1110;
       }
 
       #minimap {
@@ -125,10 +127,10 @@
 
       #search-container {
         position: fixed;
-        right: 100px;
-        top: 100px;
+        right: 120px;
+        top: calc(2.5vh + 100px);
         width: 20%;
-        height: calc(100vh - 200px);
+        height: calc(90vh - 200px);
         background-color: rgba(255, 255, 255, 0.5);
         padding: 20px;
         box-shadow: -3px 0 5px rgba(0, 0, 0, 0.2);
@@ -137,7 +139,8 @@
 
       #search-input {
         width: 100%;
-        padding: 10px;
+        padding: 20px;
+        box-sizing: border-box;
         margin-bottom: 10px;
         border: 1px solid #ccc;
       }
@@ -167,6 +170,20 @@
         display: none;
         z-index: 1000;
       }
+
+      #tutorial {
+        position: fixed;
+        bottom: 120px;
+        left: 50%;
+        width: 500px;
+        height: 100px;
+        transform: translate(-50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 20px;
+        border-radius: 5px;
+        z-index: 1000;
+      }
     </style>
   </head>
   <body>
@@ -191,13 +208,13 @@
       <input
         type="text"
         id="search-input"
-        placeholder="Search by name or comment..."
+        placeholder="춤꾼 이름이나 한마디 검색하기.."
       />
       <ul id="search-results"></ul>
     </div>
 
     <div id="new-postcard-notification">새로운 엽서가 추가되었습니다!</div>
-
+    <div id="tutorial"></div>
     <script>
       let loadedPostcards = [];
       let lastTimestamp = "";
@@ -244,8 +261,8 @@
           <img src="https://letsdance.kr/api/uploads/${postcard.gif_name}" alt="${postcard.name}" />
         `;
 
-        const randomX = Math.random() * (mapWidth - 100);
-        const randomY = Math.random() * (mapHeight - 100);
+        const randomX = 150 + Math.random() * (mapWidth - 300);
+        const randomY = 150 + Math.random() * (mapHeight - 300);
         postcardDiv.style.left = randomX + "px";
         postcardDiv.style.top = randomY + "px";
 
@@ -357,6 +374,27 @@
         clearInterval(moveInterval);
       }
 
+      // 미니맵 클릭 이벤트 추가
+      minimapContainer.addEventListener("click", (event) => {
+        const minimapRect = minimapContainer.getBoundingClientRect();
+
+        // 클릭 위치를 계산
+        const clickX = event.clientX - minimapRect.left;
+        const clickY = event.clientY - minimapRect.top;
+
+        // 미니맵 비율을 메인 맵 비율로 변환
+        const mapX =
+          -(clickX / minimapWidth) * mapWidth + window.innerWidth / 2;
+        const mapY =
+          -(clickY / minimapHeight) * mapHeight + window.innerHeight / 2;
+
+        // 지도 위치 업데이트
+        mapContainer.style.left = mapX + "px";
+        mapContainer.style.top = mapY + "px";
+
+        updateMinimapView();
+      });
+
       function moveMap(zoneId) {
         const currentX = parseInt(mapContainer.style.left) || -400;
         const currentY = parseInt(mapContainer.style.top) || -400;
@@ -367,13 +405,15 @@
 
         switch (zoneId) {
           case "top-zone":
-            newY = Math.min(currentY + step, 0);
+            newY = Math.min(currentY + step, -10);
+            console.log(newY);
             break;
           case "bottom-zone":
             newY = Math.max(currentY - step, -mapHeight + window.innerHeight);
             break;
           case "left-zone":
-            newX = Math.min(currentX + step, 0);
+            newX = Math.min(currentX + step, -10);
+            console.log(newX);
             break;
           case "right-zone":
             newX = Math.max(currentX - step, -mapWidth + window.innerWidth);
@@ -393,6 +433,10 @@
         const postcards = document.querySelectorAll(".postcard");
         searchResults.innerHTML = "";
 
+        if (searchTerm === "") {
+          return;
+        }
+
         postcards.forEach((postcard) => {
           const name = postcard.getAttribute("data-name").toLowerCase();
           const comment = postcard.getAttribute("data-comment").toLowerCase();
@@ -402,6 +446,8 @@
             li.textContent = `${name} - ${comment.substring(0, 30)}...`;
             li.addEventListener("click", () => {
               focusOnPostcard(postcard);
+              searchInput.value = "";
+              searchResults.innerHTML = "";
             });
             searchResults.appendChild(li);
           }
@@ -412,19 +458,32 @@
         const postcardRect = postcard.getBoundingClientRect();
         const mapRect = mapContainer.getBoundingClientRect();
 
-        const targetX =
-          -mapRect.left + window.innerWidth / 2 - postcardRect.width / 2;
-        const targetY =
-          -mapRect.top + window.innerHeight / 2 - postcardRect.height / 2;
+        // 포스트카드의 중심 좌표 계산
+        const postcardCenterX = postcardRect.left + postcardRect.width / 2;
+        const postcardCenterY = postcardRect.top + postcardRect.height / 2;
 
-        mapContainer.style.left = targetX + "px";
-        mapContainer.style.top = targetY + "px";
+        // 지도를 이동시켜야 할 거리 계산
+        const moveX = window.innerWidth / 2 - postcardCenterX;
+        const moveY = window.innerHeight / 2 - postcardCenterY;
+
+        // 현재 지도 위치에서 이동 거리를 더해 새로운 위치 계산
+        const newMapLeft = mapRect.left + moveX;
+        const newMapTop = mapRect.top + moveY;
+
+        // 지도 이동
+        mapContainer.style.left = newMapLeft + "px";
+        mapContainer.style.top = newMapTop + "px";
 
         updateMinimapView();
       }
 
       loadPostcards();
       updateMinimapView();
+
+      // 15분(900초)마다 새로고침
+      setInterval(function () {
+        window.location.reload();
+      }, 900000); // 900,000ms = 15분
     </script>
   </body>
 </html>
