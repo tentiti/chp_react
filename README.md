@@ -31,6 +31,7 @@ CHP_react/
 - **배포**: AWS EC2, Gunicorn, Nginx
 
 ## 실행 방법
+- npm, python이 설치되어 있어야 합니다.
 
 1. 모든 파일을 다운로드합니다.
 
