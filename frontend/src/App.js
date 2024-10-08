@@ -42,6 +42,7 @@ function App() {
   const [showSizeInfo, setShowSizeInfo] = useState(false);
   const [showInstaInfo, setShowInstaInfo] = useState(false); // 추가된 상태
   const [showKakaoInfo, setShowKakaoInfo] = useState(false); // 추가된 상태 
+  const [showNaverInfo, setShowNaverInfo] = useState(false); // 추가된 상태 
   const [isSizeChecked, setIsSizeChecked] = useState(false);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);  // 실시간 창 높이 상태 관리
 
@@ -57,20 +58,22 @@ function App() {
       const userAgent = navigator.userAgent || navigator.vendor || window.opera;
       return {
         isInstagram: userAgent.includes("Instagram"),
-        isKakao: userAgent.includes("Kakao")
+        isKakao: userAgent.includes("Kakao"),
+        isNaver: userAgent.includes("NAVER") &&  userAgent.includes("Android")
       };
     };
 
     const width = window.innerWidth;
     const height = window.innerHeight;
     const deviceType = getDeviceType();
-    const { isInstagram, isKakao } = checkBrowser();  // 한 번만 호출
+    const { isInstagram, isKakao, isNaver } = checkBrowser();  // 한 번만 호출
 
     setWindowHeight(height);  // 창 높이 상태 업데이트
     setShowSizeInfo((deviceType === 'tablet' || deviceType === 'desktop') && (width < 500 || height < 500));
     setIsFixedSize((deviceType === 'tablet' || deviceType === 'desktop') && (width >= 500 && height >= 500));
     setShowInstaInfo(isInstagram);
     setShowKakaoInfo(isKakao);
+    setShowNaverInfo(isNaver);
     setIsSizeChecked(true);
   }, []);
 
@@ -118,7 +121,11 @@ function App() {
         <div className="size-info-container">
           <img src="/static/stockimages/kakaoinfo.png" alt="Kakao Browser Information" className="size-info-image" />
         </div> 
-      ) : (
+      ) : showNaverInfo ? ( // 카카오 안내 정보 추가
+        <div className="size-info-container">
+          <img src="/static/stockimages/naverinfo.png" alt="Naver Browser Information" className="size-info-image" />
+        </div> 
+      ) :(
         
         <SceneProvider>
           <VideoProvider>
