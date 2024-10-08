@@ -59,7 +59,8 @@ function App() {
       return {
         isInstagram: userAgent.includes("Instagram"),
         isKakao: userAgent.includes("Kakao"),
-        isNaver: userAgent.includes("NAVER") &&  userAgent.includes("Android")
+        // isNaver: userAgent.includes("NAVER") &&  userAgent.includes("Android")
+        isNaver: false
       };
     };
 

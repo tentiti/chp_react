@@ -508,10 +508,11 @@ const PostcardView = ({isFixedSize}) => {
         const response = await axios.get(uploadedFileUrl, { responseType: 'blob' });
         const blob = response.data; // Blob 데이터는 response.data에 저장됨
         const blobUrl = URL.createObjectURL(blob);
-    
+        const extension = recordingBlob.type === 'video/mp4' ? 'mp4' : 'webm';
+
         const a = document.createElement('a');
         a.href = blobUrl;
-        a.download = `${postcard?.name}의 춤사위_변환.mp4`;
+        a.download = `${postcard?.name}의 춤사위_변환.${extension}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

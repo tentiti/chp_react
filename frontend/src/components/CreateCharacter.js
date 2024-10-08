@@ -102,51 +102,89 @@ const CreateCharacter = ({isFixedSize}) => {
     ACCESSORY: null,
   });
 
-  const handleAssetSelection = async (category, index, modelPath) => {
+// Define the accessory groups
+const HATS = [1, 2, 3, 4, 5, 6, 8, 11, 12, 17, 18];
+const GLASSES = [13, 14, 15, 16];
+const OTHER_ACCESSORIES = [7, 9, 10];
+
+// New state to store selected accessory indices by group
+const [selectedAccessories, setSelectedAccessories] = useState({
+  hat: null,
+  glasses: null,
+  other: null,
+});
+
+const handleAssetSelection = async (category, index, modelPath) => {
     const isSameModelSelected = selectedIndices[category] === index;
     const isDress = (/19|20|21|22|23|24/.test(modelPath)) && category === 'TOP';
-  
-    // 이미 선택된 모델을 다시 클릭한 경우: 모델을 제거하고 해제
-    if (isSameModelSelected) {
-      await removeModel(category); // 사이드 이펙트는 여기서 처리
-      setSelectedIndices( prev=>({...prev, [category]: null}));
-      return;
-    }
-  
-    // 이미 선택된 모델이 있다면 해당 카테고리 모델을 먼저 제거
-    if (selectedIndices[category] !== null) {
-      await removeModel(category); // 사이드 이펙트는 setter 함수 외부에서
-    }
-  
-    // 모델 로드
-    loadModel(modelPath, category);
-  
-    // 드레스인지 여부를 체크하고, 드레스면 하의를 제거하는 로직
-    if (category === 'TOP' && isDress) {
 
-      await removeBottomModel(); // 사이드 이펙트는 여기서 처리
-      setSelectedIndices((prevSelectedIndices) => ({
-        ...prevSelectedIndices,
-        [category]: index,
-        'BOTTOM': null, // 하의 선택 해제
-      }));
-      return;
-    } else if (category === 'BOTTOM' && selectedIndices['TOP'] >= 17) {
-      await removeModel('TOP'); // 사이드 이펙트
-      setSelectedIndices((prevSelectedIndices) => ({
-        ...prevSelectedIndices,
-        [category]: index,
-        'TOP': null, // 상의 선택 해제
-      }));
-      return;
+    if (isSameModelSelected) {
+        await removeModel(category);
+        setSelectedIndices(prev => ({ ...prev, [category]: null }));
+        return;
     }
-  
-    // 새로운 모델 선택
-    setSelectedIndices((prevSelectedIndices) => ({
-      ...prevSelectedIndices,
-      [category]: index,
-    }));
-  };
+
+    // Handle other categories as usual
+    if (selectedIndices[category] !== null) {
+        await removeModel(category);
+    }
+
+    loadModel(modelPath, category);
+
+    if (category === 'TOP' && isDress) {
+        await removeBottomModel();
+        setSelectedIndices(prev => ({ ...prev, [category]: index, 'BOTTOM': null }));
+        return;
+    } else if (category === 'BOTTOM' && selectedIndices['TOP'] >= 17) {
+        await removeModel('TOP');
+        setSelectedIndices(prev => ({ ...prev, [category]: index, 'TOP': null }));
+        return;
+    }
+
+    setSelectedIndices(prev => ({ ...prev, [category]: index }));
+};
+
+// Modify removeModel to handle specific accessory items by index
+const removeModel = (category, index = null) => {
+    return new Promise((resolve) => {
+        modelsRef.current = modelsRef.current.filter((item) => {
+            if (item.categoryName !== category || (index !== null && item.index !== index)) {
+                return true;
+            }
+
+            const modelInScene = sceneRef.current.getObjectById(item.model.id);
+            if (!modelInScene) {
+                console.log(`Model in category ${category} is already removed`);
+                return false;
+            }
+
+            sceneRef.current.remove(item.model);
+
+            if (item.mixer) {
+                item.mixer.stopAllAction();
+                item.mixer.uncacheRoot(item.model);
+            }
+
+            item.model.traverse((child) => {
+                if (child.isMesh) {
+                    if (child.geometry) child.geometry.dispose();
+                    if (child.material) {
+                        if (Array.isArray(child.material)) {
+                            child.material.forEach(disposeMaterial);
+                        } else {
+                            disposeMaterial(child.material);
+                        }
+                    }
+                }
+            });
+            return false;
+        });
+
+        rendererRef.current.render(sceneRef.current, cameraRef.current);
+        resolve();
+    });
+};
+
   
   // 모델을 씬에서 제거하는 함수 최적화// 모델을 씬에서 제거하는 함수 최적화
   const disposeMaterial = (material) => {
@@ -156,57 +194,7 @@ const CreateCharacter = ({isFixedSize}) => {
     material.dispose();  // Material 해제
   };
   
-  const removeModel = (category) => {
-    return new Promise((resolve) => {
-    modelsRef.current = modelsRef.current.filter((item) => {
-      if (item.categoryName !== category) {
-        return true;  // 다른 카테고리의 모델은 유지
-      }
   
-      const modelInScene = sceneRef.current.getObjectById(item.model.id);
-      if (!modelInScene) {
-        console.log(`Model in category ${category} is already removed`);
-        return false;  // 모델이 이미 삭제된 경우
-      }
-  
-      // 씬에서 모델 제거
-      sceneRef.current.remove(item.model);
-      console.log(`Model removed from scene for category: ${category}`);
-  
-      // 애니메이션이 있는 경우 중지하고 해제
-      if (item.mixer) {
-        item.mixer.stopAllAction();  // 모든 애니메이션 액션 중지
-        item.mixer.uncacheRoot(item.model);  // 애니메이션과 모델 간의 캐시 해제
-      }
-  
-      // 모델과 그 하위 객체들에 대해 리소스 해제
-      item.model.traverse((child) => {
-        if (child.isMesh) {
-          // Geometry 해제
-          if (child.geometry) {
-            child.geometry.dispose();
-          }
-  
-          // Material 해제
-          if (child.material) {
-            if (Array.isArray(child.material)) {
-              child.material.forEach(disposeMaterial);
-            } else {
-              disposeMaterial(child.material);
-            }
-          }
-        }
-      });
-  
-      return false;  // 이 모델은 삭제되었으므로 filter에서 제외
-    });
-  
-    // 씬을 다시 렌더링
-    rendererRef.current.render(sceneRef.current, cameraRef.current);
-
-    resolve();
-  });
-  };
   
 
   const [loadingStatus, setLoadingStatus] = useState('Loading...');
