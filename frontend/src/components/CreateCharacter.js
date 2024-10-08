@@ -103,9 +103,9 @@ const CreateCharacter = ({isFixedSize}) => {
   });
 
 // Define the accessory groups
-const HATS = [1, 2, 3, 4, 5, 6, 8, 11, 12, 17, 18];
-const GLASSES = [13, 14, 15, 16];
-const OTHER_ACCESSORIES = [7, 9, 10];
+const HATS = [0, 1, 2, 3, 4, 5, 7, 10, 11, 16, 17];
+const GLASSES = [12, 13, 14, 15];
+const OTHER_ACCESSORIES = [6, 8, 9];
 
 // New state to store selected accessory indices by group
 const [selectedAccessories, setSelectedAccessories] = useState({
@@ -114,7 +114,73 @@ const [selectedAccessories, setSelectedAccessories] = useState({
   other: null,
 });
 
+useEffect(() => {
+  console.log("Updated selectedAccessories:", selectedAccessories);
+  // selectedAccessories가 업데이트된 이후 수행할 작업
+}, [selectedAccessories]);
+
+const removeAccessoryModel = (group) => {
+  return new Promise((resolve) => {
+    modelsRef.current = modelsRef.current.filter((item) => {
+      if (item.categoryName !== 'ACCESSORY' || selectedAccessories[group] === null) {
+        return true;
+      }
+      
+      const modelInScene = sceneRef.current.getObjectById(item.model.id);
+      if (!modelInScene) {
+        return false;
+      }
+
+      sceneRef.current.remove(item.model);
+
+      item.model.traverse((child) => {
+        if (child.isMesh) {
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach(disposeMaterial);
+            } else {
+              disposeMaterial(child.material);
+            }
+          }
+        }
+      });
+      return false;
+    });
+
+    rendererRef.current.render(sceneRef.current, cameraRef.current);
+    resolve();
+  });
+};
+
+
 const handleAssetSelection = async (category, index, modelPath) => {
+  //소품은 아예 다르게 처리
+  if (category === 'ACCESSORY') {
+    let group = null;
+    if (HATS.includes(index)) group = 'hat';
+    else if (GLASSES.includes(index)) group = 'glasses';
+    else if (OTHER_ACCESSORIES.includes(index)) group = 'other';
+    console.log(`Selected accessory group: ${group}`);
+
+    // 현재 그룹에 선택된 소품이 이미 있으면 제거
+    if (selectedAccessories[group] !== null && selectedAccessories[group] === index) {
+      await removeAccessoryModel(group, index);
+      setSelectedAccessories((prev) => ({ ...prev, [group]: null }));
+      return;
+    }
+
+    // 현재 그룹에 다른 소품이 선택되어 있으면 제거
+    if (selectedAccessories[group] !== null && selectedAccessories[group] !== index) {
+      await removeAccessoryModel(group, selectedAccessories[group]);
+    }
+
+    // 새로운 소품 로딩 및 상태 업데이트
+    loadModel(modelPath, category+group);
+    setSelectedAccessories((prev) => ({ ...prev, [group]: index }));
+    return;
+  }
+
     const isSameModelSelected = selectedIndices[category] === index;
     const isDress = (/19|20|21|22|23|24/.test(modelPath)) && category === 'TOP';
 
@@ -156,6 +222,10 @@ const removeModel = (category, index = null) => {
             if (!modelInScene) {
                 console.log(`Model in category ${category} is already removed`);
                 return false;
+            }
+
+            if (category === 'ACCESSORY'){
+              return;
             }
 
             sceneRef.current.remove(item.model);
@@ -317,7 +387,7 @@ const removeModel = (category, index = null) => {
     // 중복된 모델이 이미 있는지 확인
     const existingModelIndex = findExistingModel(categoryName);
   
-    if (existingModelIndex !== -1) {
+    if (existingModelIndex !== -1 && categoryName != 'ACCESSORY') {
       const existingModel = modelsRef.current[existingModelIndex];
   
       // 이미 선택된 동일 모델이면 제거만 하고 리턴
@@ -1619,10 +1689,27 @@ const clearExpressionCanvas = useCallback(() => {
             </>
           ) : (
 <>
-  {activeCategory &&
-    activeCategory.assets.map((asset, index) => (
+{activeCategory &&
+  activeCategory.assets.map((asset, index) => {
+    let isSelected = false;
+
+    if (activeCategory.name === "ACCESSORY") {
+      // Check if the accessory is selected in its specific group
+      if (HATS.includes(index)) {
+        isSelected = selectedAccessories.hat === index;
+      } else if (GLASSES.includes(index)) {
+        isSelected = selectedAccessories.glasses === index;
+      } else if (OTHER_ACCESSORIES.includes(index)) {
+        isSelected = selectedAccessories.other === index;
+      }
+    } else {
+      // For non-accessory categories, use selectedIndices
+      isSelected = selectedIndices[activeCategory.name] === index;
+    }
+
+    return (
       <div
-        key={index} // key 속성은 여기 위치해야 합니다.
+        key={index}
         id="makemescrollhere"
         style={{
           overflowY: 'scroll !important',
@@ -1635,24 +1722,17 @@ const clearExpressionCanvas = useCallback(() => {
             width: "100%",
             aspectRatio: "1 / 1",
             borderRadius: "18px",
-            backgroundColor:
-              selectedIndices[activeCategory.name] === index
-                ? "#E9A7A7"
-                : "#EDECE7", // 선택된 항목에 배경색 추가
+            backgroundColor: isSelected ? "#E9A7A7" : "#EDECE7",
           }}
           onClick={() => {
-            const modelPath = activeCategory.useColor ? `/static/models/${asset}_${selectedColor|| "Black"}.glb` : `/static/models/${asset}.glb`;
-            // alert(modelPath);
-            handleAssetSelection(activeCategory.name, index, modelPath); // 카테고리별 선택된 인덱스 업데이트
-            
+            const modelPath = activeCategory.useColor
+              ? `/static/models/${asset}_${selectedColor || "Black"}.glb`
+              : `/static/models/${asset}.glb`;
+            handleAssetSelection(activeCategory.name, index, modelPath);
           }}
         >
           <img
-            src={`/static/assetImages/${
-              activeCategory.useColor
-                ? `${asset}_${selectedColor}`
-                : `${asset}`
-            }.webp`}
+            src={`/static/assetImages/${activeCategory.useColor ? `${asset}_${selectedColor}` : asset}.webp`}
             alt={`${asset}`}
             style={{
               width: "100%",
@@ -1663,7 +1743,9 @@ const clearExpressionCanvas = useCallback(() => {
           />
         </div>
       </div>
-    ))}
+    );
+  })}
+
 </>
 
           )}
