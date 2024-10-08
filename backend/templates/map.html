@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Postcard Map</title>
+    <title>춤판</title>
     <style>
       body {
         background-color: salmon;
@@ -14,9 +14,9 @@
 
       #map-container {
         position: absolute;
-        width: 300vw; /* 윈도우 크기의 2배 */
-        height: 300vh; /* 윈도우 크기의 2배 */
-        background-color: rgba(255, 255, 0, 0.2); /* 반투명 노란색 */
+        width: 300vw;
+        height: 300vh;
+        background-color: rgba(255, 255, 0, 0.2);
         top: -400px;
         left: -400px;
         transition: transform 0.5s ease-in-out;
@@ -26,7 +26,7 @@
         position: absolute;
         width: 100px;
         height: 100px;
-        transition: transform 2s ease-in-out; /* 이미지 이동 속도 */
+        transition: transform 2s ease-in-out;
       }
 
       .postcard img {
@@ -44,42 +44,44 @@
         white-space: nowrap;
       }
 
-      /* 방향에 따른 이동 영역 */
       .move-zone {
         position: fixed;
-        background-color: rgba(0, 0, 0, 0.1);
+        /* background-color: rgba(0, 0, 0, 0.5);  */
         z-index: 10;
       }
 
       #top-zone {
+        background-color: #66a7b2;
         top: 0;
-        left: 0;
-        width: 100vw;
+        left: 25vw;
+        width: 50vw;
         height: 100px;
       }
 
       #bottom-zone {
+        background-color: #66a7b2;
         bottom: 0;
-        left: 0;
-        width: 100vw;
+        left: 25vw;
+        width: 50vw;
         height: 100px;
       }
 
       #left-zone {
-        top: 0;
+        background-color: #66a7b2;
+        top: 25vh;
         left: 0;
         width: 100px;
-        height: 100vh;
+        height: 50vh;
       }
 
       #right-zone {
-        top: 0;
+        background-color: #66a7b2;
+        top: 25vh;
         right: 0;
         width: 100px;
-        height: 100vh;
+        height: 50vh;
       }
 
-      /* 미니맵 스타일 */
       #minimap-container {
         position: fixed;
         bottom: 20px;
@@ -88,7 +90,7 @@
         height: 150px;
         background-color: rgba(255, 255, 255, 0.8);
         border: 1px solid #ccc;
-        z-index: 100; /* 미니맵의 z-index를 100으로 설정 */
+        z-index: 100;
       }
 
       #minimap {
@@ -103,26 +105,24 @@
         height: 5px;
       }
 
-      .minimap-red {
-        background-color: red;
+      .minimap-gray {
+        background-color: #bcbabf;
+      }
+
+      .minimap-yellow {
+        background-color: #e5e09d;
       }
 
       .minimap-blue {
-        background-color: blue;
+        background-color: #66a7b2;
       }
 
-      .minimap-green {
-        background-color: green;
-      }
-
-      /* 미니맵에서 현재 보여지는 부분 표시 */
       #minimap-view {
         position: absolute;
         border: 2px solid blue;
         z-index: 30;
       }
 
-      /* 검색영역 스타일 */
       #search-container {
         position: fixed;
         right: 100px;
@@ -145,6 +145,8 @@
       #search-results {
         list-style: none;
         padding: 0;
+        max-height: calc(100% - 50px);
+        overflow-y: auto;
       }
 
       #search-results li {
@@ -152,47 +154,39 @@
         cursor: pointer;
         color: blue;
       }
+
+      #new-postcard-notification {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        display: none;
+        z-index: 1000;
+      }
     </style>
   </head>
   <body>
-    <h1>Postcard Map</h1>
+    <h1>춤판</h1>
 
-    <!-- Map container -->
-    <div id="map-container">
-      {% for postcard in postcards %}
-      <div
-        class="postcard"
-        id="postcard-{{ loop.index }}"
-        data-number="{{ postcard.number }}"
-        data-name="{{ postcard.name }}"
-        data-comment="{{ postcard.comment }}"
-        data-timestamp="{{ postcard.timestamp }}"
-      >
-        <img
-          src="https://localhost:8000/api/uploads/{{ postcard.gif_name }}"
-          alt="{{ postcard.name }}"
-        />
-      </div>
-      {% endfor %}
-    </div>
+    <div id="map-container"></div>
 
-    <!-- Tooltip for showing postcard name on hover -->
     <div class="tooltip" id="tooltip"></div>
 
-    <!-- 이동을 위한 방향 영역 -->
     <div class="move-zone" id="top-zone"></div>
     <div class="move-zone" id="bottom-zone"></div>
     <div class="move-zone" id="left-zone"></div>
     <div class="move-zone" id="right-zone"></div>
 
-    <!-- 미니맵 -->
     <div id="minimap-container">
       <div id="minimap">
         <div id="minimap-view"></div>
       </div>
     </div>
 
-    <!-- 검색 기능 -->
     <div id="search-container">
       <input
         type="text"
@@ -202,46 +196,69 @@
       <ul id="search-results"></ul>
     </div>
 
-    <script>
-      let lastTimestamp = document
-        .querySelector(".postcard")
-        .getAttribute("data-timestamp");
+    <div id="new-postcard-notification">새로운 엽서가 추가되었습니다!</div>
 
-      const postcards = document.querySelectorAll(".postcard");
-      const tooltip = document.getElementById("tooltip");
+    <script>
+      let loadedPostcards = [];
+      let lastTimestamp = "";
+
       const mapContainer = document.getElementById("map-container");
+      const tooltip = document.getElementById("tooltip");
       const minimapContainer = document.getElementById("minimap");
       const minimapView = document.getElementById("minimap-view");
+      const searchInput = document.getElementById("search-input");
+      const searchResults = document.getElementById("search-results");
+      const newPostcardNotification = document.getElementById(
+        "new-postcard-notification"
+      );
 
-      // 화면의 크기
       const mapWidth = window.innerWidth * 2;
       const mapHeight = window.innerHeight * 2;
-      const minimapWidth = 150; // 미니맵 크기
+      const minimapWidth = 150;
       const minimapHeight = 150;
 
-      // Set initial position and hover events
-      postcards.forEach((postcard, index) => {
-        const cardWidth = 100;
-        const cardHeight = 100;
+      function loadPostcards() {
+        fetch("https://letsdance.kr/api/postcards", { mode: "cors" })
+          .then((response) => response.json())
+          .then((postcards) => {
+            postcards.forEach((postcard) => {
+              if (!loadedPostcards.includes(postcard.id)) {
+                addPostcardToMap(postcard);
+                loadedPostcards.push(postcard.id);
+              }
+            });
+          })
+          .catch((error) => {
+            console.log("Error loading postcards:", error);
+          });
+      }
 
-        // Set random initial position
-        const randomX = Math.random() * (mapWidth - cardWidth);
-        const randomY = Math.random() * (mapHeight - cardHeight);
-        postcard.style.left = randomX + "px";
-        postcard.style.top = randomY + "px";
+      function addPostcardToMap(postcard) {
+        const postcardDiv = document.createElement("div");
+        postcardDiv.classList.add("postcard");
+        postcardDiv.setAttribute("data-number", postcard.number);
+        postcardDiv.setAttribute("data-name", postcard.name);
+        postcardDiv.setAttribute("data-comment", postcard.comment);
+        postcardDiv.setAttribute("data-timestamp", postcard.timestamp);
+        postcardDiv.innerHTML = `
+          <img src="https://letsdance.kr/api/uploads/${postcard.gif_name}" alt="${postcard.name}" />
+        `;
 
-        // 미니맵에 표시될 엘리먼트 추가
+        const randomX = Math.random() * (mapWidth - 100);
+        const randomY = Math.random() * (mapHeight - 100);
+        postcardDiv.style.left = randomX + "px";
+        postcardDiv.style.top = randomY + "px";
+
+        mapContainer.appendChild(postcardDiv);
+
         const minimapPostcard = document.createElement("div");
         minimapPostcard.classList.add("minimap-postcard");
-
-        // postcard.number에 따라 색상 설정
-        const postcardNumber = postcard.getAttribute("data-number");
-        if (postcardNumber == 1) {
-          minimapPostcard.classList.add("minimap-red");
-        } else if (postcardNumber == 2) {
+        if (postcard.number == 1) {
+          minimapPostcard.classList.add("minimap-gray");
+        } else if (postcard.number == 2) {
+          minimapPostcard.classList.add("minimap-yellow");
+        } else if (postcard.number == 3) {
           minimapPostcard.classList.add("minimap-blue");
-        } else if (postcardNumber == 3) {
-          minimapPostcard.classList.add("minimap-green");
         }
 
         minimapPostcard.style.left = (randomX / mapWidth) * minimapWidth + "px";
@@ -249,43 +266,25 @@
           (randomY / mapHeight) * minimapHeight + "px";
         minimapContainer.appendChild(minimapPostcard);
 
-        // Hover event to show name in tooltip
-        postcard.addEventListener("mouseover", (e) => {
-          const name = e.target.alt;
+        postcardDiv.addEventListener("mouseover", (e) => {
           tooltip.style.display = "block";
-          tooltip.textContent = name;
+          tooltip.textContent = postcard.name;
           tooltip.style.left = e.pageX + "px";
           tooltip.style.top = e.pageY + "px";
         });
 
-        // Hide tooltip on mouseout
-        postcard.addEventListener("mouseout", () => {
+        postcardDiv.addEventListener("mouseout", () => {
           tooltip.style.display = "none";
         });
 
-        // Move tooltip with mouse
-        postcard.addEventListener("mousemove", (e) => {
+        postcardDiv.addEventListener("mousemove", (e) => {
           tooltip.style.left = e.pageX + "px";
           tooltip.style.top = e.pageY + "px";
         });
 
-        // Click event to show alert with comment and timestamp
-        postcard.addEventListener("click", () => {
-          const comment = postcard.getAttribute("data-comment");
-          const timestamp = postcard.getAttribute("data-timestamp");
-          alert(`날짜!: ${timestamp}\n코멘트: ${comment}`);
+        postcardDiv.addEventListener("click", () => {
+          alert(`날짜!: ${postcard.timestamp}\n코멘트: ${postcard.comment}`);
         });
-      });
-
-      // Scroll container in response to hover in specific zones
-      const moveSpeed = 20; // 이동 속도 설정
-
-      function moveMap(dx, dy) {
-        const currentX = parseInt(mapContainer.style.left) || -400;
-        const currentY = parseInt(mapContainer.style.top) || -400;
-        mapContainer.style.left = currentX + dx + "px";
-        mapContainer.style.top = currentY + dy + "px";
-        updateMinimapView();
       }
 
       function updateMinimapView() {
@@ -301,94 +300,27 @@
         minimapView.style.height = viewHeight + "px";
       }
 
-      document.getElementById("top-zone").addEventListener("mouseenter", () => {
-        const interval = setInterval(() => moveMap(0, moveSpeed), 50);
-        document
-          .getElementById("top-zone")
-          .addEventListener("mouseleave", () => clearInterval(interval));
-      });
+      setInterval(() => {
+        fetchNewPostcards();
+      }, 6000);
 
-      document
-        .getElementById("bottom-zone")
-        .addEventListener("mouseenter", () => {
-          const interval = setInterval(() => moveMap(0, -moveSpeed), 50);
-          document
-            .getElementById("bottom-zone")
-            .addEventListener("mouseleave", () => clearInterval(interval));
-        });
-
-      document
-        .getElementById("left-zone")
-        .addEventListener("mouseenter", () => {
-          const interval = setInterval(() => moveMap(moveSpeed, 0), 50);
-          document
-            .getElementById("left-zone")
-            .addEventListener("mouseleave", () => clearInterval(interval));
-        });
-
-      document
-        .getElementById("right-zone")
-        .addEventListener("mouseenter", () => {
-          const interval = setInterval(() => moveMap(-moveSpeed, 0), 50);
-          document
-            .getElementById("right-zone")
-            .addEventListener("mouseleave", () => clearInterval(interval));
-        });
-
-      // 미니맵 클릭 시 해당 위치로 이동
-      minimapContainer.addEventListener("click", (e) => {
-        const xRatio = e.offsetX / minimapWidth;
-        const yRatio = e.offsetY / minimapHeight;
-
-        const targetX = -(xRatio * mapWidth) + window.innerWidth / 2;
-        const targetY = -(yRatio * mapHeight) + window.innerHeight / 2;
-
-        mapContainer.style.left = targetX + "px";
-        mapContainer.style.top = targetY + "px";
-        updateMinimapView();
-      });
-
-      // Search functionality
-      const searchInput = document.getElementById("search-input");
-      const searchResults = document.getElementById("search-results");
-
-      searchInput.addEventListener("input", (e) => {
-        const query = e.target.value.toLowerCase();
-        searchResults.innerHTML = "";
-
-        postcards.forEach((postcard) => {
-          const name = postcard.getAttribute("data-name").toLowerCase();
-          const comment = postcard.getAttribute("data-comment").toLowerCase();
-
-          if (name.includes(query) || comment.includes(query)) {
-            const resultItem = document.createElement("li");
-            resultItem.textContent = `${name} - ${comment}`;
-            resultItem.addEventListener("click", () => {
-              postcard.scrollIntoView({ behavior: "smooth", block: "center" });
-            });
-            searchResults.appendChild(resultItem);
-          }
-        });
-      });
-
-      // AJAX로 60초마다 새로운 포스트카드 가져오기
-      let loadedPostcards = []; // 이미 로드된 포스트카드 ID 저장
-
-      // AJAX로 60초마다 새로운 포스트카드 가져오기
       function fetchNewPostcards() {
-        fetch(`/api/postcards/`)
+        fetch("https://letsdance.kr/api/postcards", { mode: "cors" })
           .then((response) => response.json())
           .then((data) => {
-            data.new_postcards.forEach((postcard) => {
+            console.log("testing", loadedPostcards);
+            let newPostcardsAdded = false;
+            data.forEach((postcard) => {
               if (!loadedPostcards.includes(postcard.id)) {
-                // 중복 체크
-                addPostcardToMap(postcard); // 중복이 아닐 경우 포스트카드 추가
-                loadedPostcards.push(postcard.id); // 새로운 포스트카드의 ID 저장
+                console.log("New postcard added:", postcard);
+                addPostcardToMap(postcard);
+                loadedPostcards.push(postcard.id);
+                lastTimestamp = postcard.timestamp;
+                newPostcardsAdded = true;
               }
             });
-
-            if (data.new_postcards.length > 0) {
-              lastTimestamp = data.new_postcards[0].timestamp; // 타임스탬프 업데이트
+            if (newPostcardsAdded) {
+              showNewPostcardNotification();
             }
           })
           .catch((error) => {
@@ -396,44 +328,102 @@
           });
       }
 
-      function addPostcardToMap(postcard) {
-        const postcardDiv = document.createElement("div");
-        postcardDiv.classList.add("postcard");
-        postcardDiv.setAttribute("data-number", postcard.number);
-        postcardDiv.setAttribute("data-name", postcard.name);
-        postcardDiv.setAttribute("data-comment", postcard.comment);
-        postcardDiv.setAttribute("data-timestamp", postcard.timestamp);
-        postcardDiv.innerHTML = `
-          <img src="https://localhost:8000/api/uploads/${postcard.gif_name}" alt="${postcard.name}" />
-        `;
-        mapContainer.appendChild(postcardDiv);
-
-        const randomX = Math.random() * (mapWidth - 100);
-        const randomY = Math.random() * (mapHeight - 100);
-        postcardDiv.style.left = randomX + "px";
-        postcardDiv.style.top = randomY + "px";
-
-        // 미니맵에 추가
-        const minimapPostcard = document.createElement("div");
-        minimapPostcard.classList.add("minimap-postcard");
-
-        if (postcard.number == 1) {
-          minimapPostcard.classList.add("minimap-red");
-        } else if (postcard.number == 2) {
-          minimapPostcard.classList.add("minimap-blue");
-        } else if (postcard.number == 3) {
-          minimapPostcard.classList.add("minimap-green");
-        }
-
-        minimapPostcard.style.left = (randomX / mapWidth) * minimapWidth + "px";
-        minimapPostcard.style.top =
-          (randomY / mapHeight) * minimapHeight + "px";
-        minimapContainer.appendChild(minimapPostcard);
+      function showNewPostcardNotification() {
+        newPostcardNotification.style.display = "block";
+        setTimeout(() => {
+          newPostcardNotification.style.display = "none";
+        }, 3000);
       }
 
-      setInterval(fetchNewPostcards, 60000); // 60초마다 새로운 포스트카드를 확인
+      // 이동 영역 관련 코드
+      const moveZones = document.querySelectorAll(".move-zone");
+      let isMoving = false;
+      let moveInterval;
 
-      // 페이지 로드 후 초기 미니맵 상태 업데이트
+      moveZones.forEach((zone) => {
+        zone.addEventListener("mouseenter", startMoving);
+        zone.addEventListener("mouseleave", stopMoving);
+      });
+
+      function startMoving(e) {
+        if (isMoving) return;
+        isMoving = true;
+        moveInterval = setInterval(() => moveMap(e.target.id), 50);
+      }
+
+      function stopMoving() {
+        if (!isMoving) return;
+        isMoving = false;
+        clearInterval(moveInterval);
+      }
+
+      function moveMap(zoneId) {
+        const currentX = parseInt(mapContainer.style.left) || -400;
+        const currentY = parseInt(mapContainer.style.top) || -400;
+        const step = 10;
+
+        let newX = currentX;
+        let newY = currentY;
+
+        switch (zoneId) {
+          case "top-zone":
+            newY = Math.min(currentY + step, 0);
+            break;
+          case "bottom-zone":
+            newY = Math.max(currentY - step, -mapHeight + window.innerHeight);
+            break;
+          case "left-zone":
+            newX = Math.min(currentX + step, 0);
+            break;
+          case "right-zone":
+            newX = Math.max(currentX - step, -mapWidth + window.innerWidth);
+            break;
+        }
+
+        mapContainer.style.left = newX + "px";
+        mapContainer.style.top = newY + "px";
+        updateMinimapView();
+      }
+
+      // 검색 기능 개선
+      searchInput.addEventListener("input", handleSearch);
+
+      function handleSearch() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const postcards = document.querySelectorAll(".postcard");
+        searchResults.innerHTML = "";
+
+        postcards.forEach((postcard) => {
+          const name = postcard.getAttribute("data-name").toLowerCase();
+          const comment = postcard.getAttribute("data-comment").toLowerCase();
+
+          if (name.includes(searchTerm) || comment.includes(searchTerm)) {
+            const li = document.createElement("li");
+            li.textContent = `${name} - ${comment.substring(0, 30)}...`;
+            li.addEventListener("click", () => {
+              focusOnPostcard(postcard);
+            });
+            searchResults.appendChild(li);
+          }
+        });
+      }
+
+      function focusOnPostcard(postcard) {
+        const postcardRect = postcard.getBoundingClientRect();
+        const mapRect = mapContainer.getBoundingClientRect();
+
+        const targetX =
+          -mapRect.left + window.innerWidth / 2 - postcardRect.width / 2;
+        const targetY =
+          -mapRect.top + window.innerHeight / 2 - postcardRect.height / 2;
+
+        mapContainer.style.left = targetX + "px";
+        mapContainer.style.top = targetY + "px";
+
+        updateMinimapView();
+      }
+
+      loadPostcards();
       updateMinimapView();
     </script>
   </body>

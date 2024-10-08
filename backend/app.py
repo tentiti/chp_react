@@ -332,7 +332,7 @@ def get_postcards():
                 "name": postcard.name,
                 "comment": postcard.comment,
                 "timestamp": postcard.timestamp.strftime("%Y년 %m월 %d일에 함께한 ")
-                + "{postcard.id}번째 춤",
+                + f"{postcard.id}번째 춤",
                 "number": postcard.number,
             }
             for postcard in postcards
