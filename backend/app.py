@@ -430,6 +430,6 @@ if __name__ == "__main__":
         debug=True,
         host="0.0.0.0",
         port=8000,
-        keyfile="/Users/hyungyulee/chp_react/certs/server.key",
-        certfile="/Users/hyungyulee/chp_react/certs/server.crt",
+        keyfile="../certs/server.key",
+        certfile="../certs/server.crt",
     )
