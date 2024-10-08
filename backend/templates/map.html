@@ -13,10 +13,18 @@
         font-style: normal;
       }
 
+      @font-face {
+        font-family: "Cafe24Simplehae";
+        src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.1/Cafe24Simplehae.woff")
+          format("woff");
+        font-weight: normal;
+        font-style: normal;
+      }
+
       body {
         background-color: salmon;
-        width: 320vw;
-        height: calc(300vw + 20vh);
+        width: 200vw;
+        height: 200vw;
         position: relative;
         overflow: hidden;
         display: flex;
@@ -25,8 +33,8 @@
 
       #map-container {
         position: absolute;
-        width: 320vw;
-        height: calc(300vw + 20vh);
+        width: 100%;
+        height: 100%;
         background-color: rgba(255, 255, 0, 0.2);
         top: 0;
         left: 0;
@@ -193,6 +201,86 @@
         border-radius: 5px;
         z-index: 1000;
       }
+
+      #postcard-detail {
+        position: fixed;
+        top: 120px;
+        left: 120px;
+        width: 300px;
+        height: calc(300px * (1250 / 720)); /* Dynamically calculates the height */
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        display: none;
+        z-index: 10000;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat; 
+        font-size: 20px;
+      }
+
+      #postcard-detail .close-btn {
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        cursor: pointer;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      /* Comment Section */
+      #comment {
+        position: absolute;
+        top: 72.5%;
+        z-index: 900;
+        width: 84%;
+        color: #412823;
+        font-size: 0.6em;
+        text-align: center;
+        line-height: 2.3;
+        font-family: Cafe24Simplehae, sans-serif;
+        font-weight: bold;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        overflow: hidden;
+      }
+
+      /* Timestamp */
+      #timestamp {
+        position: absolute;
+        top: 82%;
+        z-index: 900;
+        width: 320px;
+        color: #412823;
+        font-size: 8px;
+        text-align: center;
+        line-height: 2;
+        font-family: Cafe24Simplehae, sans-serif;
+        font-weight: bold;
+        word-wrap: break-word;
+        overflow: hidden;
+      }
+
+      /* Name */
+      #name {
+        position: absolute;
+        top: 86%;
+        z-index: 900;
+        width: 20%;
+        color: #412823;
+        font-size: 0.6em;
+        font-family: Pretendard-Regular, sans-serif;
+        left: 67%;
+        text-align: center;
+        vertical-align: middle;
+        overflow: hidden;
+        font-weight: bold;
+      }
+
     </style>
   </head>
   <body>
@@ -220,6 +308,16 @@
         placeholder="춤꾼 이름이나 한마디 검색하기.."
       />
       <ul id="search-results"></ul>
+    </div>
+
+    <!-- 추가된 div 요소 -->
+    <div id="postcard-detail" onclick="closePostcardDetail()">
+      <span class="close-btn" onclick="closePostcardDetail()">X</span>
+      <div id="postcard-content"></div>
+      <img id="gif"></img>
+      <div id="comment"></div>
+      <div id="timestamp"></div>
+      <div id="name"></div>
     </div>
 
     <div id="new-postcard-notification">새로운 엽서가 추가되었습니다!</div>
@@ -309,7 +407,7 @@
         });
 
         postcardDiv.addEventListener("click", () => {
-          alert(`날짜!: ${postcard.timestamp}\n코멘트: ${postcard.comment}`);
+          showPostcardDetails(postcardDiv);
         });
       }
 
@@ -454,7 +552,7 @@
             const li = document.createElement("li");
             li.textContent = `${name} - ${comment.substring(0, 30)}...`;
             li.addEventListener("click", () => {
-              focusOnPostcard(postcard);
+              showPostcardDetails(postcard);
               searchInput.value = "";
               searchResults.innerHTML = "";
             });
@@ -463,7 +561,17 @@
         });
       }
 
+      function resetPostcardSize() {
+        const postcards = document.querySelectorAll(".postcard");
+        postcards.forEach((postcard) => {
+          postcard.style.transform = "scale(1)";
+        });
+      }
+      
+
       function focusOnPostcard(postcard) {
+        resetPostcardSize(); // Reset all postcards before scaling up the clicked one
+  
         const postcardRect = postcard.getBoundingClientRect();
         const mapRect = mapContainer.getBoundingClientRect();
 
@@ -479,11 +587,90 @@
         const newMapLeft = mapRect.left + moveX;
         const newMapTop = mapRect.top + moveY;
 
+        postcard.style.transition = "transform 0.4s ease";
+        postcard.style.transform = "scale(1.3)";
+
         // 지도 이동
         mapContainer.style.left = newMapLeft + "px";
         mapContainer.style.top = newMapTop + "px";
 
         updateMinimapView();
+      }
+
+      const modelPositions = [
+        { x: 16.75, y: 31.5, width: 36.75},
+        { x: 33.5, y: 27.7, width: 36.75},
+        { x: 42.25, y: 22, width: 36.75},
+      ];
+
+      function showPostcardDetails(postcard) {
+        resetPostcardSize(); // Reset all postcards before scaling up the clicked one
+  
+        const postcardDetail = document.getElementById("postcard-detail");
+        const gifElement = document.getElementById("gif");
+        const timestampElement = document.getElementById("timestamp");
+        const commentElement = document.getElementById("comment");
+        const nameElement = document.getElementById("name");
+        const tutorialelement = document.getElementById("tutorial")
+          // Retrieve the position information based on postcard number
+        const positionIndex = postcard.dataset.number - 1; // assuming postcard.number is 1-based
+        const modelPosition = modelPositions[positionIndex] || modelPositions[0]; // default to first if undefined
+
+        //hide tutorial
+        tutorialelement.style.display = "none";
+         // Apply the styles to the gifElement based on modelPosition
+        gifElement.src = postcard.querySelector("img").src;
+        gifElement.style.position = "absolute";
+        gifElement.style.top = `calc(${modelPosition.y}% - 2%)`;
+        gifElement.style.left = `calc(${modelPosition.x}% + 1%)`;
+        gifElement.style.width = `calc(${modelPosition.width}% + 7%)`;
+        gifElement.style.height = "auto";
+        gifElement.style.display = "block"; // Ensures GIF is visible when loaded
+
+
+        // Set the content for each element using the postcard's data attributes
+        timestampElement.textContent = postcard.dataset.timestamp;
+        commentElement.textContent = postcard.dataset.comment;
+        nameElement.textContent = postcard.dataset.name;
+
+        // Display the postcard detail container
+        postcardDetail.style.display = "block";
+
+        // Set the background image dynamically based on postcard number
+        const backgroundIndex = postcard.dataset.number; // default to 1 if not provided
+        postcardDetail.style.backgroundImage = `url('share_postcardfinal_${backgroundIndex}.webp')`;
+
+              // Center the postcard on the screen
+        const postcardRect = postcard.getBoundingClientRect();
+        const mapRect = mapContainer.getBoundingClientRect();
+
+        // Calculate the postcard center coordinates
+        const postcardCenterX = postcardRect.left + postcardRect.width / 2;
+        const postcardCenterY = postcardRect.top + postcardRect.height / 2;
+
+        // Calculate the movement needed to center the postcard
+        const moveX = window.innerWidth / 2 - postcardCenterX;
+        const moveY = window.innerHeight / 2 - postcardCenterY;
+
+        // Calculate the new map position
+        const newMapLeft = mapRect.left + moveX;
+        const newMapTop = mapRect.top + moveY;
+
+        // Move the map container
+        mapContainer.style.left = newMapLeft + "px";
+        mapContainer.style.top = newMapTop + "px";
+
+        postcard.style.transition = "transform 0.4s ease";
+        postcard.style.transform = "scale(1.3)";
+
+        updateMinimapView();
+      }
+
+      function closePostcardDetail() {
+        resetPostcardSize(); // Reset all postcards before scaling up the clicked one
+  
+        document.getElementById("postcard-detail").style.display = "none";
+        document.getElementById("tutorial").style.display = "flex";
       }
 
       loadPostcards();
