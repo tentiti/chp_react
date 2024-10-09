@@ -951,7 +951,7 @@ const uploadGif = async (gifBlob) => {
     } else {
         // 그 외의 경우 흰색으로 그리고 굵기는 5
         ctx.lineWidth = 10;
-        ctx.strokeStyle = '#000000'; // 검은색으로 그리기
+        ctx.strokeStyle = '#111111'; // 검은색으로 그리기
 
     }
   
