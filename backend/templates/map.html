@@ -22,9 +22,11 @@
       }
 
       body {
-        background-color: salmon;
-        width: 200vw;
-        height: 200vw;
+        background-Image: url("background.png");
+        /* bacground-size: contain; */
+        background-repeat: repeat;
+        width: 800vw;
+        height: 800vw;
         position: relative;
         overflow: hidden;
         display: flex;
@@ -33,12 +35,11 @@
 
       #map-container {
         position: absolute;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(255, 255, 0, 0.2);
+        /* background-color: rgba(255, 255, 0, 0.2); */
         top: 0;
         left: 0;
         transition: transform 0.5s ease-in-out;
+        transform-origin: center center;
       }
 
       .postcard {
@@ -46,6 +47,7 @@
         width: 150px;
         height: 150px;
         transition: transform 2s ease-in-out;
+        border: 1px solid #ccc;
       }
 
       .postcard img {
@@ -281,6 +283,25 @@
         font-weight: bold;
       }
 
+      #zoom-controls {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 100;
+      }
+
+      #zoom-controls button {
+        display: block;
+        margin-bottom: 5px;
+        padding: 10px;
+        font-size: 16px;
+        background-color: rgba(255, 255, 255, 0.7);
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+
     </style>
   </head>
   <body>
@@ -322,6 +343,13 @@
 
     <div id="new-postcard-notification">새로운 엽서가 추가되었습니다!</div>
     <div id="tutorial"></div>
+
+    <div id="zoom-controls">
+      <button onclick="zoomIn()">Zoom In</button>
+      <button onclick="zoomOut()">Zoom Out</button>
+    </div>
+
+    
     <script>
       let loadedPostcards = [];
       let lastTimestamp = "";
@@ -368,10 +396,15 @@
           <img src="https://letsdance.kr/api/uploads/${postcard.gif_name}" alt="${postcard.name}" />
         `;
 
-        const randomX = 150 + Math.random() * (mapWidth - 300);
-        const randomY = 150 + Math.random() * (mapHeight - 300);
+        // Calculate the maximum X and Y positions, considering the 50vw and 50vh margin
+        const marginX = window.innerWidth / 2;
+        const marginY = window.innerHeight / 2;
+        const randomX = marginX + Math.random() * (mapWidth - 2 * marginX);
+        const randomY = marginY + Math.random() * (mapHeight - 2 * marginY);
+
         postcardDiv.style.left = randomX + "px";
         postcardDiv.style.top = randomY + "px";
+
 
         mapContainer.appendChild(postcardDiv);
 
@@ -390,21 +423,42 @@
           (randomY / mapHeight) * minimapHeight + "px";
         minimapContainer.appendChild(minimapPostcard);
 
-        postcardDiv.addEventListener("mouseover", (e) => {
-          tooltip.style.display = "block";
-          tooltip.textContent = postcard.name;
-          tooltip.style.left = e.pageX + "px";
-          tooltip.style.top = e.pageY + "px";
+        // 모든 엽서에 mousemove 이벤트 추가
+        mapContainer.addEventListener("mousemove", (e) => {
+          let closestPostcard = null;
+          let minDistance = 30; // 20px 이내 거리 제한
+
+          // 모든 엽서 순회하면서 중심과의 거리 계산
+          document.querySelectorAll(".postcard").forEach((postcard) => {
+            const rect = postcard.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            const distance = Math.sqrt(
+              Math.pow(e.pageX - centerX, 2) + Math.pow(e.pageY - centerY, 2)
+            );
+
+            // 가장 가까운 엽서 업데이트 (20px 이내인 경우만)
+            if (distance <= minDistance) {
+              minDistance = distance;
+              closestPostcard = postcard;
+            }
+          });
+
+          // 가장 가까운 엽서가 있는 경우 툴팁 표시
+          if (closestPostcard) {
+            tooltip.style.display = "block";
+            tooltip.textContent = closestPostcard.getAttribute("data-name");
+            tooltip.style.left = e.pageX + "px";
+            tooltip.style.top = e.pageY + "px";
+          } else {
+            tooltip.style.display = "none"; // 가까운 엽서가 없으면 툴팁 숨기기
+          }
         });
 
-        postcardDiv.addEventListener("mouseout", () => {
-          tooltip.style.display = "none";
-        });
 
-        postcardDiv.addEventListener("mousemove", (e) => {
-          tooltip.style.left = e.pageX + "px";
-          tooltip.style.top = e.pageY + "px";
-        });
+
+
 
         postcardDiv.addEventListener("click", () => {
           showPostcardDetails(postcardDiv);
@@ -460,26 +514,83 @@
       }
 
       // 이동 영역 관련 코드
-      const moveZones = document.querySelectorAll(".move-zone");
-      let isMoving = false;
-      let moveInterval;
+// 지도 이동 함수 (기존 코드에서 별도로 분리)
+function moveMapByDirection(direction, isKeyboard = false) {
+  const currentX = parseInt(mapContainer.style.left) || -400;
+  const currentY = parseInt(mapContainer.style.top) || -400;
+  const step = isKeyboard ? 30 : 10; // 키보드로 이동 시 30, 마우스 오버로 이동 시 10
 
-      moveZones.forEach((zone) => {
-        zone.addEventListener("mouseenter", startMoving);
-        zone.addEventListener("mouseleave", stopMoving);
-      });
+  let newX = currentX;
+  let newY = currentY;
 
-      function startMoving(e) {
-        if (isMoving) return;
-        isMoving = true;
-        moveInterval = setInterval(() => moveMap(e.target.id), 50);
-      }
+  switch (direction) {
+    case "up":
+      newY = Math.min(currentY + step, -10);
+      break;
+    case "down":
+      newY = Math.max(currentY - step, -mapHeight + window.innerHeight);
+      break;
+    case "left":
+      newX = Math.min(currentX + step, -10);
+      break;
+    case "right":
+      newX = Math.max(currentX - step, -mapWidth + window.innerWidth);
+      break;
+  }
 
-      function stopMoving() {
-        if (!isMoving) return;
-        isMoving = false;
-        clearInterval(moveInterval);
-      }
+  mapContainer.style.left = newX + "px";
+  mapContainer.style.top = newY + "px";
+  updateMinimapView();
+}
+
+// 키보드 이벤트 추가
+document.addEventListener("keydown", (e) => {
+  switch (e.key) {
+    case "ArrowUp":
+    case "w":
+    case "W":
+      moveMapByDirection("up", true); // 키보드로 이동 시 두 번째 인자 true
+      break;
+    case "ArrowDown":
+    case "s":
+    case "S":
+      moveMapByDirection("down", true);
+      break;
+    case "ArrowLeft":
+    case "a":
+    case "A":
+      moveMapByDirection("left", true);
+      break;
+    case "ArrowRight":
+    case "d":
+    case "D":
+      moveMapByDirection("right", true);
+      break;
+  }
+});
+
+// 이동 영역 관련 코드
+const moveZones = document.querySelectorAll(".move-zone");
+let isMoving = false;
+let moveInterval;
+
+moveZones.forEach((zone) => {
+  zone.addEventListener("mouseenter", startMoving);
+  zone.addEventListener("mouseleave", stopMoving);
+});
+
+function startMoving(e) {
+  if (isMoving) return;
+  isMoving = true;
+  moveInterval = setInterval(() => moveMap(e.target.id), 50);
+}
+
+function stopMoving() {
+  if (!isMoving) return;
+  isMoving = false;
+  clearInterval(moveInterval);
+}
+
 
       // 미니맵 클릭 이벤트 추가
       minimapContainer.addEventListener("click", (event) => {
@@ -680,6 +791,95 @@
       setInterval(function () {
         window.location.reload();
       }, 900000); // 900,000ms = 15분
+
+      //랜덤이미지
+      const randomImages = [
+        'random1.webp', 'random2.webp', 'random3.webp', 
+        'random4.webp', 'random5.webp', 'random6.webp', 
+        'random7.webp', 'random8.webp'
+      ];
+
+      // Store references to the images so you can update them later
+      let randomImageElements = [];
+
+      // Function to add 10 random images to the map
+      function addRandomImages() {
+        for (let i = 0; i < 10; i++) {
+          const imageDiv = document.createElement('div');
+          imageDiv.classList.add('random-image');
+          const img = document.createElement('img');
+          img.src = randomImages[Math.floor(Math.random() * randomImages.length)];
+          img.style.width = '80px'; // Adjust the size as needed
+          img.style.height = '80px';
+
+          const randomX = Math.random() * (mapWidth - 200) + 100;
+          const randomY = Math.random() * (mapHeight - 200) + 100;
+          imageDiv.style.position = 'absolute';
+          imageDiv.style.left = `${randomX}px`;
+          imageDiv.style.top = `${randomY}px`;
+
+          imageDiv.appendChild(img);
+          mapContainer.appendChild(imageDiv);
+          randomImageElements.push(imageDiv);
+        }
+      }
+
+      // Function to update one random image's source and position
+      function updateRandomImage() {
+        const randomIndex = Math.floor(Math.random() * randomImageElements.length);
+        const randomImageDiv = randomImageElements[randomIndex];
+        const newImageSrc = randomImages[Math.floor(Math.random() * randomImages.length)];
+
+        // Change image source
+        randomImageDiv.querySelector('img').src = newImageSrc;
+
+        // Move image to a new random position
+        const newX = Math.random() * (mapWidth - 200) + 100;
+        const newY = Math.random() * (mapHeight - 200) + 100;
+        randomImageDiv.style.left = `${newX}px`;
+        randomImageDiv.style.top = `${newY}px`;
+      }
+
+      // Load images initially
+      addRandomImages();
+
+      // Update one random image every 3 minutes (180,000 ms)
+      setInterval(updateRandomImage, 180000);
+
+      //줌
+      let currentScale = 1;
+      const scaleStep = 0.1; // Amount to scale in or out with each step
+      const minScale = 0.5;  // Minimum zoom level
+      const maxScale = 3;    // Maximum zoom level
+
+      function zoomIn() {
+        if (currentScale < maxScale) {
+          currentScale += scaleStep;
+          updateMapScale();
+        }
+      }
+
+      function zoomOut() {
+        if (currentScale > minScale) {
+          currentScale -= scaleStep;
+          updateMapScale();
+        }
+      }
+
+      function updateMapScale() {
+        mapContainer.style.transform = `scale(${currentScale})`;
+        updateMinimapView();
+      }
+
+      // Handle mouse wheel for zoom
+      mapContainer.addEventListener('wheel', (event) => {
+        event.preventDefault();
+        if (event.deltaY < 0) {
+          zoomIn();
+        } else {
+          zoomOut();
+        }
+      });
     </script>
   </body>
 </html>
