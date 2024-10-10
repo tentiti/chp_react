@@ -23,7 +23,7 @@
 
       body {
         background-Image: url("background.png");
-        /* bacground-size: contain; */
+        bacground-size: contain;
         background-repeat: repeat;
         width: 800vw;
         height: 800vw;
@@ -35,6 +35,8 @@
 
       #map-container {
         position: absolute;
+        width: 100%;
+        height: 100%;
         /* background-color: rgba(255, 255, 0, 0.2); */
         top: 0;
         left: 0;
@@ -301,6 +303,17 @@
         cursor: pointer;
       }
 
+      /* 기존 스타일 아래에 추가 */
+      .blinking {
+        animation: blinking 1s infinite;
+      }
+
+      @keyframes blinking {
+        0% { opacity: 1; }
+        50% { opacity: 0; }
+        100% { opacity: 1; }
+      }
+
 
     </style>
   </head>
@@ -373,17 +386,27 @@
         fetch("https://letsdance.kr/api/postcards", { mode: "cors" })
           .then((response) => response.json())
           .then((postcards) => {
+            // 타임스탬프를 기준으로 내림차순 정렬 (최신순)
+            postcards.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            // 최근 5개의 엽서 ID 추출
+            let latestPostcards = postcards.slice(0, 5).map(p => p.id);
+
             postcards.forEach((postcard) => {
               if (!loadedPostcards.includes(postcard.id)) {
                 addPostcardToMap(postcard);
                 loadedPostcards.push(postcard.id);
               }
             });
+
+            // 깜빡임 효과 업데이트
+            updateMinimapBlinking(latestPostcards);
           })
           .catch((error) => {
             console.log("Error loading postcards:", error);
           });
       }
+
 
       function addPostcardToMap(postcard) {
         const postcardDiv = document.createElement("div");
@@ -417,6 +440,8 @@
         } else if (postcard.number == 3) {
           minimapPostcard.classList.add("minimap-blue");
         }
+
+        minimapPostcard.setAttribute('data-id', postcard.id);
 
         minimapPostcard.style.left = (randomX / mapWidth) * minimapWidth + "px";
         minimapPostcard.style.top =
@@ -483,28 +508,56 @@
       }, 6000);
 
       function fetchNewPostcards() {
-        fetch("https://letsdance.kr/api/postcards", { mode: "cors" })
-          .then((response) => response.json())
-          .then((data) => {
-            console.log("testing", loadedPostcards);
-            let newPostcardsAdded = false;
-            data.forEach((postcard) => {
-              if (!loadedPostcards.includes(postcard.id)) {
-                console.log("New postcard added:", postcard);
-                addPostcardToMap(postcard);
-                loadedPostcards.push(postcard.id);
-                lastTimestamp = postcard.timestamp;
-                newPostcardsAdded = true;
-              }
-            });
-            if (newPostcardsAdded) {
-              showNewPostcardNotification();
-            }
-          })
-          .catch((error) => {
-            console.log("Error fetching new postcards:", error);
-          });
+  fetch("https://letsdance.kr/api/postcards", { mode: "cors" })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("testing", loadedPostcards);
+      let newPostcardsAdded = false;
+
+      // 타임스탬프를 기준으로 내림차순 정렬 (최신순)
+      data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+      // 최근 5개의 엽서 ID 추출
+      let latestPostcards = data.slice(0, 5).map(p => p.id);
+
+      data.forEach((postcard) => {
+        if (!loadedPostcards.includes(postcard.id)) {
+          console.log("New postcard added:", postcard);
+          addPostcardToMap(postcard);
+          loadedPostcards.push(postcard.id);
+          lastTimestamp = postcard.timestamp;
+          newPostcardsAdded = true;
+        }
+      });
+
+      if (newPostcardsAdded) {
+        showNewPostcardNotification();
       }
+
+      // 깜빡임 효과 업데이트
+      updateMinimapBlinking(latestPostcards);
+    })
+    .catch((error) => {
+      console.log("Error fetching new postcards:", error);
+    });
+}
+
+function updateMinimapBlinking(latestPostcards) {
+  // 모든 미니맵 아이콘에서 깜빡임 클래스 제거
+  document.querySelectorAll('.minimap-postcard').forEach(icon => {
+    icon.classList.remove('blinking');
+  });
+
+  // 최근 5개의 엽서에 해당하는 아이콘에 깜빡임 클래스 추가
+  latestPostcards.forEach(id => {
+    let icon = document.querySelector(`.minimap-postcard[data-id='${id}']`);
+    if (icon) {
+      icon.classList.add('blinking');
+    }
+  });
+}
+
+
 
       function showNewPostcardNotification() {
         newPostcardNotification.style.display = "block";
