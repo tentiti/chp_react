@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>춤판</title>
+    <style>
+      @font-face {
+        font-family: "ClimateCrisisKR-1979";
+        src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/ClimateCrisisKR-2030.woff2")
+          format("woff2");
+        font-weight: 400;
+      }
+
+      @font-face {
+        font-family: "Pretendard-Regular";
+        src: url("https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff")
+          format("woff");
+        font-weight: 400;
+        font-style: normal;
+      }
+
+      @font-face {
+        font-family: "Cafe24Simplehae";
+        src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.1/Cafe24Simplehae.woff")
+          format("woff");
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      body {
+        background-image: url("https://letsdance.kr/api/uploads/background.png");
+        background-repeat: repeat;
+        width: 200vw;
+        height: 200vw;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        font-family: "Pretendard-Regular", sans-serif;
+      }
+
+      #title {
+        font-family: "ClimateCrisisKR-1979", sans-serif;
+        position: fixed;
+        top: 40px;
+        left: 40px;
+        color: #412823;
+        z-index: 2000;
+      }
+
+      #invitationandmanual {
+        position: fixed;
+        bottom: 120px;
+        width: 522px;
+        height: 90%;
+        left: 50%;
+        transform: translate(-50%, 0);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        z-index: 900;
+      }
+      #cpinvitation {
+        width: 522px;
+        height: 231px;
+        cursor: pointer;
+      }
+
+      #cpmanual {
+        width: 522px;
+        height: 343px;
+        cursor: pointer;
+      }
+
+      /* 닫기 상태로 바뀐 후 이미지 크기 조정 */
+
+      #map-container {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        transition: transform 0.5s ease-in-out;
+        transform-origin: 50% 50%;
+      }
+
+      .postcard {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        transition: transform 2s ease-in-out;
+        z-index: 1000;
+      }
+
+      .postcard img {
+        width: 100%;
+        height: 100%;
+      }
+
+      .tooltip {
+        position: absolute;
+        background-color: rgba(61, 61, 61, 0.7);
+        color: #f8f6f1;
+        padding: 10px;
+        border-radius: 10px;
+        display: none;
+        white-space: nowrap;
+        z-index: 1000;
+        stroke: 1px solid #412823;
+      }
+
+      .move-zone {
+        position: fixed;
+        font-size: 70px;
+        color: #bab9b3;
+        z-index: 1000;
+        text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.3s;
+        z-index: 10;
+      }
+
+      .move-zone:hover {
+        color: #e9a7a7;
+      }
+
+      #top-zone {
+        top: 0;
+        left: 25vw;
+        width: 50vw;
+        height: 100px;
+      }
+
+      #bottom-zone {
+        bottom: 0;
+        left: 25vw;
+        width: 50vw;
+        height: 100px;
+      }
+
+      #left-zone {
+        top: 25vh;
+        left: 0;
+        width: 100px;
+        height: 50vh;
+      }
+
+      #right-zone {
+        top: 25vh;
+        right: 0;
+        width: 100px;
+        height: 50vh;
+      }
+
+      #minimap-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 180px;
+        height: 180px;
+        z-index: 1110;
+      }
+
+      #minimapimage {
+        position: absolute;
+        width: 80%;
+        height: 80%;
+        left: 10%;
+        top: 10%;
+        background-color: rgba(61, 61, 61, 0.7);
+        border: 1px solid #412823;
+        border-radius: 10px;
+      }
+
+      #minimap {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+      }
+
+      .minimap-postcard {
+        position: absolute;
+        width: 5px;
+        height: 5px;
+      }
+
+      .minimap-gray {
+        background-color: #bcbabf;
+      }
+
+      .minimap-yellow {
+        background-color: #e5e09d;
+      }
+
+      .minimap-blue {
+        background-color: #66a7b2;
+      }
+
+      #minimap-view {
+        position: absolute;
+        border: 2px solid #e9a7a7;
+        border-radius: 10px;
+        z-index: 30;
+      }
+
+      #search-container {
+        position: fixed;
+        width: 420px;
+        left: 36px;
+        top: 120px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 1000;
+      }
+
+      #search-input {
+        box-sizing: border-box;
+        width: 420px;
+        height: 49px;
+        box-sizing: border-box;
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid #412823;
+        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        border-radius: 10px;
+        padding-left: 20px;
+        color: #412823;
+        font-family: 'Pretendard-Regular', sans-serif;
+      }
+
+      #search-input::placeholder {
+        color: #412823;
+        opacity: 1;
+      }
+
+      #search-results {
+        width: 420px;
+        max-height: 245px;
+        list-style: none;
+        padding: 20px;
+        padding-right: 35px;
+        overflow-y: auto;
+        box-sizing: border-box;
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid #412823;
+        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        border-radius: 10px;
+        font-family: 'Pretendard-Regular', sans-serif;
+        color: #412823;
+        font-size: 15px;
+        line-height: 1.5;
+        display: none;
+      }
+
+      #search-results li {
+        cursor: pointer;
+        font-family: 'Pretendard-Regular', sans-serif;
+        color: #412823;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      /* 스크롤바 전체 */
+      #search-results {
+        scrollbar-width: auto;
+        scrollbar-color: #412823 #d9d9d9;
+        padding-right: 20px;
+      }
+
+      #search-results::-webkit-scrollbar {
+        width: 16px;
+      }
+
+      #search-results::-webkit-scrollbar-track {
+        background: #d9d9d9;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+
+      #search-results::-webkit-scrollbar-thumb {
+        background-color: #412823;
+        border-radius: 8px;
+        border: 8px solid #d9d9d9;
+      }
+
+      #search-results::-webkit-scrollbar-thumb:hover {
+        background-color: #2e1c19;
+      }
+
+      #new-postcard-notification {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        display: none;
+        z-index: 1000;
+      }
+
+      #tutorial {
+        position: fixed;
+        bottom: 120px;
+        left: 50%;
+        width: 500px;
+        height: 100px;
+        transform: translate(-50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 20px;
+        border-radius: 5px;
+        z-index: 1000;
+      }
+
+      #postcard-detail {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        width: 400px;
+        height: 300px;
+        transform: translate(-50%, -50%);
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+        display: none;
+        z-index: 10000;
+        color: #412823;
+        font-family: 'Pretendard-Regular', sans-serif;
+      }
+
+      #postcard-detail .close-btn {
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        cursor: pointer;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      /* Comment Section */
+      #comment {
+        position: absolute;
+        top: 30%;
+        left: 10%;
+        width: 80%;
+        color: #412823;
+        font-size: 0.8em;
+        text-align: center;
+        line-height: 1.5;
+        font-family: 'Cafe24Simplehae', sans-serif;
+        font-weight: bold;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        overflow: hidden;
+      }
+
+      /* Timestamp */
+      #timestamp {
+        position: absolute;
+        top: 20%;
+        left: 10%;
+        width: 80%;
+        color: #412823;
+        font-size: 0.7em;
+        text-align: center;
+        line-height: 1.5;
+        font-family: 'Cafe24Simplehae', sans-serif;
+        font-weight: bold;
+        word-wrap: break-word;
+        overflow: hidden;
+      }
+
+      /* Name */
+      #name {
+        position: absolute;
+        top: 90%;
+        width: 100%;
+        color: #412823;
+        font-size: 0.8em;
+        font-family: 'Pretendard-Regular', sans-serif;
+        text-align: center;
+        vertical-align: middle;
+        overflow: hidden;
+        font-weight: bold;
+      }
+
+      #zoom-controls {
+        position: fixed;
+        top: 40px;
+        right: 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 1100;
+        width: 100px;
+      }
+
+      /* Play Button */
+      #play-button {
+        position: absolute;
+        left: 60%;
+        top: 70%;
+        cursor: pointer;
+        width: 50px;
+        height: 50px;
+      }
+
+      /* Link to postcard share view */
+      #share-link {
+        position: absolute;
+        bottom: 10%;
+        width: 100%;
+        text-align: center;
+      }
+
+      /* Blinking effect */
+      .blinking {
+        animation: blinking 1s infinite;
+      }
+
+      @keyframes blinking {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="title">
+      <span style="font-size: 28px;">이제 댄스타임</span><br />
+      <span style="font-size: 15px;">: 평화의 나무에 달빛이 닿은 날, 반짝이는 춤결</span
+      ><br />
+    </div>
+
+    <div id="map-container"></div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <div class="move-zone" id="top-zone">
+      &#9650;
+    </div>
+    <div class="move-zone" id="bottom-zone">
+      &#9660;
+    </div>
+    <div class="move-zone" id="left-zone">
+      &#9664;
+    </div>
+    <div class="move-zone" id="right-zone">
+      &#9654;
+    </div>
+
+    <div id="minimap-container">
+      <div id="minimapimage"></div>
+      <div id="minimap">
+        <div id="minimap-view"></div>
+      </div>
+    </div>
+
+    <div id="search-container">
+      <input
+        type="text"
+        id="search-input"
+        placeholder="춤꾼 이름이나 한마디 검색하기.."
+      />
+      <ul id="search-results"></ul>
+    </div>
+
+    <div id="invitationandmanual">
+      <img
+        id="cpinvitation"
+        src="https://letsdance.kr/api/uploads/cp_invitation.png"
+        alt="춤판 초대장"
+      />
+      <img
+        id="cpmanual"
+        src="https://letsdance.kr/api/uploads/cp_manual.png"
+        alt="춤판 초대장"
+      />
+    </div>
+
+    <!-- Postcard Detail Modal -->
+    <div id="postcard-detail"></div>
+
+    <div id="new-postcard-notification">새로운 엽서가 추가되었습니다!</div>
+
+    <div id="zoom-controls">
+      <img
+        src="https://letsdance.kr/api/uploads/zoomin.png"
+        id="zoom-in"
+        alt="Zoom In"
+      />
+      <img
+        src="https://letsdance.kr/api/uploads/zoomout.png"
+        id="zoom-out"
+        alt="Zoom Out"
+      />
+    </div>
+
+    <script>
+      let loadedPostcards = [];
+      let lastTimestamp = "";
+
+      // 전역 변수 초기화
+      let zoom = 1;
+      const zoomStep = 0.2;
+      const minZoom = 0.5;
+      const maxZoom = 3;
+
+      const mapContainer = document.getElementById("map-container");
+      const tooltip = document.getElementById("tooltip");
+      const minimapContainer = document.getElementById("minimap");
+      const minimapView = document.getElementById("minimap-view");
+      const searchInput = document.getElementById("search-input");
+      const searchResults = document.getElementById("search-results");
+      const newPostcardNotification = document.getElementById(
+        "new-postcard-notification"
+      );
+
+      const mapWidth = document.body.clientWidth;
+      const mapHeight = document.body.clientHeight;
+
+      const minimapWidth = 150;
+      const minimapHeight = 150;
+
+      //매뉴얼
+
+      const cpInvitation = document.getElementById("cpinvitation");
+      const cpManual = document.getElementById("cpmanual");
+
+      let isInvitationOpen = false; // 초대장 열림 상태 변수
+      let isManualOpen = false; // 매뉴얼 열림 상태 변수
+
+      // 초대장 클릭 이벤트
+      cpInvitation.addEventListener("click", () => {
+        if (isInvitationOpen) {
+          // 닫힌 상태로 돌아가기
+          cpInvitation.src =
+            "https://letsdance.kr/api/uploads/cp_invitation.png";
+          cpInvitation.style.width = "522px";
+          cpInvitation.style.height = "231px";
+        } else {
+          // 열림 이미지로 변경
+          cpInvitation.src =
+            "https://letsdance.kr/api/uploads/invitation_open.png";
+          cpInvitation.style.width = "173px";
+          cpInvitation.style.height = "auto";
+        }
+        isInvitationOpen = !isInvitationOpen; // 상태 반전
+      });
+
+      // 초대장 마우스 호버 이벤트
+      cpInvitation.addEventListener("mouseenter", () => {
+        if (isInvitationOpen) {
+          cpInvitation.src =
+            "https://letsdance.kr/api/uploads/invitation_close.png";
+        }
+      });
+
+      cpInvitation.addEventListener("mouseleave", () => {
+        if (isInvitationOpen) {
+          cpInvitation.src =
+            "https://letsdance.kr/api/uploads/invitation_open.png";
+        }
+      });
+
+      // 매뉴얼 클릭 이벤트
+      cpManual.addEventListener("click", () => {
+        if (isManualOpen) {
+          // 닫힌 상태로 돌아가기
+          cpManual.src = "https://letsdance.kr/api/uploads/cp_manual.png";
+          cpManual.style.width = "522px";
+          cpManual.style.height = "343px";
+        } else {
+          // 열림 이미지로 변경
+          cpManual.src = "https://letsdance.kr/api/uploads/manual_open.png";
+          cpManual.style.width = "173px";
+          cpManual.style.height = "auto";
+        }
+        isManualOpen = !isManualOpen; // 상태 반전
+      });
+
+      // 매뉴얼 마우스 호버 이벤트
+      cpManual.addEventListener("mouseenter", () => {
+        if (isManualOpen) {
+          cpManual.src = "https://letsdance.kr/api/uploads/manual_close.png";
+        }
+      });
+
+      cpManual.addEventListener("mouseleave", () => {
+        if (isManualOpen) {
+          cpManual.src = "https://letsdance.kr/api/uploads/manual_open.png";
+        }
+      });
+
+      function loadPostcards() {
+        fetch("https://letsdance.kr/api/postcards", { mode: "cors" })
+          .then((response) => response.json())
+          .then((postcards) => {
+            // 타임스탬프를 기준으로 내림차순 정렬 (최신순)
+            postcards.sort(
+              (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+            );
+
+            // 최근 5개의 엽서 ID 추출
+            let latestPostcards = postcards.slice(0, 5).map((p) => p.id);
+
+            postcards.forEach((postcard) => {
+              if (!loadedPostcards.includes(postcard.id)) {
+                addPostcardToMap(postcard);
+                loadedPostcards.push(postcard.id);
+              }
+            });
+
+            // 깜빡임 효과 업데이트
+            updateMinimapBlinking(latestPostcards);
+          })
+          .catch((error) => {
+            console.log("Error loading postcards:", error);
+          });
+      }
+
+      function addPostcardToMap(postcard) {
+        const postcardDiv = document.createElement("div");
+        postcardDiv.classList.add("postcard");
+        postcardDiv.setAttribute("data-number", postcard.number);
+        postcardDiv.setAttribute("data-name", postcard.name);
+        postcardDiv.setAttribute("data-comment", postcard.comment);
+        postcardDiv.setAttribute("data-timestamp", postcard.timestamp);
+        postcardDiv.setAttribute("data-id", postcard.id);
+        postcardDiv.innerHTML = `
+          <img src="https://letsdance.kr/api/uploads/${postcard.gif_name}" alt="${postcard.name}" />
+        `;
+
+        // Calculate the maximum X and Y positions, considering the 50vw and 50vh margin
+        const marginX = window.innerWidth / 2;
+        const marginY = window.innerHeight / 2;
+        const randomX = (mapWidth / 10) + Math.random() * (mapWidth * 0.9);
+        const randomY = (mapWidth / 10) + Math.random() * (mapHeight * 0.9);
+
+        postcardDiv.style.left = randomX + "px";
+        postcardDiv.style.top = randomY + "px";
+
+        mapContainer.appendChild(postcardDiv);
+
+        const minimapPostcard = document.createElement("div");
+        minimapPostcard.classList.add("minimap-postcard");
+        if (postcard.number == 1) {
+          minimapPostcard.classList.add("minimap-gray");
+        } else if (postcard.number == 2) {
+          minimapPostcard.classList.add("minimap-yellow");
+        } else if (postcard.number == 3) {
+          minimapPostcard.classList.add("minimap-blue");
+        }
+
+        minimapPostcard.setAttribute("data-id", postcard.id);
+
+        minimapPostcard.style.left = (randomX / mapWidth) * minimapWidth + "px";
+        minimapPostcard.style.top =
+          (randomY / mapHeight) * minimapHeight + "px";
+        minimapContainer.appendChild(minimapPostcard);
+
+        postcardDiv.addEventListener("click", () => {
+          showSpeechBubble(postcardDiv);
+        });
+      }
+
+      function showSpeechBubble(postcardDiv) {
+        resetPostcardSize();
+        closePostcardDetail();
+
+        const postcardDetail = document.getElementById("postcard-detail");
+        postcardDetail.innerHTML = ""; // Clear existing content
+
+        // Set speech bubble background
+        postcardDetail.style.backgroundImage =
+          "url('https://letsdance.kr/api/uploads/speechbox.png')";
+        postcardDetail.style.display = "block";
+
+        // Create timestamp and comment elements
+        const timestampElement = document.createElement("div");
+        timestampElement.id = "timestamp";
+        timestampElement.textContent = postcardDiv.dataset.timestamp;
+
+        const commentElement = document.createElement("div");
+        commentElement.id = "comment";
+        commentElement.textContent = postcardDiv.dataset.comment;
+
+        // Append elements to postcardDetail
+        postcardDetail.appendChild(timestampElement);
+        postcardDetail.appendChild(commentElement);
+
+        // Create play button
+        const playButton = document.createElement("img");
+        playButton.src = "https://letsdance.kr/api/uploads/playimage.png";
+        playButton.id = "play-button";
+
+        // Play button click event
+        playButton.addEventListener("click", () => {
+          showPostcardDetails(postcardDiv);
+        });
+
+        postcardDetail.appendChild(playButton);
+
+        // Display name below the initial image
+        const nameElement = document.createElement("div");
+        nameElement.id = "name";
+        nameElement.textContent = postcardDiv.dataset.name;
+        postcardDetail.appendChild(nameElement);
+
+        // Center map on postcard
+        focusOnPostcard(postcardDiv);
+      }
+
+      function showPostcardDetails(postcardDiv) {
+        const postcardDetail = document.getElementById("postcard-detail");
+        postcardDetail.innerHTML = ""; // Clear existing content
+
+        // Set the background image dynamically based on postcard number
+        const backgroundIndex = postcardDiv.dataset.number; // default to 1 if not provided
+        postcardDetail.style.backgroundImage = `url('https://letsdance.kr/api/uploads/share_postcardfinal_${backgroundIndex}.webp')`;
+
+        // Display GIF
+        const gifElement = document.createElement("img");
+        gifElement.src = postcardDiv.querySelector("img").src;
+        gifElement.style.position = "absolute";
+        gifElement.style.top = "20%";
+        gifElement.style.left = "25%";
+        gifElement.style.width = "50%";
+        gifElement.style.height = "auto";
+        gifElement.style.display = "block";
+        postcardDetail.appendChild(gifElement);
+
+        // Create timestamp and comment elements
+        const timestampElement = document.createElement("div");
+        timestampElement.id = "timestamp";
+        timestampElement.textContent = postcardDiv.dataset.timestamp;
+        postcardDetail.appendChild(timestampElement);
+
+        const commentElement = document.createElement("div");
+        commentElement.id = "comment";
+        commentElement.textContent = postcardDiv.dataset.comment;
+        postcardDetail.appendChild(commentElement);
+
+        // Display name
+        const nameElement = document.createElement("div");
+        nameElement.id = "name";
+        nameElement.textContent = postcardDiv.dataset.name;
+        postcardDetail.appendChild(nameElement);
+
+        // Close button
+        const closeButton = document.createElement("span");
+        closeButton.classList.add("close-btn");
+        closeButton.textContent = "X";
+        closeButton.addEventListener("click", closePostcardDetail);
+        postcardDetail.appendChild(closeButton);
+
+        // Create link to the postcard share view
+        const linkElement = document.createElement("a");
+        linkElement.href = `https://letsdance.kr/postcardshareview/${postcardDiv.dataset.id}`;
+        linkElement.textContent = `https://letsdance.kr/postcardshareview/${postcardDiv.dataset.id}`;
+        linkElement.target = "_blank"; // Open in a new tab
+        linkElement.id = "share-link";
+        postcardDetail.appendChild(linkElement);
+
+        // Show the postcard detail
+        postcardDetail.style.display = "block";
+      }
+
+      function closePostcardDetail() {
+        resetPostcardSize();
+        const postcardDetail = document.getElementById("postcard-detail");
+        postcardDetail.style.display = "none";
+        postcardDetail.innerHTML = ""; // Clear content
+      }
+
+      setInterval(() => {
+        fetchNewPostcards();
+      }, 6000);
+
+      mapContainer.addEventListener("mousemove", (e) => {
+        let closestPostcard = null;
+        let minDistance = 20; // 20px 이내 거리 제한
+
+        // 모든 엽서를 순회하여 가장 가까운 엽서를 찾습니다.
+        document.querySelectorAll(".postcard").forEach((postcard) => {
+          const rect = postcard.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+
+          const distance = Math.sqrt(
+            Math.pow(e.clientX - centerX, 2) + Math.pow(e.clientY - centerY, 2)
+          );
+
+          // 가장 가까운 엽서를 업데이트합니다.
+          if (distance <= minDistance) {
+            minDistance = distance;
+            closestPostcard = postcard;
+          }
+        });
+
+        // 가장 가까운 엽서가 있는 경우 툴팁을 표시합니다.
+        if (closestPostcard) {
+          tooltip.style.display = "block";
+          tooltip.textContent = closestPostcard.getAttribute("data-name");
+          tooltip.style.left = e.pageX + "px";
+          tooltip.style.top = e.pageY + "px";
+          tooltip.style.zIndex = "10000"; // 툴팁을 위로 올림
+        } else {
+          tooltip.style.display = "none"; // 가까운 엽서가 없으면 툴팁 숨기기
+        }
+      });
+
+      function fetchNewPostcards() {
+        fetch("https://letsdance.kr/api/postcards", { mode: "cors" })
+          .then((response) => response.json())
+          .then((data) => {
+            let newPostcardsAdded = false;
+
+            // 타임스탬프를 기준으로 내림차순 정렬 (최신순)
+            data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            // 최근 5개의 엽서 ID 추출
+            let latestPostcards = data.slice(0, 5).map((p) => p.id);
+
+            data.forEach((postcard) => {
+              if (!loadedPostcards.includes(postcard.id)) {
+                addPostcardToMap(postcard);
+                loadedPostcards.push(postcard.id);
+                lastTimestamp = postcard.timestamp;
+                newPostcardsAdded = true;
+              }
+            });
+
+            if (newPostcardsAdded) {
+              showNewPostcardNotification();
+            }
+
+            // 깜빡임 효과 업데이트
+            updateMinimapBlinking(latestPostcards);
+          })
+          .catch((error) => {
+            console.log("Error fetching new postcards:", error);
+          });
+      }
+
+      function updateMinimapBlinking(latestPostcards) {
+        // 모든 미니맵 아이콘에서 깜빡임 클래스 제거
+        document.querySelectorAll(".minimap-postcard").forEach((icon) => {
+          icon.classList.remove("blinking");
+        });
+
+        // 최근 5개의 엽서에 해당하는 아이콘에 깜빡임 클래스 추가
+        latestPostcards.forEach((id) => {
+          let icon = document.querySelector(
+            `.minimap-postcard[data-id='${id}']`
+          );
+          if (icon) {
+            icon.classList.add("blinking");
+          }
+        });
+      }
+
+      function showNewPostcardNotification() {
+        newPostcardNotification.style.display = "block";
+        setTimeout(() => {
+          newPostcardNotification.style.display = "none";
+        }, 3000);
+      }
+
+      // 이동 영역 관련 코드
+      // 지도 이동 함수 (기존 코드에서 별도로 분리)
+      function moveMapByDirection(direction, isKeyboard = false) {
+        const currentX = parseInt(mapContainer.style.left) || -400;
+        const currentY = parseInt(mapContainer.style.top) || -400;
+        const step = isKeyboard ? 30 : 10; // 키보드로 이동 시 30, 마우스 오버로 이동 시 10
+
+        let newX = currentX;
+        let newY = currentY;
+
+        switch (direction) {
+          case "up":
+            newY = Math.min(currentY + step, -10);
+            break;
+          case "down":
+            newY = Math.max(currentY - step, -mapHeight + window.innerHeight);
+            break;
+          case "left":
+            newX = Math.min(currentX + step, -10);
+            break;
+          case "right":
+            newX = Math.max(currentX - step, -mapWidth + window.innerWidth);
+            break;
+        }
+
+        mapContainer.style.left = newX + "px";
+        mapContainer.style.top = newY + "px";
+        updateMinimapView();
+      }
+
+      // 키보드 이벤트 추가
+      document.addEventListener("keydown", (e) => {
+        // 검색 입력창이 포커스를 가지고 있는 경우 키보드 이동 무시
+        if (document.activeElement === searchInput) {
+          return;
+        }
+
+        switch (e.key) {
+          case "ArrowUp":
+          case "w":
+          case "W":
+            moveMapByDirection("up", true); // 키보드로 이동 시 두 번째 인자 true
+            break;
+          case "ArrowDown":
+          case "s":
+          case "S":
+            moveMapByDirection("down", true);
+            break;
+          case "ArrowLeft":
+          case "a":
+          case "A":
+            moveMapByDirection("left", true);
+            break;
+          case "ArrowRight":
+          case "d":
+          case "D":
+            moveMapByDirection("right", true);
+            break;
+        }
+      });
+
+      // 이동 영역 관련 코드
+      const moveZones = document.querySelectorAll(".move-zone");
+      let isMoving = false;
+      let moveInterval;
+
+      moveZones.forEach((zone) => {
+        zone.addEventListener("mouseenter", startMoving);
+        zone.addEventListener("mouseleave", stopMoving);
+      });
+
+      function startMoving(e) {
+        if (isMoving) return;
+        isMoving = true;
+        moveInterval = setInterval(() => moveMap(e.target.id), 50);
+      }
+
+      function stopMoving() {
+        if (!isMoving) return;
+        isMoving = false;
+        clearInterval(moveInterval);
+      }
+
+      // 미니맵 클릭 이벤트 추가
+      minimapContainer.addEventListener("click", (event) => {
+        const minimapRect = minimapContainer.getBoundingClientRect();
+
+        // 클릭 위치를 계산
+        const clickX = event.clientX - minimapRect.left;
+        const clickY = event.clientY - minimapRect.top;
+
+        // 미니맵 비율을 메인 맵 비율로 변환
+        const mapX =
+          -(clickX / minimapWidth) * mapWidth + window.innerWidth / 2;
+        const mapY =
+          -(clickY / minimapHeight) * mapHeight + window.innerHeight / 2;
+
+        // 지도 위치 업데이트
+        mapContainer.style.left = mapX + "px";
+        mapContainer.style.top = mapY + "px";
+
+        updateMinimapView();
+      });
+
+      function moveMap(zoneId) {
+        const currentX = parseInt(mapContainer.style.left) || -400;
+        const currentY = parseInt(mapContainer.style.top) || -400;
+        const step = 10;
+
+        let newX = currentX;
+        let newY = currentY;
+
+        switch (zoneId) {
+          case "top-zone":
+            newY = Math.min(currentY + step, -10);
+            break;
+          case "bottom-zone":
+            newY = Math.max(currentY - step, -mapHeight + window.innerHeight);
+            break;
+          case "left-zone":
+            newX = Math.min(currentX + step, -10);
+            break;
+          case "right-zone":
+            newX = Math.max(currentX - step, -mapWidth + window.innerWidth);
+            break;
+        }
+
+        mapContainer.style.left = newX + "px";
+        mapContainer.style.top = newY + "px";
+        updateMinimapView();
+      }
+
+      // 검색 기능 개선
+      searchInput.addEventListener("input", handleSearch);
+
+      function handleSearch() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const postcards = document.querySelectorAll(".postcard");
+        searchResults.innerHTML = "";
+
+        // 검색어가 없으면 searchResults를 숨김
+        if (searchTerm === "") {
+          searchResults.style.display = "none";
+          return;
+        }
+
+        let resultsFound = false;
+
+        postcards.forEach((postcard) => {
+          const name = postcard.getAttribute("data-name").toLowerCase();
+          const comment = postcard.getAttribute("data-comment").toLowerCase();
+
+          if (name.includes(searchTerm) || comment.includes(searchTerm)) {
+            const li = document.createElement("li");
+
+            // 이름을 bold 처리하고, 줄바꿈 추가
+            li.innerHTML = `<strong>${name}</strong><br>${comment.substring(
+              0,
+              30
+            )}...`;
+
+            li.addEventListener("click", () => {
+              showSpeechBubble(postcard);
+              searchInput.value = "";
+              searchResults.innerHTML = "";
+              searchResults.style.display = "none"; // 검색 결과 선택 시 숨김
+            });
+            searchResults.appendChild(li);
+            resultsFound = true;
+          }
+        });
+
+        // 검색 결과가 있을 때만 표시
+        searchResults.style.display = resultsFound ? "block" : "none";
+      }
+
+      function resetPostcardSize() {
+        const postcards = document.querySelectorAll(".postcard");
+        postcards.forEach((postcard) => {
+          postcard.style.transform = "scale(1)";
+        });
+      }
+
+      function focusOnPostcard(postcard) {
+        resetPostcardSize(); // Reset all postcards before scaling up the clicked one
+
+        const postcardRect = postcard.getBoundingClientRect();
+        const mapRect = mapContainer.getBoundingClientRect();
+
+        // 포스트카드의 중심 좌표 계산
+        const postcardCenterX = postcardRect.left + postcardRect.width / 2;
+        const postcardCenterY = postcardRect.top + postcardRect.height / 2;
+
+        // 지도를 이동시켜야 할 거리 계산
+        const moveX = window.innerWidth / 2 - postcardCenterX;
+        const moveY = window.innerHeight / 2 - postcardCenterY;
+
+        // 현재 지도 위치에서 이동 거리를 더해 새로운 위치 계산
+        const newMapLeft = mapRect.left + moveX;
+        const newMapTop = mapRect.top + moveY;
+
+        postcard.style.transition = "transform 0.4s ease";
+        postcard.style.transform = "scale(1.3)";
+
+        // 지도 이동
+        mapContainer.style.left = newMapLeft + "px";
+        mapContainer.style.top = newMapTop + "px";
+
+        updateMinimapView();
+      }
+
+      function loadPostcards();
+      updateMinimapView();
+
+      // 15분(900초)마다 새로고침
+      setInterval(function () {
+        window.location.reload();
+      }, 900000); // 900,000ms = 15분
+
+      //랜덤이미지
+      const randomImages = [
+        "random1.webp",
+        "random2.webp",
+        "random3.webp",
+        "random4.webp",
+        "random5.webp",
+        "random6.webp",
+        "random7.webp",
+        "random8.webp",
+      ];
+
+      // Store references to the images so you can update them later
+      let randomImageElements = [];
+
+      // Function to add 10 random images to the map
+      function addRandomImages() {
+        for (let i = 0; i < 10; i++) {
+          const imageDiv = document.createElement("div");
+          imageDiv.classList.add("random-image");
+          const img = document.createElement("img");
+          img.src =
+            "https://letsdance.kr/api/uploads/" +
+            randomImages[Math.floor(Math.random() * randomImages.length)];
+          img.style.width = "80px"; // Adjust the size as needed
+          img.style.height = "80px";
+
+          const randomX = Math.random() * mapWidth;
+          const randomY = Math.random() * mapWidth;
+          imageDiv.style.position = "absolute";
+          imageDiv.style.left = `${randomX}px`;
+          imageDiv.style.top = `${randomY}px`;
+
+          imageDiv.appendChild(img);
+          mapContainer.appendChild(imageDiv);
+          randomImageElements.push(imageDiv);
+        }
+      }
+
+      // Function to update one random image's source and position
+      function updateRandomImage() {
+        const randomIndex = Math.floor(
+          Math.random() * randomImageElements.length
+        );
+        const randomImageDiv = randomImageElements[randomIndex];
+        const newImageSrc =
+          randomImages[Math.floor(Math.random() * randomImages.length)];
+
+        // Change image source
+        randomImageDiv.querySelector("img").src =
+          "https://letsdance.kr/api/uploads/" + newImageSrc;
+
+        // Move image to a new random position
+        const newX = Math.random() * (mapWidth - 200) + 100;
+        const newY = Math.random() * (mapHeight - 200) + 100;
+        randomImageDiv.style.left = `${newX}px`;
+        randomImageDiv.style.top = `${newY}px`;
+      }
+
+      // Load images initially
+      addRandomImages();
+
+      // Update one random image every 3 minutes (180,000 ms)
+      setInterval(updateRandomImage, 180000);
+
+      //줌
+      //버튼 연결
+      document.getElementById("zoom-in").addEventListener("click", zoomIn);
+      document.getElementById("zoom-out").addEventListener("click", zoomOut);
+
+      //버튼 호버 효과
+      const zoomInButton = document.getElementById("zoom-in");
+      const zoomOutButton = document.getElementById("zoom-out");
+
+      // 줌 인 버튼 마우스 호버 이벤트
+      zoomInButton.addEventListener("mouseenter", () => {
+        zoomInButton.src =
+          "https://letsdance.kr/api/uploads/zoomin_focus.png";
+      });
+
+      zoomInButton.addEventListener("mouseleave", () => {
+        zoomInButton.src = "https://letsdance.kr/api/uploads/zoomin.png";
+      });
+
+      // 줌 아웃 버튼 마우스 호버 이벤트
+      zoomOutButton.addEventListener("mouseenter", () => {
+        zoomOutButton.src =
+          "https://letsdance.kr/api/uploads/zoomout_focus.png";
+      });
+
+      zoomOutButton.addEventListener("mouseleave", () => {
+        zoomOutButton.src = "https://letsdance.kr/api/uploads/zoomout.png";
+      });
+
+      // 줌 인 함수
+      function zoomIn() {
+        if (zoom < maxZoom) {
+          zoom = Math.min(zoom + zoomStep, maxZoom);
+          updateMapTransform();
+          updateMinimapView();
+        }
+      }
+
+      // 줌 아웃 함수
+      function zoomOut() {
+        if (zoom > minZoom) {
+          zoom = Math.max(zoom - zoomStep, minZoom);
+          updateMapTransform();
+          updateMinimapView();
+        }
+      }
+
+      // 뷰포트 중앙 기준 transform-origin 계산
+      function calculateTransformOrigin() {
+        const mapRect = mapContainer.getBoundingClientRect();
+        const viewportCenterX = window.innerWidth / 2;
+        const viewportCenterY = window.innerHeight / 2;
+
+        // 맵 컨테이너 내에서의 상대적 위치를 퍼센트로 계산
+        const originX =
+          ((viewportCenterX - mapRect.left) / mapRect.width) * 100;
+        const originY =
+          ((viewportCenterY - mapRect.top) / mapRect.height) * 100;
+
+        return `${originX}% ${originY}%`;
+      }
+
+      // 지도 변환 업데이트 함수
+      function updateMapTransform() {
+        const currentX = parseInt(mapContainer.style.left) || 0;
+        const currentY = parseInt(mapContainer.style.top) || 0;
+        mapContainer.style.transformOrigin = calculateTransformOrigin();
+        mapContainer.style.transform = `scale(${zoom})`;
+      }
+
+      // 마우스 휠을 통한 줌인/줌아웃
+      mapContainer.addEventListener("wheel", (event) => {
+        event.preventDefault();
+        if (event.deltaY < 0) {
+          zoomIn();
+        } else {
+          zoomOut();
+        }
+      });
+
+      function updateMinimapView() {
+        const currentX = parseInt(mapContainer.style.left) || -400;
+        const currentY = parseInt(mapContainer.style.top) || -400;
+        const viewX = (-currentX / mapWidth) * minimapWidth;
+        const viewY = (-currentY / mapHeight) * minimapHeight;
+        const viewWidth =
+          (window.innerWidth / mapWidth) * minimapWidth * (1 / zoom);
+        const viewHeight =
+          (window.innerHeight / mapHeight) * minimapHeight * (1 / zoom);
+
+        // 사각형의 중심 좌표 계산
+        const centerX = viewX + viewWidth / 2;
+        const centerY = viewY + viewHeight / 2;
+
+        // 새로운 width와 height에 맞게 left와 top 조정
+        minimapView.style.width = viewWidth + "px";
+        minimapView.style.height = viewHeight + "px";
+        minimapView.style.left = centerX - viewWidth / 2 + "px";
+        minimapView.style.top = centerY - viewHeight / 2 + "px";
+      }
+
+      loadPostcards();
+      updateMinimapView();
+    </script>
+  </body>
+</html>
