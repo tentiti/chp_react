@@ -1395,11 +1395,6 @@ function zoomOut() {
 }
 
 function adjustMapForZoom(prevZoom) {
-  const rect = mapContainer.getBoundingClientRect();
-  const viewportCenterX = window.innerWidth / 2;
-  const viewportCenterY = window.innerHeight / 2;
-  
-
   updateMapTransform();
   updateMinimapView();
 }
