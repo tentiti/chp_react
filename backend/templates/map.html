@@ -142,16 +142,16 @@
       }
       #cpinvitation {
 
-      width: 522px;
-      height: 231px;
+      width: 173px;
+      height: auto;
       cursor: pointer;
 
       }
 
       #cpmanual {
 
-      width: 522px;
-      height: 343px;
+      width: 173px;
+      height: auto;
       cursor: pointer;
 
       }
@@ -571,8 +571,8 @@
         height: auto;
         font-family: 'Pretendard-Regular', sans-serif;
 
-        top: 28%;
-        left: 42%;
+        top: 23%;
+        left: 44%;
         transform: translate(-50%, 0);
         text-align: center;
       }
@@ -633,8 +633,8 @@
     </div>
 
     <div id="invitationandmanual">
-      <img id="cpinvitation" src="https://letsdance.kr/api/uploads/cp_invitation.webp" alt="춤판 초대장"/>
-      <img id="cpmanual" src="https://letsdance.kr/api/uploads/cp_manual.webp" alt="춤판 초대장"/>
+      <img id="cpinvitation" src="https://letsdance.kr/api/uploads/invitation_close.webp" alt="춤판 초대장"/>
+      <img id="cpmanual" src="https://letsdance.kr/api/uploads/manual_open.webp" alt="춤판 초대장"/>
     </div>
 
     <!-- 추가된 div 요소 -->
@@ -704,8 +704,8 @@
       const cpInvitation = document.getElementById("cpinvitation");
     const cpManual = document.getElementById("cpmanual");
 
-    let isInvitationOpen = false; // 초대장 열림 상태 변수
-    let isManualOpen = false;     // 매뉴얼 열림 상태 변수
+    let isInvitationOpen = true; // 초대장 열림 상태 변수
+    let isManualOpen = true;     // 매뉴얼 열림 상태 변수
 
 // 초대장 클릭 이벤트
 cpInvitation.addEventListener("click", () => {
@@ -730,13 +730,13 @@ cpInvitation.addEventListener("click", () => {
 // 초대장 마우스 호버 이벤트
 cpInvitation.addEventListener("mouseenter", () => {
   if (isInvitationOpen) {
-    cpInvitation.src = "https://letsdance.kr/api/uploads/invitation_close.webp";
+    cpInvitation.src = "https://letsdance.kr/api/uploads/invitation_open.webp";
   }
 });
 
 cpInvitation.addEventListener("mouseleave", () => {
   if (isInvitationOpen) {
-    cpInvitation.src = "https://letsdance.kr/api/uploads/invitation_open.webp";
+    cpInvitation.src = "https://letsdance.kr/api/uploads/invitation_close.webp";
   }
 });
 
@@ -807,9 +807,14 @@ cpManual.addEventListener("mouseleave", () => {
         postcardDiv.setAttribute("data-name", postcard.name);
         postcardDiv.setAttribute("data-comment", postcard.comment);
         postcardDiv.setAttribute("data-timestamp", postcard.timestamp);
-        postcardDiv.innerHTML = `
-          <img src="https://letsdance.kr/api/uploads/${postcard.gif_name}" alt="${postcard.name}" />
-        `;
+        // 0에서 1초(1000 밀리초) 사이의 랜덤 딜레이
+        const delay = Math.random() * 1000;
+
+        setTimeout(() => {
+          postcardDiv.innerHTML = `
+            <img src="https://letsdance.kr/api/uploads/${postcard.gif_name}" alt="${postcard.name}" />
+          `;
+        }, delay);
 
         // Calculate the maximum X and Y positions, considering the 50vw and 50vh margin
         const randomX = window.innerWidth/2 + Math.random() * (mapWidth - window.innerWidth);
@@ -1043,10 +1048,8 @@ function stopMoving() {
         const clickY = event.clientY - minimapRect.top;
 
         // 미니맵 비율을 메인 맵 비율로 변환
-        const mapX =
-          -(clickX / minimapWidth) * mapWidth + window.innerWidth / 2;
-        const mapY =
-          -(clickY / minimapHeight) * mapHeight + window.innerHeight / 2;
+        const mapX = -((clickX / minimapWidth) * (mapWidth * zoom) - window.innerWidth / 2);
+  const mapY = -((clickY / minimapHeight) * (mapHeight * zoom) - window.innerHeight / 2);
 
         // 지도 위치 업데이트
         mapContainer.style.left = mapX + "px";
@@ -1397,8 +1400,8 @@ function adjustMapForZoom(prevZoom) {
   const viewportCenterY = window.innerHeight / 2;
   
   // 줌 이전의 오프셋 계산
-  const offsetX = (viewportCenterX - rect.left - rect.width / 2) / prevZoom;
-  const offsetY = (viewportCenterY - rect.top - rect.height / 2) / prevZoom;
+  const offsetX = (viewportCenterX - rect.left ) / prevZoom;
+  const offsetY = (viewportCenterY - rect.top ) / prevZoom;
 
   translateX -= offsetX * (zoom - prevZoom);
   translateY -= offsetY * (zoom - prevZoom);
@@ -1436,22 +1439,22 @@ mapContainer.addEventListener("wheel", (event) => {
     zoomOut();
   }
 });
-
 function updateMinimapView() {
-  const currentX = parseFloat(mapContainer.style.left) || -400;
-  const currentY = parseFloat(mapContainer.style.top) || -400;
+  const currentX = parseFloat(mapContainer.style.left) || 0;
+  const currentY = parseFloat(mapContainer.style.top) || 0;
 
-  // 맵 위치를 미니맵 좌표로 변환
-  const viewX = (-currentX / mapWidth) * minimapWidth + minimapWidth / 2;
-  const viewY = (-currentY / mapHeight) * minimapHeight + minimapHeight / 2;
-  const viewWidth = (window.innerWidth / mapWidth) * minimapWidth * (1 / zoom);
-  const viewHeight = (window.innerHeight / mapHeight) * minimapHeight * (1 / zoom);
+  // 맵 위치를 미니맵 좌표로 변환 (줌 레벨 고려)
+  const viewX = (-currentX / (mapWidth * zoom)) * minimapWidth + minimapWidth / 2;
+  const viewY = (-currentY / (mapHeight * zoom)) * minimapHeight + minimapHeight / 2;
+  const viewWidth = (window.innerWidth / (mapWidth * zoom)) * minimapWidth;
+  const viewHeight = (window.innerHeight / (mapHeight * zoom)) * minimapHeight;
 
   minimapView.style.width = `${viewWidth}px`;
   minimapView.style.height = `${viewHeight}px`;
   minimapView.style.left = `${viewX - viewWidth / 2}px`;
   minimapView.style.top = `${viewY - viewHeight / 2}px`;
 }
+
 
 
 // Select the elements you want to hide on hover
