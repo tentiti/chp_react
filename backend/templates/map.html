@@ -276,7 +276,7 @@
 
       #minimap-view {
         position: absolute;
-        border: 2px solid #e9a7a7;
+        /* border: 2px solid #e9a7a7; */
         border-radius: 10px;
         z-index: 30;
       }
@@ -1040,23 +1040,26 @@ function stopMoving() {
 
 
       // 미니맵 클릭 이벤트 추가
-      minimapContainer.addEventListener("click", (event) => {
-        const minimapRect = minimapContainer.getBoundingClientRect();
+//       minimapContainer.addEventListener("click", (event) => {
+//     const minimapRect = minimapContainer.getBoundingClientRect();
+    
+//     // 클릭 위치를 계산
+//     const clickXRatio = (event.clientX - minimapRect.left) / minimapRect.width;
+//     const clickYRatio = (event.clientY - minimapRect.top) / minimapRect.height;
+    
+//     // 미니맵 비율을 메인 맵 비율로 변환
+//     const mapX = -((clickXRatio * mapWidth * zoom) - window.innerWidth / 2);
+//     const mapY = -((clickYRatio * mapHeight * zoom) - window.innerHeight / 2);
 
-        // 클릭 위치를 계산
-        const clickX = event.clientX - minimapRect.left;
-        const clickY = event.clientY - minimapRect.top;
+//     alert(mapX + " " + mapY + " " + clickXRatio + " " + clickYRatio);
+    
+//     // 지도 위치 업데이트
+//     mapContainer.style.left = mapX + "px";
+//     mapContainer.style.top = mapY + "px";
 
-        // 미니맵 비율을 메인 맵 비율로 변환
-        const mapX = -((clickX / minimapWidth) * (mapWidth * zoom) - window.innerWidth / 2);
-  const mapY = -((clickY / minimapHeight) * (mapHeight * zoom) - window.innerHeight / 2);
+//     updateMinimapView();
+// });
 
-        // 지도 위치 업데이트
-        mapContainer.style.left = mapX + "px";
-        mapContainer.style.top = mapY + "px";
-
-        updateMinimapView();
-      });
 
       function moveMap(zoneId) {
         const currentX = parseInt(mapContainer.style.left) || -400;
