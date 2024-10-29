@@ -34,14 +34,17 @@ const PostcardShareView = ({isFixedSize}) => {
   useEffect(() => {
     const fetchPostcard = async () => {
       try {
-        const response = await axios.get(`/api/postcard/${id}`, { cache: 'no-cache' });
-        if (response.status === 200) {
-          setPostcard(response.data);
+        const response = await axios.get('/data/allData.json'); // JSON 파일에서 데이터 가져오기
+        const data = response.data.postcards; // postcards 배열 접근
+        const selectedPostcard = data.find(item => item.id === parseInt(id, 10)); // id로 필터링
+
+        if (selectedPostcard) {
+          setPostcard(selectedPostcard); // 필터링한 postcard 데이터 설정
         } else {
-          console.error('Error fetching postcard:', response.status);
+          console.error(`Postcard with ID ${id} not found.`);
         }
       } catch (error) {
-        console.error('Network error:', error);
+        console.error('Error fetching postcard:', error);
       }
     };
 
@@ -191,7 +194,7 @@ const PostcardShareView = ({isFixedSize}) => {
           <img
             id="gifElement" 
             key={gifKey} // Ensure the GIF is reloaded by changing the key
-            src={`/api/uploads/${postcard.gif_name}`}
+            src={`/uploads/${postcard.gif_name}`}
             alt="GIF"
             style={{
               position: 'absolute',

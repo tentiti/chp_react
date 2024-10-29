@@ -496,7 +496,7 @@ function Home( {isFixedSize}) {
               }}>
                 <img
                   style={{width:'100%', height:'100%'}}
-                  src={`/uploads/${postcard.png_name}`} 
+                  src={`/uploads/${postcard.gif_name.replace('.gif', '.png')}`} // 확장자를 .png로 변경
                   alt={`grid ${postcard.id}`}
                   onError={(e) => handleImageError(e, postcard.id)} 
                   onClick={() => window.location.href = `/postcardshareview/${postcard.id}`} 
