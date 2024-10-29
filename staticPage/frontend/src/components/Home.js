@@ -281,12 +281,20 @@ function Home( {isFixedSize}) {
     // Fetch Postcards
     const fetchPostcards = async () => {
       try {
-        const response = await axios.get('/api/postcards');
-        setPostcards(response.data);
+        const response = await axios.get('/data/allData.json'); // JSON 파일 경로
+        const data = response.data;
+  
+        // postcards가 배열인지 확인하고 설정
+        if (Array.isArray(data.postcards)) {
+          setPostcards(data.postcards);
+        } else {
+          console.error("Expected 'postcards' to be an array, but got:", typeof data.postcards);
+        }
       } catch (error) {
         console.error("There was an error fetching the postcards!", error);
       }
     };
+  
 
     fetchPostcards();
 
@@ -488,7 +496,7 @@ function Home( {isFixedSize}) {
               }}>
                 <img
                   style={{width:'100%', height:'100%'}}
-                  src={`/api/uploads/${postcard.png_name}`} 
+                  src={`/uploads/${postcard.png_name}`} 
                   alt={`grid ${postcard.id}`}
                   onError={(e) => handleImageError(e, postcard.id)} 
                   onClick={() => window.location.href = `/postcardshareview/${postcard.id}`} 

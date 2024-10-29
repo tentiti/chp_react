@@ -5,7 +5,8 @@ import json
 import os
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///1029.db"
+base_dir = os.path.dirname(os.path.abspath(__file__))
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(base_dir, '1029.db')}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
@@ -41,16 +42,14 @@ def generate_json_file_with_sequential_ids():
             ]
         }
 
-        # JSON 파일 경로 확인 및 생성
-        output_dir = os.path.join("frontend", "public", "data")
-        os.makedirs(output_dir, exist_ok=True)  # 경로가 없으면 생성
+        # 현재 파일 경로에 JSON 파일 생성
+        output_dir = os.path.dirname(__file__)  # 현재 파일의 경로
+        output_file = os.path.join(output_dir, "allData.json")
 
-        with open(
-            os.path.join(output_dir, "allData.json"), "w", encoding="utf-8"
-        ) as json_file:
+        with open(output_file, "w", encoding="utf-8") as json_file:
             json.dump(data, json_file, ensure_ascii=False, indent=4)
 
-        print("JSON file with sequential IDs generated successfully.")
+        print("JSON file with sequential IDs generated successfully at", output_file)
     except Exception as e:
         print(f"Error generating JSON file: {e}")
 
