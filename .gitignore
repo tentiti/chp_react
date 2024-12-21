@@ -7,6 +7,7 @@ frontend/build
 *node_modules/*
 node_modules
 frontend/build*
+frontend/backupbuild
 
 */.pnp
 .pnp.js

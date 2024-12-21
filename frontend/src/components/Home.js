@@ -524,11 +524,11 @@ function Home( {isFixedSize}) {
 
       {/* Footer */}
       <footer style={{letterSpacing:'-0.025em'}}>
-        <div>2024. 10. 12 - 11. 3.</div>
+        <div>2024. 12. 9 - 12. 30.</div>
         <div className="footerBorder">|</div>
         <a href="https://www.instagram.com/kkot.pida.gallery/">김화순 개인전</a>
         <div className="footerBorder">|</div>
-        <a href="https://www.zahamuseum.org">자하미술관</a>
+        <a href="https://www.zahamuseum.org">오월미술관</a>
       </footer>
     </div>
   );
