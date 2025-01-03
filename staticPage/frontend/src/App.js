@@ -136,13 +136,13 @@ function App() {
                 <Route path="/Home" element={<Home />} />
                 <Route path="/undefined" element={<Home isFixedSize={isFixedSize} />} />
                 <Route path="/invitation" element={<Invitation />} />
-                <Route path="/postcardview/:id" element={<PostcardView isFixedSize={isFixedSize}/>} />
+                <Route path="/postcardview/" element={<PostcardView isFixedSize={isFixedSize}/>} />
                 <Route path="/CreateCharacter" element={<CreateCharacter isFixedSize={isFixedSize} />} />
                 <Route path="/place-selection" element={<PlaceSelection isFixedSize={isFixedSize}/>} />
                 <Route path="/postcardcreation" element={<PostcardCreation isFixedSize={isFixedSize}/>} />
                 <Route path="/credit/:id" element={<Credit />} />
                 <Route path="/postcardshareview/:id" element={<PostcardShareView isFixedSize={isFixedSize} />} />
-                <Route path="/postcardsafeview/:id" element={<PostcardSafeView isFixedSize={isFixedSize} />} />
+                <Route path="/postcardsafeview/" element={<PostcardSafeView isFixedSize={isFixedSize} />} />
               </Routes>
             </Router>
           </VideoProvider>

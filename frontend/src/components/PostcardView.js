@@ -299,7 +299,7 @@ function usePreload(canvasRef)
       const postcardData = await fetchPostcard(id);
 
       if(!shouldLoad) return;
-      const imageUrl = `/static/stockimages/postcardfinal_${postcardData?.number}.png`;
+      const imageUrl = `/static/stockimages/postcardfinal_${postcardData?.number}.webp`;
       setPostcard(postcardData);
       await preloadImage(imageUrl);
 

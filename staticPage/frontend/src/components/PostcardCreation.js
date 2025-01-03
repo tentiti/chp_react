@@ -117,12 +117,11 @@ const PostcardCreation = ({isFixedSize}) => {
         gifName: realgifUrl,
         name,
         comment,
-        timestamp: currentTime,
+        timestamp: `${new Date().getFullYear()}년 ${String(new Date().getMonth() + 1).padStart(2, '0')}월 ${String(new Date().getDate()).padStart(2, '0')}일에 함께 한 춤사위`,
         selectedBackground,
       };
-      const response = await axios.post(`/api/submit-postcard`, postData);
-      const postcardId = response.data.id;
-      navigate(`/postcardview/${postcardId}`, { state: { videoFiles: videoFiles } });
+      
+      navigate(`/postcardview/`, { state: {postcardData: postData, videoFiles: videoFiles } });
     } catch (error) {
       console.error('Error submitting postcard:', error);
       alert('포스트카드 제출 중 오류가 발생했습니다. 다시 시도해주세요.');

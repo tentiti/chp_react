@@ -1,22 +1,14 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as THREE from 'three';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import RecordRTC from 'recordrtc';
-//import Credit from './Credit';
 import { useScene } from './SceneContext';
 import './PostcardView.css';
 import Invitation from './Invitation';
-
-//파일 금쪽이
-// import { FFmpeg } from '@ffmpeg/ffmpeg';
-// import { fetchFile } from '@ffmpeg/util';
-
 const RECORDING_DURATION_MS = 18750; // 녹화 시간 상수
 
 // 안드로이드 기기 확인 함수
 const isAndroidDevice = () => /Android/i.test(navigator.userAgent);
-// const isAndroidDevice = () => true;
 
 /***
  * three.js 시작 및 세팅 관련 함수
@@ -32,18 +24,6 @@ function preloadImage(src)
       resolve(); // 에러 발생 시에도 callback 호출하여 진행
     };
   } )
-}
-
-async function fetchPostcard(id)
-{
-  try {
-    const response = await axios.get(`/api/postcard/${id}`, { cache: 'no-cache' });
-    if(response.status === 200) return response.data;
-    throw new Error(`Error fetching postcard : ${response.status}`);
-  }
-  catch(e) {
-    throw new Error(`Error fetching postcard : ${e}`);
-  }
 }
 
 function addLightToScene(scene)
@@ -234,11 +214,11 @@ function useThree()
       sceneRef.current = new THREE.Scene();
       addLightToScene(sceneRef.current);
       if(Array.isArray(mixer.current) && mixer.current.length > 0) addModelToScene(sceneRef.current, mixer);
-      moveAndScaleModels(sceneRef.current.children, modelPositionConfigs[postcard?.number] || modelPositionConfigs.default)
+      moveAndScaleModels(sceneRef.current.children, modelPositionConfigs[postcard?.selectedBackground] || modelPositionConfigs.default)
       rendererRef.current = initRenderer(canvasRef.current);
       const camera = initCamera();
       sceneRef.current.add(camera);
-      makeBackgroundMesh(`/static/stockimages/postcardfinal_${postcard?.number}.webp`, rendererRef.current).then( bg=>sceneRef.current.add(bg) );
+      makeBackgroundMesh(`/static/stockimages/postcardfinal_${postcard?.selectedBackground}.webp`, rendererRef.current).then( bg=>sceneRef.current.add(bg) );
       const commentMesh = makeText(postcard.comment, 0, -12.2, 94, true);
       const timestampMesh = makeText(postcard.timestamp, 0, -14, 60);
       const nameMesh = makeText(postcard.name, 6, -15.8, 80);
@@ -288,31 +268,41 @@ function useThree()
   return {initThree, disposeThree};
 }
 
-function usePreload(canvasRef)
-{
-  const { id } = useParams();
-  const [postcard, setPostcard] = useState(null);
-  const {initThree, disposeThree} = useThree();
-  useEffect( ()=>{
-    let shouldLoad = true;
-    (async ()=>{
-      const postcardData = await fetchPostcard(id);
+function usePreload(canvasRef) {
+  const location = useLocation();
+  const { postcardData } = location.state || { postcardData: {} };
+  console.log("postcardData 확인:", postcardData);
 
-      if(!shouldLoad) return;
-      const imageUrl = `/static/stockimages/postcardfinal_${postcardData?.number}.png`;
+  const id = 1;
+  const { initThree, disposeThree } = useThree();
+
+// 훅 내부에서 postcard 상태를 선언
+  const [postcard, setPostcard] = useState(null);
+
+  useEffect(() => {
+    let shouldLoad = true;
+    (async () => {
+      if (!shouldLoad) return;
+
+      // postcardData를 상태에 저장
       setPostcard(postcardData);
+
+      const imageUrl = `/static/stockimages/postcardfinal_${postcardData?.selectedBackground}.png`;
       await preloadImage(imageUrl);
 
-      if(!shouldLoad) return;
+      if (!shouldLoad) return;
       initThree(imageUrl, postcardData, canvasRef);
     })();
-    return ()=>{
+    return () => {
       shouldLoad = false;
       disposeThree();
     };
-  }, [id, initThree, disposeThree, canvasRef] );
+  }, [id, initThree, disposeThree, canvasRef]);
+
+  // postcard 상태를 반환
   return postcard;
 }
+
 
 /***
  * record 관련 함수
@@ -455,11 +445,11 @@ const PostcardView = ({isFixedSize}) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const postcard = usePreload(canvasRef);
-  const [ isReadyToRecord, setIsReadyToRecord ] = useState(true);
+const [ isReadyToRecord, setIsReadyToRecord ] = useState(true);
   const { audioRef, startRecording, isRecording, isRecordingDone, recordingBlob } = useRecord(canvasRef, isReadyToRecord);
   const resetAndPlayAnimations = useAnimationPlay();
   const [ hasShared, setHasShared ] = useState(false);
-  const { id } = useParams();
+  const id = 0;
   const navigate = useNavigate();
 
   const [isInvitationVisible, setIsInvitationVisible] = useState(false);
@@ -470,59 +460,11 @@ const PostcardView = ({isFixedSize}) => {
   const [isDownloadReady, setIsDownloadReady] = useState(false); // 다운로드 버튼 활성화 상태
   const [uploadedFileUrl, setUploadedFileUrl] = useState(null); // 업로드된 파일 URL 저장
 
-  const uploadVideoToServer = async (videoBlob) => {
-    
-    if (!isAndroidDevice()) {
-      setIsDownloadReady(true); // 업로드 완료 후 버튼 활성화
-      return; 
-    }
- 
-    if (uploadedFileUrl) return;
-    try {
-      const formData = new FormData();
-      formData.append('file', videoBlob, 'video.mp4');
-  
-      const response = await axios.post('/api/upload-video', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-  
-      if (response.status === 200) {
-        const { file_url } = response.data;
-        console.log(`동영상이 성공적으로 업로드 및 변환되었습니다! 다운로드 링크: ${file_url}`);
-        setUploadedFileUrl(file_url); // 업로드된 URL 상태에 저장
-        setIsDownloadReady(true); // 업로드 완료 후 버튼 활성화
-    
-        return file_url;
-      }
-    } catch (error) {
-      console.error('동영상 업로드 중 오류 발생:', error);
-    }
-  };
+  console.log("postcardData 확인:", postcard);
 
   // 다운로드 및 공유 버튼에서 업로드된 파일 URL 또는 로컬 recordingBlob을 사용
   const downloadVideo = async() => {
-    if (uploadedFileUrl) {
-      console.log('변환된 영상을 가져옵니다...');
-      try {
-        console.log(uploadedFileUrl);
-        const response = await axios.get(uploadedFileUrl, { responseType: 'blob' });
-        const blob = response.data; // Blob 데이터는 response.data에 저장됨
-        const blobUrl = URL.createObjectURL(blob);
-        const extension = recordingBlob.type === 'video/mp4' ? 'mp4' : 'webm';
-
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = `${postcard?.name}의 춤사위_변환.${extension}`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    
-        URL.revokeObjectURL(blobUrl); // 사용 후 메모리에서 해제
-      } catch (error) {
-        console.error('파일 다운로드 오류:', error);
-      }
-    }
-     else if (recordingBlob) {
+    if (recordingBlob) {
       // 다른 기기에서는 로컬 recordingBlob 사용
       const a = document.createElement('a');
       const blobUrl = URL.createObjectURL(recordingBlob);
@@ -545,25 +487,7 @@ const PostcardView = ({isFixedSize}) => {
     }
   
     try {
-      // 안드로이드 기기에서 업로드된 파일을 다운로드하여 Blob으로 변환
-      if (uploadedFileUrl) {
-        const response = await axios.get(uploadedFileUrl, { responseType: 'blob' });
-        const blob = response.data; // Blob 데이터는 response.data에 저장됨\
-  
-        const file = new File([blob], `${postcard?.name}의 춤사위_변환.mp4`, { type: 'video/mp4' });
-  
-        // 파일을 공유할 수 있는지 확인 후 공유
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: 'My Animation',
-            text: 'Check out this animation I created!',
-          });
-          console.log('Video shared successfully');
-        } else {
-          alert('이 장치에서는 파일 공유가 지원되지 않습니다. 다운로드하여 수동으로 공유해 주세요.');
-        }
-      } else if (recordingBlob) {
+
         // 다른 기기에서는 로컬 recordingBlob을 사용하여 공유
         const file = new File([recordingBlob], `${postcard?.name}의 춤사위.mp4`, { type: 'video/mp4' });
   
@@ -579,7 +503,7 @@ const PostcardView = ({isFixedSize}) => {
         } else {
           console.error('Sharing not supported on this device for files');
         }
-      }
+      
     } catch (error) {
       console.error('Error sharing video:', error);
     } finally {
@@ -594,7 +518,7 @@ const PostcardView = ({isFixedSize}) => {
       const animationInterval = setInterval(() => {
         resetAndPlayAnimations();
       }, 18750); 
-      uploadVideoToServer(recordingBlob); // 업로드 호출
+      // uploadVideoToServer(recordingBlob); // 업로드 호출
       
       return () => clearInterval(animationInterval);
     }
@@ -743,10 +667,6 @@ const PostcardView = ({isFixedSize}) => {
             춤사위 만들기
           </button>
 
-          {/* 두 번째 버튼: 특정 페이지로 이동 */}
-          <button className="upbutton" onClick={() => window.location.href = `/postcardsafeview/${id}`}>
-            춤사위가 보이지 않나요? <br></br>수동 녹화하기
-          </button>
         </>
       )}
 
