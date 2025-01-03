@@ -703,83 +703,83 @@ function disposeModel(model) {
     });
   };
 
-  const startGifRecording = () => {
-    return new Promise((resolve) => {
-      rendererRef.current.setSize(400, 400);
+  // const startGifRecording = () => {
+  //   return new Promise((resolve) => {
+  //     rendererRef.current.setSize(400, 400);
 
-      const canvas = document.createElement('canvas');
-      canvas.width = 400;
-      canvas.height = 400;
-      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  //     const canvas = document.createElement('canvas');
+  //     canvas.width = 400;
+  //     canvas.height = 400;
+  //     const ctx = canvas.getContext('2d', { willReadFrequently: true });
   
-      const gif = new GIF({
-        workers: 4,
-        quality: 10,
-        width: 400,
-        height: 400,
-        transparent: 'rgba(0,0,0,0)',
-      });
+  //     const gif = new GIF({
+  //       workers: 4,
+  //       quality: 10,
+  //       width: 400,
+  //       height: 400,
+  //       transparent: 'rgba(0,0,0,0)',
+  //     });
   
-      const originalFps = 24;  // 원래 애니메이션 재생 속도
-      const totalFrames = 450; // 450프레임 녹화
-      const frameDuration = 1 / originalFps;  // 24fps 기준 프레임당 시간
-      let frameCount = 0;
+  //     const originalFps = 24;  // 원래 애니메이션 재생 속도
+  //     const totalFrames = 450; // 450프레임 녹화
+  //     const frameDuration = 1 / originalFps;  // 24fps 기준 프레임당 시간
+  //     let frameCount = 0;
   
-      // 애니메이션을 2배 빠르게 재생
-      resetAndStartAnimation();
-      modelsRef.current.forEach(({ mixer }) => {
-        mixer.timeScale = 1;  // 애니메이션 속도를 2배로
-      });
+  //     // 애니메이션을 2배 빠르게 재생
+  //     resetAndStartAnimation();
+  //     modelsRef.current.forEach(({ mixer }) => {
+  //       mixer.timeScale = 1;  // 애니메이션 속도를 2배로
+  //     });
 
   
-      gif.on('finished', async (blob) => {
-        console.log('gif created');
-        // 서버에 GIF 업로드
-        let gifUploadUrl = await uploadGif(blob);
+  //     gif.on('finished', async (blob) => {
+  //       console.log('gif created');
+  //       // 서버에 GIF 업로드
+  //       let gifUploadUrl = await uploadGif(blob);
       
-        // 업로드 후 URL 반환
-        resolve(gifUploadUrl);
-        gif.abort();
-      });
+  //       // 업로드 후 URL 반환
+  //       resolve(gifUploadUrl);
+  //       gif.abort();
+  //     });
       
-      // 빠르게 렌더링 및 캡처하는 루프
-      let delta = 0;
-      while (frameCount < totalFrames) {
-        // 애니메이션 프레임 업데이트 (2배 빠른 속도)
-        modelsRef.current.forEach(({ mixer }) => mixer.update(frameDuration));
+  //     // 빠르게 렌더링 및 캡처하는 루프
+  //     let delta = 0;
+  //     while (frameCount < totalFrames) {
+  //       // 애니메이션 프레임 업데이트 (2배 빠른 속도)
+  //       modelsRef.current.forEach(({ mixer }) => mixer.update(frameDuration));
   
-        // 캔버스에 그리기
-        rendererRef.current.render(sceneRef.current, cameraRef.current);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(canvasRef.current, 0, 0);
+  //       // 캔버스에 그리기
+  //       rendererRef.current.render(sceneRef.current, cameraRef.current);
+  //       ctx.clearRect(0, 0, canvas.width, canvas.height);
+  //       ctx.drawImage(canvasRef.current, 0, 0);
   
-        // GIF에 프레임 추가 (24fps로 보이도록 딜레이 설정)
-        gif.addFrame(ctx, { copy: true, delay: 1000 / originalFps });
+  //       // GIF에 프레임 추가 (24fps로 보이도록 딜레이 설정)
+  //       gif.addFrame(ctx, { copy: true, delay: 1000 / originalFps });
 
-        if (frameCount === 0) {
-                // 첫 번째 프레임을 PNG로 저장 (선택 사항)
-          rendererRef.current.render(sceneRef.current, cameraRef.current);
-          const pngBlob = canvas.toDataURL('image/png');
-          // console.log("First frame as PNG:", pngBlob);
-          addVideoFile(pngBlob);  // VideoContext에 첫 프레임 저장
-        }
+  //       if (frameCount === 0) {
+  //               // 첫 번째 프레임을 PNG로 저장 (선택 사항)
+  //         rendererRef.current.render(sceneRef.current, cameraRef.current);
+  //         const pngBlob = canvas.toDataURL('image/png');
+  //         // console.log("First frame as PNG:", pngBlob);
+  //         addVideoFile(pngBlob);  // VideoContext에 첫 프레임 저장
+  //       }
   
 
-        frameCount++;
-        delta += frameDuration;
-      }
+  //       frameCount++;
+  //       delta += frameDuration;
+  //     }
   
-      // GIF 렌더링 시작
-      gif.render();
-    });
-  };
+  //     // GIF 렌더링 시작
+  //     gif.render();
+  //   });
+  // };
   
   
 
   const startRecording = async (setVideoFile) => {
     setIsRecording(true); // 녹화 시작
 
-    await new Promise((resolve) => setTimeout(resolve, 200)); // 약간의 대기 후 녹화 시작
+    // await new Promise((resolve) => setTimeout(resolve, 200)); // 약간의 대기 후 녹화 시작
 
     //모델링 정보 넘기기
     updateSceneData({
@@ -795,6 +795,19 @@ function disposeModel(model) {
     0.1, // near
     1000 // far
   );
+
+  cameraRef.current.position.set(0, 1, 50);
+  cameraRef.current.lookAt(new THREE.Vector3(0, 3.2, 0));
+  cameraRef.current.updateProjectionMatrix();
+
+  await new Promise((resolve) => setTimeout(resolve, 30));
+
+  resetAndStartAnimation(); 
+
+  rendererRef.current.render(sceneRef.current, cameraRef.current);
+  const firstFrame = canvasRef.current.toDataURL('image/png');
+  addVideoFile(firstFrame); // VideoContext에 첫 프레임(스틸컷) 저장
+
    // 짧은 지연 후 녹화 시작
    await new Promise((resolve) => setTimeout(resolve, 30));
 
@@ -813,18 +826,18 @@ function disposeModel(model) {
 
   try {
     // Wait for both GIF and MP4 recordings to finish
-    const gifUploadUrl = await startGifRecording();  // Return the gif URL directly
+    // const gifUploadUrl = await startGifRecording();  // Return the gif URL directly
     // await startRecordingWithBackgrounds(setVideoFile);  // Handle MP4 recordings
 
-    console.log("Recording completed", gifUploadUrl);
+    // console.log("Recording completed", gifUploadUrl);
 
     // Access video files from context
 
     // After recording is done and GIF is uploaded, navigate to placeselection
     navigate('/place-selection', {
       state: {
-        gifUrl: gifUploadUrl.stillfilename,  // Use the returned gif URL directly
-        realgifUrl: gifUploadUrl.filename,
+        gifUrl: 'offline archive',  // Use the returned gif URL directly
+        realgifUrl: 'offline archive',
       },
     });
 
@@ -832,43 +845,6 @@ function disposeModel(model) {
     console.error("Error during recording:", error);
   }
 };
-
-const uploadGif = async (gifBlob) => {
-  const formData = new FormData();
-  formData.append('file', gifBlob, 'transparent_animation.gif');
-  
-  try {
-      const response = await fetch(`/api/upload`, {
-          method: 'POST',
-          body: formData,
-      });
-
-      if (!response.ok) {
-          const errorText = await response.text();  // Get error message from the response body
-          throw new Error(`GIF upload failed: ${response.status} ${response.statusText}. Server response: ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log('Upload response:', data);
-
-      const filename = data.filename;
-
-      const gifUrl = `/api/uploads/${filename}`;
-
-      return data;
-
-  } catch (error) {
-      // Differentiate between fetch failures and other errors
-      if (error.name === 'TypeError') {
-          console.error('Network or CORS issue, unable to reach server:', error.message);
-      } else {
-          console.error('Error uploading GIF:', error.message);
-      }
-
-      return null;
-  }
-};
-
 
   const closeOverlay = () => {
     setOverlayVisible(false);

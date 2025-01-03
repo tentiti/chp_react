@@ -9,6 +9,8 @@ node_modules
 frontend/build*
 frontend/backupbuild
 
+staticPage/uploads/*
+
 */.pnp
 .pnp.js
 node_modules/
