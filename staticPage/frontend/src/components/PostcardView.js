@@ -615,8 +615,8 @@ const [ isReadyToRecord, setIsReadyToRecord ] = useState(true);
           {postcard?.name ? `'${postcard.name}'의 춤사위` : '춤사위'}
         </div>
 
-        <div onClick={handleMenuClick} style={{ cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', paddingRight: '20px' }}>
-          <img src="/static/icons/hamburger.webp" alt="menu" id="menu-button" style={{width:'30px', height:'30px'}}/>
+        <div style={{ cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', paddingRight: '20px' }}>
+          <img src="/static/icons/hamburger.webp" alt="menu" id="menu-button" style={{width:'30px', height:'30px', opacity:'0'}}/>
         </div>
       </header>
 

@@ -414,7 +414,7 @@ function Home( {isFixedSize}) {
       <img src="/static/icons/hamburger.webp" alt="menu" id="menu-button" style={{width: '30px'}}/>
               
     </div>
-        <img src="/static/stockimages/tutorial.webp" alt="tutorial" style={{
+        <img src="/static/stockimages/tutorial.png" alt="tutorial" style={{
           position: 'absolute',
           top: '55px',
           width: '90%', 
@@ -531,12 +531,16 @@ function Home( {isFixedSize}) {
       )}
 
       {/* Footer */}
+
       <footer style={{letterSpacing:'-0.025em'}}>
-        <div>2024. 10. 12 - 11. 3.</div>
-        <div className="footerBorder">|</div>
-        <a href="https://www.instagram.com/kkot.pida.gallery/">김화순 개인전</a>
-        <div className="footerBorder">|</div>
+        <div id="footer1">이 프로젝트는 2024년&nbsp;<a href="https://www.instagram.com/kkot.pida.gallery/">김화순 개인전</a>&nbsp;과 함께 진행되었습니다. </div>
+        <div id="footer2">
+        <div>2024. 10. 12 - 11. 3&nbsp;</div>
         <a href="https://www.zahamuseum.org">자하미술관</a>
+        <div >&nbsp; | &nbsp;</div>
+        <div >2024. 12. 09 - 2025. 01. 12 &nbsp;</div>
+        <a href="https://place.map.kakao.com/1666463188">오월미술관</a>
+        </div>
       </footer>
     </div>
   );

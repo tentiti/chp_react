@@ -48,6 +48,9 @@ const CreateCharacter = ({isFixedSize}) => {
   const dracoLoaderRef = useRef(null);
   const loaderRef = useRef(null);
 
+  const [isAccessorySelected, setIsAccessorySelected] = useState(false);
+
+
   useEffect(() => {
     if (!dracoLoaderRef.current) {
       const dracoLoader = new DRACOLoader();
@@ -178,6 +181,9 @@ const handleAssetSelection = async (category, index, modelPath) => {
     // 새로운 소품 로딩 및 상태 업데이트
     loadModel(modelPath, category+group);
     setSelectedAccessories((prev) => ({ ...prev, [group]: index }));
+
+    setIsAccessorySelected(true); // 액세서리 선택됨
+
     return;
   }
 
@@ -1235,7 +1241,7 @@ const clearExpressionCanvas = useCallback(() => {
     }}>
       <div className="overlay-content">
         <img
-          src="../static/stockimages/maker_invitation.webp"
+          src="../static/stockimages/maker_invitation.png"
           alt="Invitation"
         />
       </div>
@@ -1622,13 +1628,14 @@ const clearExpressionCanvas = useCallback(() => {
               >
                 {/* 배경 이미지 */}
                 <img
-                  src="static/stockimages/facebackground.webp"
+                  src="static/stockimages/facebackground.png"
                   alt="Face Background"
                   style={{
                     position: "absolute",
                     left: "0",
+                    top: "10%",
                     width: "100%", // 고정된 900px 너비
-                    height: "100%", // 고정된 900px 높이
+                    height: "80%", // 고정된 900px 높이
                     objectFit: "contain", // 이미지 크기를 커버로 설정
                     pointerEvents: "none", // 이미지에 클릭이 되지 않게 설정
                     zIndex: 4,
@@ -1684,6 +1691,9 @@ const clearExpressionCanvas = useCallback(() => {
     }
 
     return (
+
+
+      
       <div
         key={index}
         id="makemescrollhere"
@@ -1692,6 +1702,7 @@ const clearExpressionCanvas = useCallback(() => {
           WebkitOverflowScrolling: 'touch !important',
         }}
       >
+
         <div
           className="pictures"
           style={{
@@ -1826,6 +1837,24 @@ const clearExpressionCanvas = useCallback(() => {
             ))}
           </div>
         )}
+
+{activeCategory && activeCategory.name === "ACCESSORY" && (
+  <div style={{
+    width: "100%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems:"center",
+    padding: "10px"
+
+  }}>
+    <img 
+      src="/static/stockimages/accessoryinfo.png" 
+      alt="Accessory Info" 
+      style={{ width: "50%", maxWidth: "400px" }} 
+    />
+  </div>
+)}
+
       </div>
     </div>
   </div>
