@@ -57,5 +57,6 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "https://localhost:8000"
+  "proxy": "https://localhost:8000",
+  "homepage": "https://letsdancekr.github.io/"
 }
